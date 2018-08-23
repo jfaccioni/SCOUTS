@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>OutlierAnalysis</class>
+ <widget class="QWidget" name="OutlierAnalysis">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>593</width>
+    <height>549</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QStackedWidget" name="pages_widget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>601</width>
+     <height>591</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
+   </property>
+   <widget class="QWidget" name="page_main">
+    <widget class="QLabel" name="title_main">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>531</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt; font-weight:600;&quot;&gt;Outlier Analysis&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="description_main">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>50</y>
+       <width>301</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Please choose your desired analysis:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="cytof_btn_main">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>190</y>
+       <width>559</width>
+       <height>62</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string> Cytof</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/science.svg</normaloff>icons/science.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="rnaseq_btn_main">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>280</y>
+       <width>559</width>
+       <height>62</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string> RNAseq</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/run.svg</normaloff>icons/run.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QLabel" name="credits_main">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>493</y>
+       <width>301</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Juliano Luiz Faccioni - Labsinal/UFRGS 2018&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="help_main">
+     <property name="geometry">
+      <rect>
+       <x>448</x>
+       <y>470</y>
+       <width>129</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string> Help</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/help.svg</normaloff>icons/help.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="quit_main">
+     <property name="geometry">
+      <rect>
+       <x>448</x>
+       <y>506</y>
+       <width>129</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string> Quit</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/quit.svg</normaloff>icons/quit.svg</iconset>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="page_cytof">
+    <widget class="QLabel" name="main_description_cytof">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>50</y>
+       <width>301</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Please choose the settings for the analysis:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="main_title_cytof">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>531</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt; font-weight:600;&quot;&gt;Outlier Analysis - Cytof data&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="input_btn_cytof">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>100</y>
+       <width>271</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string> Select input file (.xlsx or .csv) ...</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/file.svg</normaloff>icons/file.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="input_echo_cytof">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>130</y>
+       <width>551</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="readOnly">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="analysis_description_cytof">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>210</y>
+       <width>191</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select analysis settings:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="tuckey_15_cytof">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>280</y>
+       <width>58</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>1.&amp;5</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">TuckeyFactor</string>
+     </attribute>
+    </widget>
+    <widget class="QRadioButton" name="tuckey_30_cytof">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>280</y>
+       <width>59</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&amp;3.0</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">TuckeyFactor</string>
+     </attribute>
+    </widget>
+    <widget class="QPushButton" name="help_cytof">
+     <property name="geometry">
+      <rect>
+       <x>448</x>
+       <y>470</y>
+       <width>129</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string> Help</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/help.svg</normaloff>icons/help.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="back_cytof">
+     <property name="geometry">
+      <rect>
+       <x>448</x>
+       <y>506</y>
+       <width>129</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string> Back</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/back.svg</normaloff>icons/back.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="run_cytof">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>470</y>
+       <width>131</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string> Run!</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/pipe.svg</normaloff>icons/pipe.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QLabel" name="output_description_cytof">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>310</y>
+       <width>331</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select output settings:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="output_text_cytof">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>350</y>
+       <width>261</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Export multiple text files (.csv)</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="output_excel_cytof">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>380</y>
+       <width>311</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Export multiple Excel spreadsheets (.xlsx)</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="output_excel_group_cytof">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>410</y>
+       <width>281</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Group spreadsheets as tabs</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="tuckey_description_cytof">
+     <property name="geometry">
+      <rect>
+       <x>117</x>
+       <y>265</y>
+       <width>121</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tuckey factor:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="outliersby_both_cytof">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>250</y>
+       <width>59</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>bo&amp;th</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">OutliersBy</string>
+     </attribute>
+    </widget>
+    <widget class="QLabel" name="outliersby_description_cytof">
+     <property name="geometry">
+      <rect>
+       <x>70</x>
+       <y>235</y>
+       <width>151</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate outliers by:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="outliersby_control_cytof">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>250</y>
+       <width>81</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>co&amp;ntrol</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">OutliersBy</string>
+     </attribute>
+    </widget>
+    <widget class="QRadioButton" name="outliersby_sample_cytof">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>250</y>
+       <width>81</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>samp&amp;le</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">OutliersBy</string>
+     </attribute>
+    </widget>
+    <widget class="QPushButton" name="output_btn_cytof">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>160</y>
+       <width>271</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string> Select folder to output analysis ...</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>icons/folder.svg</normaloff>icons/folder.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="output_echo_cytof">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>190</y>
+       <width>551</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="readOnly">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>output_excel_cytof</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>output_excel_group_cytof</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>224</x>
+     <y>402</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>224</x>
+     <y>424</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <buttongroups>
+  <buttongroup name="OutliersBy"/>
+  <buttongroup name="TuckeyFactor"/>
+ </buttongroups>
+</ui>

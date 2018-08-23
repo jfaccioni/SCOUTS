@@ -1,5 +1,5 @@
 import os
-
+import pprint
 import numpy as np
 import pandas as pd
 from openpyxl import Workbook
@@ -12,6 +12,10 @@ pd.set_option('expand_frame_repr', False)
 # cutoff value for gating
 GATE_CUTOFF = 0.1
 
+
+# ## to-do list ## #
+# TODO:
+# TODO: reformat GUI so that variables below are input by the user
 
 def cytof(input_file, output_folder, outliers, tuckey, export_csv,
           export_excel, group_excel):
@@ -52,6 +56,9 @@ def cytof(input_file, output_folder, outliers, tuckey, export_csv,
             marker_dict[marker] = (first_quartile, third_quartile, iqr, cutoff)
             sample_dict[sample] = marker_dict
     assert sample_dict, marker_dict
+    pprint.pprint(sample_dict)
+    print('\n' * 5)
+    pprint.pprint(marker_dict)
 
     # stream data from pandas to openpyxl
     wb = Workbook()
@@ -61,29 +68,44 @@ def cytof(input_file, output_folder, outliers, tuckey, export_csv,
         raw_data.append(r)
 
     if row_is_outlier_for_marker:
-        if outliers in ('control', 'both'):
-            compare_marker_column(wb, raw_data, marker_dict,
-                                  by_control=True, control=control)
-        if outliers in ('sample', 'both'):
-            compare_marker_column(wb, raw_data, marker_dict, by_control=False)
-    if row_is_outlier_for_any_marker:
-        if outliers in ('control', 'both'):
-            compare_whole_row(wb, raw_data, marker_dict, by_control=True,
-                              control=control)
-        if outliers in ('sample', 'both'):
-            compare_whole_row(wb, raw_data, marker_dict, by_control=False)
 
-    print('saving...')
+        if outliers in ('control', 'both'):
+            for f, n in compare_marker_column(wb, raw_data, sample_dict,
+                                              by_control=True, control=control):
+                if not group_excel:
+                    f.save(os.path.join(output_folder, n))
+                    f.remove_sheet(n)
+
+        if outliers in ('sample', 'both'):
+            for f, n in compare_marker_column(wb, raw_data, sample_dict,
+                                              by_control=False):
+                if not group_excel:
+                    f.save(os.path.join(output_folder, n))
+                    f.remove_sheet(n)
+
+    if row_is_outlier_for_any_marker:
+
+        if outliers in ('control', 'both'):
+            for f, n in compare_whole_row(wb, raw_data, sample_dict,
+                                          by_control=True, control=control):
+                if not group_excel:
+                    f.save(os.path.join(output_folder, n))
+                    f.remove_sheet(n)
+
+        if outliers in ('sample', 'both'):
+            for f, n in compare_whole_row(wb, raw_data, sample_dict,
+                                          by_control=False):
+                if not group_excel:
+                    f.save(os.path.join(output_folder, n))
+                    f.remove_sheet(n)
     if export_csv:
         pass
-    if export_excel:
-        if group_excel:
-            pass
+    if export_excel and group_excel:
         wb.save(os.path.join(output_folder, 'master_analysis.xlsx'))
 
 
 def compare_marker_column(xl, data, d, by_control, control=None):
-    marker_list = [m for _, (m, _) in d.items()]
+    marker_list = [m for _, (m, (*_)) in d.items()]
     for sample, subdict in d.items():
         query_sample = control
         suf = 'control'
@@ -109,10 +131,11 @@ def compare_marker_column(xl, data, d, by_control, control=None):
                                                 column=copy_c.col_idx,
                                                 value=copy_c.value)
                     row_iterator += 1
+                yield xl, samplename
 
 
 def compare_whole_row(xl, data, d, by_control, control=None):
-    marker_list = [m for _, (m, _) in d.items()]
+    marker_list = [m for _, (m, (*_)) in d.items()]
     samplename = ''
     for sample, subdict in d.items():
         query_sample = control
@@ -143,6 +166,7 @@ def compare_whole_row(xl, data, d, by_control, control=None):
                                                 value=copy_c.value)
                         row_iterator += 1
                         break
+                yield xl, samplename
 
 
 def create_new_sheet(xl, marker, samplename, marker_list):
