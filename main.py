@@ -117,7 +117,7 @@ class ColonyCounterApp(QMainWindow):
         # input and output
         try:
             input_file = str(self.ui.input_echo_cytof.text().replace('&', ''))
-            output_folder = str(self.ui.input_echo_cytof.text().replace(
+            output_folder = str(self.ui.output_echo_cytof.text().replace(
                 '&', ''))
             assert input_file, output_folder
         except AssertionError:
