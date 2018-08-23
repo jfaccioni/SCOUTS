@@ -1,5 +1,5 @@
 import os
-import pprint
+
 import numpy as np
 import pandas as pd
 from openpyxl import Workbook
@@ -56,9 +56,6 @@ def cytof(input_file, output_folder, outliers, tuckey, export_csv,
             marker_dict[marker] = (first_quartile, third_quartile, iqr, cutoff)
             sample_dict[sample] = marker_dict
     assert sample_dict, marker_dict
-    pprint.pprint(sample_dict)
-    print('\n' * 5)
-    pprint.pprint(marker_dict)
 
     # stream data from pandas to openpyxl
     wb = Workbook()
@@ -119,7 +116,8 @@ def compare_marker_column(xl, data, d, by_control, control=None):
                 if header:  # first row
                     header = False
                     continue
-                samplename = f'{row[0]}_{marker}_column_outliers_by_{suf}'
+                name = row[0].value
+                samplename = f'{name}_{marker}_column_outliers_by_{suf}'
                 query_position = marker_list.index(marker) + 1
                 cell = row[query_position]
                 if cell.value > d[query_sample][marker][-1]:  # is outlier
@@ -152,7 +150,8 @@ def compare_whole_row(xl, data, d, by_control, control=None):
                     continue
                 for c in row:
                     if c.col_idx == 1:  # first column of rows 2 and beyond
-                        samplename = f'{row[0]}_{marker}_row_outliers_by_{suf}'
+                        name = c.value
+                        samplename = f'{name}_{marker}_row_outliers_by_{suf}'
                         continue
                     query_marker = marker_list[c.col_idx - 2]
                     if c.value > d[query_sample][query_marker][-1]:  # outlier
