@@ -64,6 +64,8 @@ def cytof(input_file, output_folder, outliers, tuckey, export_csv,
     for r in dataframe_to_rows(df, index=False, header=True):
         raw_data.append(r)
 
+    # TODO: CONSERTAR ESTA MERDA
+
     if row_is_outlier_for_marker:
 
         if outliers in ('control', 'both'):
