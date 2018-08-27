@@ -249,7 +249,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>250</y>
+       <y>240</y>
        <width>191</width>
        <height>51</height>
       </rect>
@@ -265,7 +265,7 @@
      <property name="geometry">
       <rect>
        <x>230</x>
-       <y>320</y>
+       <y>325</y>
        <width>58</width>
        <height>23</height>
       </rect>
@@ -277,14 +277,14 @@
       <bool>true</bool>
      </property>
      <attribute name="buttonGroup">
-      <string notr="true">TuckeyFactor</string>
+      <string notr="true">MarkersOutliers</string>
      </attribute>
     </widget>
     <widget class="QRadioButton" name="tuckey_30_cytof">
      <property name="geometry">
       <rect>
        <x>310</x>
-       <y>320</y>
+       <y>325</y>
        <width>59</width>
        <height>23</height>
       </rect>
@@ -293,7 +293,7 @@
       <string>&amp;3.0</string>
      </property>
      <attribute name="buttonGroup">
-      <string notr="true">TuckeyFactor</string>
+      <string notr="true">MarkersOutliers</string>
      </attribute>
     </widget>
     <widget class="QPushButton" name="help_cytof">
@@ -362,7 +362,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>340</y>
+       <y>338</y>
        <width>331</width>
        <height>51</height>
       </rect>
@@ -378,7 +378,7 @@
      <property name="geometry">
       <rect>
        <x>80</x>
-       <y>380</y>
+       <y>378</y>
        <width>261</width>
        <height>23</height>
       </rect>
@@ -394,7 +394,7 @@
      <property name="geometry">
       <rect>
        <x>80</x>
-       <y>410</y>
+       <y>408</y>
        <width>311</width>
        <height>23</height>
       </rect>
@@ -410,7 +410,7 @@
      <property name="geometry">
       <rect>
        <x>80</x>
-       <y>440</y>
+       <y>438</y>
        <width>281</width>
        <height>23</height>
       </rect>
@@ -426,7 +426,7 @@
      <property name="geometry">
       <rect>
        <x>117</x>
-       <y>305</y>
+       <y>310</y>
        <width>121</width>
        <height>51</height>
       </rect>
@@ -442,7 +442,7 @@
      <property name="geometry">
       <rect>
        <x>400</x>
-       <y>290</y>
+       <y>278</y>
        <width>59</width>
        <height>23</height>
       </rect>
@@ -458,7 +458,7 @@
      <property name="geometry">
       <rect>
        <x>70</x>
-       <y>275</y>
+       <y>263</y>
        <width>151</width>
        <height>51</height>
       </rect>
@@ -474,7 +474,7 @@
      <property name="geometry">
       <rect>
        <x>310</x>
-       <y>290</y>
+       <y>278</y>
        <width>81</width>
        <height>23</height>
       </rect>
@@ -493,7 +493,7 @@
      <property name="geometry">
       <rect>
        <x>230</x>
-       <y>290</y>
+       <y>278</y>
        <width>81</width>
        <height>23</height>
       </rect>
@@ -569,7 +569,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>230</y>
+       <y>220</y>
        <width>271</width>
        <height>25</height>
       </rect>
@@ -592,6 +592,76 @@
      <property name="icon">
       <iconset>
        <normaloff>icons/settings.svg</normaloff>icons/settings.svg</iconset>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="markersoutliers_row_cytof">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>301</y>
+       <width>81</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>row</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QRadioButton" name="markersoutliers_marker_cytof">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>301</y>
+       <width>81</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>mar&amp;ker</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QRadioButton" name="markersoutliers_both_cytof">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>301</y>
+       <width>59</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>bo&amp;th</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QLabel" name="markersoutliers_description_cytof">
+     <property name="geometry">
+      <rect>
+       <x>70</x>
+       <y>286</y>
+       <width>151</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Consider outliers for:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
      </property>
     </widget>
    </widget>
@@ -781,6 +851,7 @@
  </connections>
  <buttongroups>
   <buttongroup name="OutliersBy"/>
-  <buttongroup name="TuckeyFactor"/>
+  <buttongroup name="MarkersOutliers"/>
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

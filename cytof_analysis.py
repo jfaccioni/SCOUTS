@@ -16,7 +16,7 @@ GATE_CUTOFF = 0.1
 # ## to-do list ## #
 # TODO: reformat GUI so that variables below are input by the user
 
-def cytof(input_file, output_folder, outliers, tuckey, export_csv,
+def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
           export_excel, group_excel, sample_list):
 
     # get sample names and control sample
@@ -27,10 +27,6 @@ def cytof(input_file, output_folder, outliers, tuckey, export_csv,
             control = sample
         samples.append(sample_list)
     assert control
-
-    # temporary (should be included in GUI):
-    row_is_outlier_for_marker = True
-    row_is_outlier_for_any_marker = True
 
     # read input as pandas DataFrame, fails if file has unsupported extension
     if input_file.endswith('.xlsx') or input_file.endswith('xls'):
@@ -72,7 +68,7 @@ def cytof(input_file, output_folder, outliers, tuckey, export_csv,
 
     # TODO: CONSERTAR ESTA MERDA
 
-    if row_is_outlier_for_marker:
+    if by_marker in ['marker', 'both']:
 
         if outliers in ('control', 'both'):
             for f, n in compare_marker_column(wb, raw_data, sample_dict,
@@ -88,7 +84,7 @@ def cytof(input_file, output_folder, outliers, tuckey, export_csv,
                     f.save(os.path.join(output_folder, n))
                     f.remove_sheet(n)
 
-    if row_is_outlier_for_any_marker:
+    if by_marker in ['row', 'both']:
 
         if outliers in ('control', 'both'):
             for f, n in compare_whole_row(wb, raw_data, sample_dict,

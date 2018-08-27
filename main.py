@@ -206,6 +206,10 @@ class ColonyCounterApp(QMainWindow):
         outlier_id = self.ui.OutliersBy.checkedId()
         outlier_rule = self.ui.OutliersBy.button(outlier_id)
         cytof_dict['outliers'] = str(outlier_rule.text().replace('&', ''))
+        # markers outliers rule
+        markers_id = self.ui.OutliersBy.checkedId()
+        markers_rule = self.ui.OutliersBy.button(markers_id)
+        cytof_dict['by_marker'] = str(markers_rule.text().replace('&', ''))
         # tuckey factor
         tuckey_id = self.ui.TuckeyFactor.checkedId()
         tuckey = self.ui.TuckeyFactor.button(tuckey_id)
