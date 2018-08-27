@@ -4,10 +4,12 @@
       <w>cytof</w>
       <w>foldername</w>
       <w>fullmes</w>
+      <w>iscontrol</w>
       <w>openpyxl</w>
       <w>quantile</w>
       <w>rnaseq</w>
       <w>samplename</w>
+      <w>saveback</w>
       <w>subdict</w>
       <w>tuckey</w>
       <w>xlsx</w>

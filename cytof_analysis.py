@@ -14,15 +14,21 @@ GATE_CUTOFF = 0.1
 
 
 # ## to-do list ## #
-# TODO:
 # TODO: reformat GUI so that variables below are input by the user
 
 def cytof(input_file, output_folder, outliers, tuckey, export_csv,
-          export_excel, group_excel):
+          export_excel, group_excel, sample_list):
+
+    # get sample names and control sample
+    samples = []
+    control = ''
+    for sample_type, sample in sample_list:
+        if sample_type == 'Yes':
+            control = sample
+        samples.append(sample_list)
+    assert control
 
     # temporary (should be included in GUI):
-    sample_list = ('Ct', 'RT', 'Torin')
-    control = sample_list[0]
     row_is_outlier_for_marker = True
     row_is_outlier_for_any_marker = True
 
@@ -32,7 +38,7 @@ def cytof(input_file, output_folder, outliers, tuckey, export_csv,
     elif input_file.endswith('.csv'):
         df = pd.read_csv(input_file)
     else:
-        raise Exception
+        raise IOError
 
     # gate rows
     for index, row in df.iterrows():
