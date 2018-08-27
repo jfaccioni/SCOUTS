@@ -277,7 +277,7 @@
       <bool>true</bool>
      </property>
      <attribute name="buttonGroup">
-      <string notr="true">MarkersOutliers</string>
+      <string notr="true">TuckeyFactor</string>
      </attribute>
     </widget>
     <widget class="QRadioButton" name="tuckey_30_cytof">
@@ -293,7 +293,7 @@
       <string>&amp;3.0</string>
      </property>
      <attribute name="buttonGroup">
-      <string notr="true">MarkersOutliers</string>
+      <string notr="true">TuckeyFactor</string>
      </attribute>
     </widget>
     <widget class="QPushButton" name="help_cytof">
@@ -610,7 +610,7 @@
       <bool>false</bool>
      </property>
      <attribute name="buttonGroup">
-      <string notr="true">buttonGroup</string>
+      <string notr="true">MarkersOutliers</string>
      </attribute>
     </widget>
     <widget class="QRadioButton" name="markersoutliers_marker_cytof">
@@ -629,7 +629,7 @@
       <bool>true</bool>
      </property>
      <attribute name="buttonGroup">
-      <string notr="true">buttonGroup</string>
+      <string notr="true">MarkersOutliers</string>
      </attribute>
     </widget>
     <widget class="QRadioButton" name="markersoutliers_both_cytof">
@@ -645,7 +645,7 @@
       <string>bo&amp;th</string>
      </property>
      <attribute name="buttonGroup">
-      <string notr="true">buttonGroup</string>
+      <string notr="true">MarkersOutliers</string>
      </attribute>
     </widget>
     <widget class="QLabel" name="markersoutliers_description_cytof">
@@ -850,8 +850,8 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="OutliersBy"/>
+  <buttongroup name="TuckeyFactor"/>
   <buttongroup name="MarkersOutliers"/>
-  <buttongroup name="buttonGroup"/>
+  <buttongroup name="OutliersBy"/>
  </buttongroups>
 </ui>
