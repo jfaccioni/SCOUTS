@@ -5,7 +5,7 @@ import cytof_analysis
 from PyQt5.QtCore import (pyqtSlot, Qt)
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QMessageBox, QLineEdit,
                              QFileDialog, QTableWidgetItem)
-
+from ui import messages
 from ui.ui_structure import Ui_OutlierAnalysis
 
 
@@ -28,7 +28,7 @@ class ColonyCounterApp(QMainWindow):
 
     @pyqtSlot(name='on_rnaseq_btn_main_clicked')
     def goto_page_rnaseq(self):
-        self.not_yet_implemented()
+        messages.not_yet_implemented(self)
 
     @pyqtSlot(name='on_samples_btn_cytof_clicked')
     def goto_page_samples(self):
@@ -73,13 +73,13 @@ class ColonyCounterApp(QMainWindow):
             for cell in range(table.rowCount()):
                 item = table.item(cell, 1)
                 if item.text() == sample:
-                    self.same_sample()
+                    messages.same_sample(self)
                     return
             if self.ui.iscontrol_checkbox_samples.isChecked():
                 for cell in range(table.rowCount()):
                     item = table.item(cell, 0)
                     if item.text() == 'Yes':
-                        self.more_than_one_control()
+                        messages.more_than_one_control(self)
                         return
                 iscontrol = 'Yes'
             sample = QTableWidgetItem(sample)
@@ -103,7 +103,7 @@ class ColonyCounterApp(QMainWindow):
     @pyqtSlot(name='on_help_cytof_clicked')
     @pyqtSlot(name='on_help_rnaseq_clicked')
     def get_help(self):
-        self.not_yet_implemented()
+        messages.not_yet_implemented(self)
 
     def closeEvent(self, event):
         title = 'Quit Application'
@@ -116,44 +116,6 @@ class ColonyCounterApp(QMainWindow):
         else:
             event.ignore()
 
-    def error_message(self, trace, e):
-        title = 'An error occurred!'
-        mes = "Sorry, the analysis has been stopped due to the following error:"
-        fullmes = mes + '\n' + str(e) + '\n\nfull stack trace:\n\n' + str(trace)
-        QMessageBox.critical(self, title, fullmes)
-
-    def no_file_folder_found(self):
-        title = 'Error: no file/folder'
-        mes = 'Sorry, no input file and/or output folder was provided. Please '
-        mes2 = 'add the path to the necessary file/folder.'
-        QMessageBox.critical(self, title, mes + mes2)
-
-    def same_sample(self):
-        title = 'Error: sample name already in table'
-        mes = "Sorry, you can't do this because this sample name is already "
-        mes2 = "in the table. Please select a different name."
-        QMessageBox.critical(self, title, mes + mes2)
-
-    def more_than_one_control(self):
-        title = 'Error: more than one control selected'
-        mes = "Sorry, you can't do this because there is already a control "
-        mes2 = "column in the table. Please remove it before adding a control."
-        QMessageBox.critical(self, title, mes + mes2)
-
-    def no_samples(self):
-        title = 'Error: No samples selected'
-        mes = "Sorry, the analysis cannot be performed because no sample names "
-        mes2 = "were input. Please add your sample names."
-        QMessageBox.critical(self, title, mes + mes2)
-
-    @pyqtSlot(name='on_clear_btn_samples_clicked')
-    def prompt_clear_data(self):
-        if self.confirm_switch():
-            table = self.ui.sample_table_samples
-            while table.rowCount():
-                self.ui.sample_table_samples.removeRow(0)
-            self.goto_page_cytof()
-
     def confirm_switch(self):
         title = 'Confirm Action'
         mes = "Settings will be lost. Are you sure?"
@@ -164,19 +126,13 @@ class ColonyCounterApp(QMainWindow):
             return True
         return False
 
-    def module_done(self):
-        title = 'Module finished'
-        mes = "The module has finished! Would you like to exit now?"
-        reply = QMessageBox.question(self, title, mes,
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            sys.exit(0)
-
-    def not_yet_implemented(self):
-        title = 'Not Implemented yet!'
-        mes = "Sorry, this module has not been implemented yet."
-        QMessageBox.information(self, title, mes)
+    @pyqtSlot(name='on_clear_btn_samples_clicked')
+    def prompt_clear_data(self):
+        if self.confirm_switch():
+            table = self.ui.sample_table_samples
+            while table.rowCount():
+                self.ui.sample_table_samples.removeRow(0)
+            self.goto_page_cytof()
 
     @pyqtSlot(name='on_run_cytof_clicked')
     def run_cytof(self):
@@ -185,11 +141,12 @@ class ColonyCounterApp(QMainWindow):
             return  # do not perform analysis if dict is not complete
         try:
             cytof_analysis.cytof(**cytof_dict)
-        except Exception as e:
+        except IOError as e:
             trace = traceback.format_exc()
-            self.error_message(trace, e)
+            messages.error_message(self, trace, e)
+
         else:
-            self.module_done()
+            messages.module_done(self)
 
     def parse_cytof_input(self):
         cytof_dict = {}
@@ -198,7 +155,7 @@ class ColonyCounterApp(QMainWindow):
         output_folder = str(self.ui.output_echo_cytof.text().replace(
             '&', ''))
         if not (input_file or output_folder):
-            self.no_file_folder_found()
+            messages.no_file_folder_found(self)
             return
         cytof_dict['input_file'] = input_file
         cytof_dict['output_folder'] = output_folder
@@ -235,7 +192,7 @@ class ColonyCounterApp(QMainWindow):
         for tuples in self.yield_samples():
             sample_list.append(tuples)
         if not sample_list:
-            self.no_samples()
+            messages.no_samples(self)
             return
         cytof_dict['sample_list'] = sample_list
         return cytof_dict
