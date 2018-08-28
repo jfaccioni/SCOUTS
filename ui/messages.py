@@ -13,6 +13,13 @@ def module_done(widget):
         sys.exit(0)
 
 
+def memory_warning(widget):
+    title = 'Warning!'
+    mes = "Depending on your dataset, this option can consume a LOT of memory. "
+    mes2 = "Please make sure that your computer can handle it!"
+    QMessageBox.critical(widget, title, mes + mes2)
+
+
 def generic_error_message(widget, trace, e):
     title = 'An error occurred!'
     mes = "Sorry, the analysis has been stopped due to the following error:"

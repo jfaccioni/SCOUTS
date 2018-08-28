@@ -3,6 +3,7 @@
     <words>
       <w>cytof</w>
       <w>dataframe</w>
+      <w>dataframes</w>
       <w>foldername</w>
       <w>fullmes</w>
       <w>iscontrol</w>
@@ -11,7 +12,9 @@
       <w>rnaseq</w>
       <w>samplename</w>
       <w>saveback</w>
+      <w>sheetname</w>
       <w>subdict</w>
+      <w>subsetting</w>
       <w>tuckey</w>
       <w>xlsx</w>
     </words>

@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
+
 from ui.custom_errors import (ControlNotFound, EmptySampleList,
                               PandasInputError, SampleNamingError)
 
@@ -67,69 +68,103 @@ def cytof(widget, input_file, output_folder, outliers, by_marker, tuckey,
             marker_dict[marker] = (first_quartile, third_quartile, iqr, cutoff)
             sample_dict[sample] = marker_dict
         assert sample_dict, marker_dict
-    # open log file
-    f = open(os.path.join(output_folder, 'log.txt'), 'w')
-    # outliers by control, outliers by individual markers
-    f.write('\n\n\n ---------- BY CONTROL, BY MARKER ----------\n\n\n')
-    if outliers in ('control', 'both') and by_marker in ('marker', 'both'):
-        for sample, _ in sample_dict.items():
-            filtered_df = df[df[list(df)[0]].str.contains(sample)]
-            for marker, (*_, cutoff) in sample_dict[control].items():
-                output_df = filtered_df.loc[filtered_df[marker] > cutoff]
-                output_df.reset_index(drop=True, inplace=True)
-                f.write(f'CURRENT MARKER: {marker}\nCURRENT SAMPLE: {sample}\n')
-                f.write('METHOD: use control cutoff, ')
-                f.write('check outliers for current marker only')
-                f.write('\n\n')
-                f.write(str(output_df))
-                f.write('\n\n\n\n')
-    # outliers by control, outliers by whole row
-    f.write('\n\n\n ---------- BY CONTROL, BY ROW ----------\n\n\n')
-    if outliers in ('control', 'both') and by_marker in ('row', 'both'):
-        for sample, _ in sample_dict.items():
-            f.write(f'CURRENT SAMPLE: {sample}\n')
-            f.write('METHOD: use control cutoff, ')
-            f.write('check outliers for any markers in whole row')
-            f.write('\n\n')
-            filtered_df = df[df[list(df)[0]].str.contains(sample)]
-            output_df = pd.DataFrame(columns=list(df))
-            for marker, (*_, cutoff) in sample_dict[control].items():
-                cutoff_rows = filtered_df.loc[filtered_df[marker] > cutoff]
-                output_df = output_df.append(cutoff_rows, sort=False)
-            output_df.drop_duplicates(inplace=True)
-            output_df.reset_index(drop=True, inplace=True)
-            f.write(str(output_df))
-            f.write('\n\n\n\n')
-    # outliers by sample, outliers by individual markers
-    f.write('\n\n\n ---------- BY SAMPLE, BY MARKER ----------\n\n\n')
-    if outliers in ('sample', 'both') and by_marker in ('marker', 'both'):
-        for sample, mkdict in sample_dict.items():
-            filtered_df = df[df[list(df)[0]].str.contains(sample)]
-            for marker, (*_, cutoff) in mkdict.items():
-                output_df = filtered_df.loc[filtered_df[marker] > cutoff]
-                output_df.reset_index(drop=True, inplace=True)
-                f.write(f'CURRENT MARKER: {marker}\nCURRENT SAMPLE: {sample}\n')
-                f.write('METHOD: use sample cutoff, ')
-                f.write('check outliers for current marker only')
-                f.write('\n\n')
-                f.write(str(output_df))
-                f.write('\n\n\n\n')
-    # outliers by control, outliers by whole row
-    f.write('\n\n\n ---------- BY SAMPLE, BY ROW ----------\n\n\n')
-    if outliers in ('sample', 'both') and by_marker in ('row', 'both'):
-        for sample, mkdict in sample_dict.items():
-            f.write(f'CURRENT SAMPLE: {sample}')
-            f.write('METHOD: use sample cutoff, ')
-            f.write('check outliers for any markers in whole row')
-            f.write('\n\n')
-            filtered_df = df[df[list(df)[0]].str.contains(sample)]
-            output_df = pd.DataFrame(columns=list(df))
-            for marker, (*_, cutoff) in mkdict.items():
-                cutoff_rows = filtered_df.loc[filtered_df[marker] > cutoff]
-                output_df = output_df.append(cutoff_rows, sort=False)
-            output_df.drop_duplicates(inplace=True)
-            output_df.reset_index(drop=True, inplace=True)
-            f.write(str(output_df))
-            f.write('\n\n\n\n')
+    # change directory to output, open log file
+    os.chdir(output_folder)
+    if 'log' not in os.listdir(os.getcwd()):
+        os.mkdir('log')
+    f = open(os.path.join('log', 'outlier_analysis_log.txt'), 'w')
+    # iterate over yield_dataframes functions, subsetting dataframes
+    # and saving saving them to file as needed
+    df_list = []
+    for dataframe, m, s, n in yield_dataframes(log=f, df=df,
+                                               sample_dict=sample_dict,
+                                               control=control,
+                                               outliers=outliers,
+                                               by_marker=by_marker):
+        if s not in os.listdir(os.getcwd()):
+            os.mkdir(s)
+        main_name = f'{m}_{s}_cutoff_by_{n}'
+        output = os.path.join(s, f'{main_name}')
+        if export_csv:
+            dataframe.to_csv(f'{output}.csv', index=False)
+        if export_excel:
+            dataframe.to_excel(f'{output}.xlsx', sheet_name=m, index=False)
+            if group_excel:
+                df_list.append((dataframe, main_name))
     # close log file
     f.close()
+    # save master excel file
+    if df_list:
+        writer = pd.ExcelWriter('master_output.xlsx')
+        for dataframe, name in df_list:
+            dataframe.to_excel(writer, name, index=False)
+        writer.save()
+
+
+def yield_dataframes(log, df, sample_dict, control, outliers, by_marker):
+    # outliers by control, outliers by individual markers
+    if outliers in ('control', 'both') and by_marker in ('marker', 'both'):
+        log.write('------- CUTOFF BY CONTROL, OUTLIERS BY MARKER -------\n\n\n')
+        for sample, _ in sample_dict.items():
+            filtered_df = df[df[list(df)[0]].str.contains(sample)]
+            for marker, (*_, cutoff) in sample_dict[control].items():
+                output_df = filtered_df.loc[filtered_df[marker] > cutoff]
+                output_df.reset_index(drop=True, inplace=True)
+                log.write(f'MARKER: {marker}\nSAMPLE: {sample}\n')
+                log.write('METHOD: use control cutoff, ')
+                log.write('check outliers for current marker only')
+                log.write('\n\n')
+                log.write(str(output_df))
+                log.write('\n\n\n\n')
+                yield output_df, marker, sample, 'control'
+    # outliers by control, outliers by whole row
+    if outliers in ('control', 'both') and by_marker in ('row', 'both'):
+        log.write('------- CUTOFF BY CONTROL, OUTLIERS BY ROW -------\n\n\n')
+        for sample, _ in sample_dict.items():
+            log.write(f'SAMPLE: {sample}\n')
+            log.write('METHOD: use control cutoff, ')
+            log.write('check outliers for any markers in whole row')
+            log.write('\n\n')
+            filtered_df = df[df[list(df)[0]].str.contains(sample)]
+            output_df = pd.DataFrame(columns=list(df))
+            for marker, (*_, cutoff) in sample_dict[control].items():
+                cutoff_rows = filtered_df.loc[filtered_df[marker] > cutoff]
+                output_df = output_df.append(cutoff_rows, sort=False)
+            output_df.drop_duplicates(inplace=True)
+            output_df.reset_index(drop=True, inplace=True)
+            log.write(str(output_df))
+            log.write('\n\n\n\n')
+            yield output_df, 'all_markers', sample, 'control'
+    # outliers by sample, outliers by individual markers
+    if outliers in ('sample', 'both') and by_marker in ('marker', 'both'):
+        log.write('------- CUTOFF BY SAMPLE, OUTLIERS BY MARKER -------\n\n\n')
+        for sample, mkdict in sample_dict.items():
+            filtered_df = df[df[list(df)[0]].str.contains(sample)]
+            for marker, (*_, cutoff) in mkdict.items():
+                output_df = filtered_df.loc[filtered_df[marker] > cutoff]
+                output_df.reset_index(drop=True, inplace=True)
+                log.write(f'MARKER: {marker}\nSAMPLE: {sample}\n')
+                log.write('METHOD: use sample cutoff, ')
+                log.write('check outliers for current marker only')
+                log.write('\n\n')
+                log.write(str(output_df))
+                log.write('\n\n\n\n')
+                yield output_df, marker, sample, 'sample'
+    # outliers by control, outliers by whole row
+    if outliers in ('sample', 'both') and by_marker in ('row', 'both'):
+        log.write('------- CUTOFF BY SAMPLE, OUTLIERS BY ROW -------\n\n\n')
+        for sample, mkdict in sample_dict.items():
+            log.write(f'SAMPLE: {sample}')
+            log.write('METHOD: use sample cutoff, ')
+            log.write('check outliers for any markers in whole row')
+            log.write('\n\n')
+            filtered_df = df[df[list(df)[0]].str.contains(sample)]
+            output_df = pd.DataFrame(columns=list(df))
+            for marker, (*_, cutoff) in mkdict.items():
+                cutoff_rows = filtered_df.loc[filtered_df[marker] > cutoff]
+                output_df = output_df.append(cutoff_rows, sort=False)
+            output_df.drop_duplicates(inplace=True)
+            output_df.reset_index(drop=True, inplace=True)
+            log.write(str(output_df))
+            log.write('\n\n\n\n')
+            yield output_df, 'all_markers', sample, 'sample'

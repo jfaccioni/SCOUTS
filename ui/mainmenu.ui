@@ -264,7 +264,7 @@
     <widget class="QRadioButton" name="tuckey_15_cytof">
      <property name="geometry">
       <rect>
-       <x>230</x>
+       <x>200</x>
        <y>325</y>
        <width>58</width>
        <height>23</height>
@@ -283,7 +283,7 @@
     <widget class="QRadioButton" name="tuckey_30_cytof">
      <property name="geometry">
       <rect>
-       <x>310</x>
+       <x>260</x>
        <y>325</y>
        <width>59</width>
        <height>23</height>
@@ -425,7 +425,7 @@
     <widget class="QLabel" name="tuckey_description_cytof">
      <property name="geometry">
       <rect>
-       <x>117</x>
+       <x>70</x>
        <y>310</y>
        <width>121</width>
        <height>51</height>
@@ -441,7 +441,7 @@
     <widget class="QRadioButton" name="outliersby_both_cytof">
      <property name="geometry">
       <rect>
-       <x>400</x>
+       <x>500</x>
        <y>278</y>
        <width>59</width>
        <height>23</height>
@@ -459,12 +459,12 @@
       <rect>
        <x>70</x>
        <y>263</y>
-       <width>151</width>
+       <width>271</width>
        <height>51</height>
       </rect>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate outliers by:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Consider outliers using cutoff from:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -473,7 +473,7 @@
     <widget class="QRadioButton" name="outliersby_control_cytof">
      <property name="geometry">
       <rect>
-       <x>310</x>
+       <x>410</x>
        <y>278</y>
        <width>81</width>
        <height>23</height>
@@ -492,7 +492,7 @@
     <widget class="QRadioButton" name="outliersby_sample_cytof">
      <property name="geometry">
       <rect>
-       <x>230</x>
+       <x>330</x>
        <y>278</y>
        <width>81</width>
        <height>23</height>
@@ -593,18 +593,24 @@
       <iconset>
        <normaloff>icons/settings.svg</normaloff>icons/settings.svg</iconset>
      </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
     </widget>
     <widget class="QRadioButton" name="markersoutliers_row_cytof">
      <property name="geometry">
       <rect>
-       <x>310</x>
+       <x>390</x>
        <y>301</y>
-       <width>81</width>
+       <width>131</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>row</string>
+      <string>an&amp;y marker</string>
      </property>
      <property name="checked">
       <bool>false</bool>
@@ -616,14 +622,14 @@
     <widget class="QRadioButton" name="markersoutliers_marker_cytof">
      <property name="geometry">
       <rect>
-       <x>230</x>
+       <x>260</x>
        <y>301</y>
-       <width>81</width>
+       <width>121</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>mar&amp;ker</string>
+      <string>single mar&amp;ker</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -635,7 +641,7 @@
     <widget class="QRadioButton" name="markersoutliers_both_cytof">
      <property name="geometry">
       <rect>
-       <x>400</x>
+       <x>500</x>
        <y>301</y>
        <width>59</width>
        <height>23</height>
@@ -753,12 +759,12 @@
       <rect>
        <x>20</x>
        <y>130</y>
-       <width>141</width>
+       <width>231</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>Control Sample?</string>
+      <string>This is my control sample</string>
      </property>
     </widget>
     <widget class="QLabel" name="description_samples">
@@ -771,7 +777,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Please insert a sample identifier (e.g. &amp;quot;Control&amp;quot;, &amp;quot;Treatment_01&amp;quot;, &amp;quot;Drug&amp;quot;, ...) :&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Please insert a sample identifier (e.g. &amp;quot;Control&amp;quot;, &amp;quot;Treatment_01&amp;quot;, &amp;quot;Drug&amp;quot;) :&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -850,8 +856,8 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="TuckeyFactor"/>
   <buttongroup name="MarkersOutliers"/>
   <buttongroup name="OutliersBy"/>
+  <buttongroup name="TuckeyFactor"/>
  </buttongroups>
 </ui>

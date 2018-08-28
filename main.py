@@ -11,7 +11,6 @@ from ui.custom_errors import (ControlNotFound, EmptySampleList,
                               PandasInputError, SampleNamingError)
 from ui.ui_structure import Ui_OutlierAnalysis
 
-
 CUSTOM_ERRORS = (ControlNotFound, EmptySampleList, PandasInputError,
                  SampleNamingError)
 
@@ -123,6 +122,11 @@ class ColonyCounterApp(QMainWindow):
         if reply == QMessageBox.Yes:
             return True
         return False
+
+    @pyqtSlot(name='on_output_excel_group_cytof_clicked')
+    def memory_warning(self):
+        if self.sender().isChecked():
+            messages.memory_warning(self)
 
     @pyqtSlot(name='on_run_cytof_clicked')
     def run_cytof(self):
