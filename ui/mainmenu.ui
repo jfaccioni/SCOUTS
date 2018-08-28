@@ -411,12 +411,12 @@
       <rect>
        <x>80</x>
        <y>438</y>
-       <width>281</width>
+       <width>511</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>Group spreadsheets as tabs</string>
+      <string>Also save one Excel spreadsheet with each analysis as individual sheets</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -857,7 +857,7 @@
  </connections>
  <buttongroups>
   <buttongroup name="MarkersOutliers"/>
-  <buttongroup name="OutliersBy"/>
   <buttongroup name="TuckeyFactor"/>
+  <buttongroup name="OutliersBy"/>
  </buttongroups>
 </ui>
