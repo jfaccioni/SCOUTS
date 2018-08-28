@@ -7,8 +7,13 @@ from PyQt5.QtWidgets import (QApplication, QFileDialog, QLineEdit, QMainWindow,
 
 import cytof_analysis
 from ui import messages
-from ui.custom_errors import PandasInputError, SampleNamingError
+from ui.custom_errors import (ControlNotFound, EmptySampleList,
+                              PandasInputError, SampleNamingError)
 from ui.ui_structure import Ui_OutlierAnalysis
+
+
+CUSTOM_ERRORS = (ControlNotFound, EmptySampleList, PandasInputError,
+                 SampleNamingError)
 
 
 class ColonyCounterApp(QMainWindow):
@@ -125,14 +130,11 @@ class ColonyCounterApp(QMainWindow):
         if not cytof_dict:
             return
         try:
-            cytof_analysis.cytof(**cytof_dict)
-        except PandasInputError:
-            messages.pandas_input_error(self)
-        except SampleNamingError:
-            messages.sample_naming_error(self)
+            cytof_analysis.cytof(self, **cytof_dict)
         except Exception as e:
-            trace = traceback.format_exc()
-            messages.generic_error_message(self, trace, e)
+            if type(e) not in CUSTOM_ERRORS:
+                trace = traceback.format_exc()
+                messages.generic_error_message(self, trace, e)
         else:
             messages.module_done(self)
 

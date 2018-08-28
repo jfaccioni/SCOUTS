@@ -20,17 +20,32 @@ def generic_error_message(widget, trace, e):
     QMessageBox.critical(widget, title, fullmes)
 
 
-def pandas_input_error(widget):
-    title = 'Error: unexpected input file'
-    mes = "Sorry, the input file could not be read. Please make sure that "
-    mes2 = "the data is save in a valid format (.csv or .xlsx)."
+def empty_sample_list(widget):
+    title = 'Error: No control sample'
+    mes = "Sorry, your samples do not include a control. Please make sure to "
+    mes2 = "tag one of the samples as a control."
     QMessageBox.critical(widget, title, mes + mes2)
 
 
+def control_not_found(widget):
+    title = 'Error: No control sample'
+    mes = "Sorry, your samples do not include a control. Please make sure to "
+    mes2 = "tag one of the samples as a control."
+    QMessageBox.critical(widget, title, mes + mes2)
+
+
+def pandas_input_error(widget):
+    title = 'Error: unexpected input file'
+    mes = "Sorry, the input file could not be read. Please make sure that "
+    mes2 = "the data is save in a valid format ( supported formats are: "
+    mes3 = ".csv, .xlsx)."
+    QMessageBox.critical(widget, title, mes + mes2 + mes3)
+
+
 def sample_naming_error(widget):
-    title = 'Error: more than one control selected'
-    mes = "Sorry, you can't do this because there is already a control "
-    mes2 = "column in the table. Please remove it before adding a control."
+    title = 'Error: sample names not in input file'
+    mes = "Sorry, your sample names were not found in the input file. Please "
+    mes2 = "make sure that the names were typed correctly (case-sensitive)."
     QMessageBox.critical(widget, title, mes + mes2)
 
 
@@ -64,5 +79,5 @@ def no_samples(widget):
 
 def not_yet_implemented(widget):
     title = 'Not Implemented yet!'
-    mes = "Sorry, this module has not been implemented yet."
+    mes = "Sorry, this functionality has not been implemented yet."
     QMessageBox.information(widget, title, mes)

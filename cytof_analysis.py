@@ -3,7 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from ui.custom_errors import PandasInputError, SampleNamingError
+from ui.custom_errors import (ControlNotFound, EmptySampleList,
+                              PandasInputError, SampleNamingError)
 
 # pandas df options
 pd.set_option('display.max_rows', 50)
@@ -13,8 +14,8 @@ pd.set_option('expand_frame_repr', False)
 GATE_CUTOFF = 0.1
 
 
-def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
-          export_excel, group_excel, sample_list):
+def cytof(widget, input_file, output_folder, outliers, by_marker, tuckey,
+          export_csv, export_excel, group_excel, sample_list):
     # get sample names and control sample
     samples = []
     control = ''
@@ -22,20 +23,30 @@ def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
         if sample_type == 'Yes':
             control = sample
         samples.append(sample)
-    assert control, samples
+    # checks if samples were passed on the input table at all
+    try:
+        assert samples
+    except AssertionError:
+        raise EmptySampleList
+    # checks if there is one sample passed as control
+    try:
+        assert control
+    except AssertionError:
+        raise ControlNotFound
     # read input as pandas DataFrame, fails if file has unsupported extension
     if input_file.endswith('.xlsx') or input_file.endswith('xls'):
         df = pd.read_excel(input_file)
     elif input_file.endswith('.csv'):
         df = pd.read_csv(input_file)
     else:
-        raise PandasInputError
+        raise PandasInputError(widget)
     # checks if sample names are part of any string in first row
     for sample in samples:
         try:
             assert any(sample in text for text in list(df.iloc[:, 0]))
         except AssertionError:
-            raise SampleNamingError
+            raise SampleNamingError(widget)
+
     # gate rows
     for index, row in df.iterrows():
         mean_row_value = np.mean(row[1:])
