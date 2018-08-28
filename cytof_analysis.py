@@ -1,7 +1,9 @@
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pd
-from custom_errors import PandasInputError, SampleNamingError
+
+from ui.custom_errors import PandasInputError, SampleNamingError
 
 # pandas df options
 pd.set_option('display.max_rows', 50)
@@ -13,7 +15,6 @@ GATE_CUTOFF = 0.1
 
 def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
           export_excel, group_excel, sample_list):
-
     # get sample names and control sample
     samples = []
     control = ''
@@ -22,8 +23,6 @@ def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
             control = sample
         samples.append(sample)
     assert control, samples
-# TODO: add test/warning message when samples are not found on input file
-
     # read input as pandas DataFrame, fails if file has unsupported extension
     if input_file.endswith('.xlsx') or input_file.endswith('xls'):
         df = pd.read_excel(input_file)
@@ -31,22 +30,18 @@ def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
         df = pd.read_csv(input_file)
     else:
         raise PandasInputError
-
     # checks if sample names are part of any string in first row
     for sample in samples:
         try:
             assert any(sample in text for text in list(df.iloc[:, 0]))
         except AssertionError:
             raise SampleNamingError
-
-
     # gate rows
     for index, row in df.iterrows():
         mean_row_value = np.mean(row[1:])
         if mean_row_value < GATE_CUTOFF:
             df = df.drop(index, axis=0)
     df.reset_index(drop=True, inplace=True)
-
     # build cutoff values
     sample_dict = {}  # dict -> { 'sample' : { 'marker' : (. . .) } }
     for sample in samples:
@@ -61,9 +56,8 @@ def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
             marker_dict[marker] = (first_quartile, third_quartile, iqr, cutoff)
             sample_dict[sample] = marker_dict
         assert sample_dict, marker_dict
-
+    # open log file
     f = open(os.path.join(output_folder, 'log.txt'), 'w')
-
     # outliers by control, outliers by individual markers
     f.write('\n\n\n ---------- BY CONTROL, BY MARKER ----------\n\n\n')
     if outliers in ('control', 'both') and by_marker in ('marker', 'both'):
@@ -78,7 +72,6 @@ def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
                 f.write('\n\n')
                 f.write(str(output_df))
                 f.write('\n\n\n\n')
-
     # outliers by control, outliers by whole row
     f.write('\n\n\n ---------- BY CONTROL, BY ROW ----------\n\n\n')
     if outliers in ('control', 'both') and by_marker in ('row', 'both'):
@@ -96,7 +89,6 @@ def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
             output_df.reset_index(drop=True, inplace=True)
             f.write(str(output_df))
             f.write('\n\n\n\n')
-
     # outliers by sample, outliers by individual markers
     f.write('\n\n\n ---------- BY SAMPLE, BY MARKER ----------\n\n\n')
     if outliers in ('sample', 'both') and by_marker in ('marker', 'both'):
@@ -111,7 +103,6 @@ def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
                 f.write('\n\n')
                 f.write(str(output_df))
                 f.write('\n\n\n\n')
-
     # outliers by control, outliers by whole row
     f.write('\n\n\n ---------- BY SAMPLE, BY ROW ----------\n\n\n')
     if outliers in ('sample', 'both') and by_marker in ('row', 'both'):
@@ -129,5 +120,5 @@ def cytof(input_file, output_folder, outliers, by_marker, tuckey, export_csv,
             output_df.reset_index(drop=True, inplace=True)
             f.write(str(output_df))
             f.write('\n\n\n\n')
-
+    # close log file
     f.close()

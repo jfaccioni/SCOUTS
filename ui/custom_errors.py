@@ -1,6 +1,3 @@
-from ui import messages
-
-
 class PandasInputError(Exception):
     pass
 

@@ -1,11 +1,13 @@
 import sys
 import traceback
 
+from PyQt5.QtCore import (Qt, pyqtSlot)
+from PyQt5.QtWidgets import (QApplication, QFileDialog, QLineEdit, QMainWindow,
+                             QMessageBox, QTableWidgetItem)
+
 import cytof_analysis
-from PyQt5.QtCore import (pyqtSlot, Qt)
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QMessageBox, QLineEdit,
-                             QFileDialog, QTableWidgetItem)
 from ui import messages
+from ui.custom_errors import PandasInputError, SampleNamingError
 from ui.ui_structure import Ui_OutlierAnalysis
 
 
@@ -99,22 +101,13 @@ class ColonyCounterApp(QMainWindow):
         for index in rows:
             self.ui.sample_table_samples.removeRow(index)
 
-    @pyqtSlot(name='on_help_main_clicked')
-    @pyqtSlot(name='on_help_cytof_clicked')
-    @pyqtSlot(name='on_help_rnaseq_clicked')
-    def get_help(self):
-        messages.not_yet_implemented(self)
-
-    def closeEvent(self, event):
-        title = 'Quit Application'
-        mes = "Are you sure you want to quit?"
-        reply = QMessageBox.question(self, title, mes,
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
+    @pyqtSlot(name='on_clear_btn_samples_clicked')
+    def prompt_clear_data(self):
+        if self.confirm_switch():
+            table = self.ui.sample_table_samples
+            while table.rowCount():
+                self.ui.sample_table_samples.removeRow(0)
+            self.goto_page_cytof()
 
     def confirm_switch(self):
         title = 'Confirm Action'
@@ -126,25 +119,20 @@ class ColonyCounterApp(QMainWindow):
             return True
         return False
 
-    @pyqtSlot(name='on_clear_btn_samples_clicked')
-    def prompt_clear_data(self):
-        if self.confirm_switch():
-            table = self.ui.sample_table_samples
-            while table.rowCount():
-                self.ui.sample_table_samples.removeRow(0)
-            self.goto_page_cytof()
-
     @pyqtSlot(name='on_run_cytof_clicked')
     def run_cytof(self):
         cytof_dict = self.parse_cytof_input()
-        if not cytof_dict:  # no file/folder found, no
-            return  # do not perform analysis if dict is not complete
+        if not cytof_dict:
+            return
         try:
             cytof_analysis.cytof(**cytof_dict)
-        except IOError as e:
+        except PandasInputError:
+            messages.pandas_input_error(self)
+        except SampleNamingError:
+            messages.sample_naming_error(self)
+        except Exception as e:
             trace = traceback.format_exc()
-            messages.error_message(self, trace, e)
-
+            messages.generic_error_message(self, trace, e)
         else:
             messages.module_done(self)
 
@@ -159,15 +147,15 @@ class ColonyCounterApp(QMainWindow):
             return
         cytof_dict['input_file'] = input_file
         cytof_dict['output_folder'] = output_folder
-        # outlier generation rule
+        # set cutoff by control or by sample rule
         outlier_id = self.ui.OutliersBy.checkedId()
         outlier_rule = self.ui.OutliersBy.button(outlier_id)
         cytof_dict['outliers'] = str(outlier_rule.text().replace('&', ''))
-        # markers outliers rule
+        # outliers for each individual marker or any marker in row
         markers_id = self.ui.MarkersOutliers.checkedId()
         markers_rule = self.ui.MarkersOutliers.button(markers_id)
         cytof_dict['by_marker'] = str(markers_rule.text().replace('&', ''))
-        # tuckey factorMar
+        # tuckey factor
         tuckey_id = self.ui.TuckeyFactor.checkedId()
         tuckey = self.ui.TuckeyFactor.button(tuckey_id)
         cytof_dict['tuckey'] = float(tuckey.text().replace('&', ''))
@@ -187,7 +175,7 @@ class ColonyCounterApp(QMainWindow):
         else:
             group_excel = False
         cytof_dict['group_excel'] = group_excel
-
+        # retrieve information about sample names and which sample is control
         sample_list = []
         for tuples in self.yield_samples():
             sample_list.append(tuples)
@@ -203,6 +191,23 @@ class ColonyCounterApp(QMainWindow):
             sample_type = table.item(cell, 0).text()
             sample_name = table.item(cell, 1).text()
             yield sample_type, sample_name
+
+    @pyqtSlot(name='on_help_main_clicked')
+    @pyqtSlot(name='on_help_cytof_clicked')
+    @pyqtSlot(name='on_help_rnaseq_clicked')
+    def get_help(self):
+        messages.not_yet_implemented(self)
+
+    def closeEvent(self, event):
+        title = 'Quit Application'
+        mes = "Are you sure you want to quit?"
+        reply = QMessageBox.question(self, title, mes,
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
 
 if __name__ == '__main__':
