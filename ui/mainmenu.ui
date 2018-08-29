@@ -670,6 +670,22 @@
       <enum>Qt::RichText</enum>
      </property>
     </widget>
+    <widget class="QLabel" name="progress_description_cytof">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>470</y>
+       <width>331</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="page_samples">
     <widget class="QTableWidget" name="sample_table_samples">
@@ -857,7 +873,7 @@
  </connections>
  <buttongroups>
   <buttongroup name="MarkersOutliers"/>
-  <buttongroup name="TuckeyFactor"/>
   <buttongroup name="OutliersBy"/>
+  <buttongroup name="TuckeyFactor"/>
  </buttongroups>
 </ui>

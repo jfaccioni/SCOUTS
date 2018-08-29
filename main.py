@@ -1,6 +1,5 @@
 import sys
 import traceback
-
 from PyQt5.QtCore import (Qt, pyqtSlot)
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QLineEdit, QMainWindow,
                              QMessageBox, QTableWidgetItem)
@@ -130,13 +129,12 @@ class ColonyCounterApp(QMainWindow):
 
     @pyqtSlot(name='on_run_cytof_clicked')
     def run_cytof(self):
-        cytof_dict = self.parse_cytof_input()
-        if not cytof_dict:
-            return
         try:
+            cytof_dict = self.parse_cytof_input()
+            assert cytof_dict
             cytof_analysis.cytof(self, **cytof_dict)
         except Exception as e:
-            if type(e) not in CUSTOM_ERRORS:
+            if type(e) not in CUSTOM_ERRORS and type(e) != AssertionError:
                 trace = traceback.format_exc()
                 messages.generic_error_message(self, trace, e)
         else:
@@ -146,8 +144,7 @@ class ColonyCounterApp(QMainWindow):
         cytof_dict = {}
         # input and output
         input_file = str(self.ui.input_echo_cytof.text().replace('&', ''))
-        output_folder = str(self.ui.output_echo_cytof.text().replace(
-            '&', ''))
+        output_folder = str(self.ui.output_echo_cytof.text().replace('&', ''))
         if not (input_file or output_folder):
             messages.no_file_folder_found(self)
             return

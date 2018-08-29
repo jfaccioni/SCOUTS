@@ -47,7 +47,6 @@ def cytof(widget, input_file, output_folder, outliers, by_marker, tuckey,
             assert any(sample in text for text in list(df.iloc[:, 0]))
         except AssertionError:
             raise SampleNamingError(widget)
-
     # gate rows
     for index, row in df.iterrows():
         mean_row_value = np.mean(row[1:])

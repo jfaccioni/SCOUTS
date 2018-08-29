@@ -1,16 +1,10 @@
-import sys
-
 from PyQt5.QtWidgets import QMessageBox
 
 
 def module_done(widget):
-    title = 'Module finished'
-    mes = "The module has finished! Would you like to exit now?"
-    reply = QMessageBox.question(widget, title, mes,
-                                 QMessageBox.Yes | QMessageBox.No,
-                                 QMessageBox.No)
-    if reply == QMessageBox.Yes:
-        sys.exit(0)
+    title = 'Analysis finished!'
+    mes = "Your analysis has finished. No errors were reported."
+    QMessageBox.information(widget, title, mes)
 
 
 def memory_warning(widget):
