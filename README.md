@@ -1,9 +1,10 @@
 # SCOUT - Single Cell OUTlier analysis
+
 <p align="middle">
-<img src="/home/juliano/Documents/Labsinal-docs/publications/outlier analysis (gio)/images/cells-white.png" alt="SCOUT" width="400"/>
+<img src="/images/cells-white.png" alt="SCOUT" width="400"/>
 </p>
 
-**SCOUT** is a tool that quickly finds outliers in your RNAseq and Cytof data, generating information about your population organized by markers and by cutoff.
+**SCOUT** is a tool that quickly finds outliers in your single-cell data, generating information about your population organized by targeted molecules.
 
 ## Getting Started
 SCOUT is available both as a **binary stand-alone release** and as a **Python package**, which can be downloaded from this repository and run with your local Python interpreter.
@@ -71,19 +72,19 @@ Information about how to use SCOUT can be found in this section.
 Open the application and select which analysis to perform (e.g. Cytof):
 
 <p align="middle">
-<img src="/home/juliano/Documents/Labsinal-docs/publications/outlier analysis (gio)/images/mainapp.png" alt="Main App Window" width="400"/>
+<img src="/images/mainapp.png" alt="Main App Window" width="400"/>
 </p>
 
 Select your input and output:
 
 <p align="middle">
-<img src="/home/juliano/Documents/Labsinal-docs/publications/outlier analysis (gio)/images/iocytof.png" alt="Cytof Analysis Window" width="600"/>
+<img src="/images/iocytof.png" alt="Cytof Analysis Window" width="600"/>
 </p>
 
 Sample names are particularly important (if the application does not find a given sample, it throws an error):
 
 <p align="middle">
-<img src="/home/juliano/Documents/Labsinal-docs/publications/outlier analysis (gio)/images/samplenames.png" alt="Sample Selection Window" width="650"/>
+<img src="/images/samplenames.png" alt="Sample Selection Window" width="650"/>
 </p>
 
 The [full documentation](www.google.com) explains how the program works with sample names.
@@ -91,7 +92,7 @@ The [full documentation](www.google.com) explains how the program works with sam
 Next, select your analysis parameters:
 
 <p align="middle">
-<img src="/home/juliano/Documents/Labsinal-docs/publications/outlier analysis (gio)/images/cytof_analysis.png" alt="Cytof Parameters" width="650"/>
+<img src="/images/cytof_analysis.png" alt="Cytof Parameters" width="650"/>
 </p>
 
 Ready? Click **Run**!
@@ -114,3 +115,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * Prof. Dr. Guido Lenz
 * Prof. Dr. Harley Kornblum
 * CAPES/CNPq
+* NIH <project-no>

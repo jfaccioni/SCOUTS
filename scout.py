@@ -2,87 +2,320 @@ import sys
 import traceback
 import webbrowser
 
-from PyQt5.QtCore import (Qt, pyqtSlot)
-from PyQt5.QtWidgets import (QApplication, QFileDialog, QLineEdit, QMainWindow,
-                             QMessageBox, QTableWidgetItem)
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import (QIcon, QPixmap)
+from PyQt5.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QFileDialog,
+                             QLabel, QLineEdit, QMainWindow, QMessageBox,
+                             QPushButton, QRadioButton, QStackedWidget,
+                             QTableWidget, QTableWidgetItem, QWidget)
 
 import cytof_analysis
 from ui import messages
 from ui.custom_errors import (ControlNotFound, EmptySampleList,
                               PandasInputError, SampleNamingError)
-from ui.ui_structure import Ui_OutlierAnalysis
 
 CUSTOM_ERRORS = (ControlNotFound, EmptySampleList, PandasInputError,
                  SampleNamingError)
 
+title_style = '<p style="font-size:22pt; font-weight:600;">'
+subtitle_style = '<p style="font-size:12pt; font-weight:500;">'
+credits_style = '<p style=" font-style:italic;">'
 
-class ColonyCounterApp(QMainWindow):
+
+class SCOUT(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
-        self.ui = Ui_OutlierAnalysis()
-        self.ui.setupUi(self)
-        self.ui.quit_main.clicked.connect(self.close)
+        self.setWindowTitle("SCOUT")
+        self.resize(625, 590)
+        self.page = QStackedWidget(self)
+        self.page.resize(650, 600)
+        self.analysis_page = QWidget()
+        self.samples_page = QWidget()
+        self.gates_page = QWidget()
+        self.page.addWidget(self.analysis_page)
+        self.page.addWidget(self.samples_page)
+        self.page.addWidget(self.gates_page)
+        self.cutoff_group = QButtonGroup(self)
+        self.markers_group = QButtonGroup(self)
+        self.tukey_group = QButtonGroup(self)
 
-    @pyqtSlot(name='on_back_cytof_clicked')
-    @pyqtSlot(name='on_back_rnaseq_clicked')
-    def goto_page_main(self):
-        self.ui.pages_widget.setCurrentWidget(self.ui.page_main)
+        self.set_analysis_page()
+        self.set_samples_page()
+        self.set_gates_page()
 
-    @pyqtSlot(name='on_cytof_btn_main_clicked')
-    @pyqtSlot(name='on_saveback_btn_samples_clicked')
-    def goto_page_cytof(self):
-        self.ui.pages_widget.setCurrentWidget(self.ui.page_cytof)
-
-    @pyqtSlot(name='on_rnaseq_btn_main_clicked')
-    def goto_page_rnaseq(self):
-        messages.not_yet_implemented(self)
-
-    @pyqtSlot(name='on_samples_btn_cytof_clicked')
-    def goto_page_samples(self):
-        self.ui.pages_widget.setCurrentWidget(self.ui.page_samples)
-
-    @pyqtSlot(name='on_input_btn_cytof_clicked')
-    def get_file(self):
-        sender = self.sender()
-        output_name = sender.objectName().replace('btn', 'echo')
-        output = self.findChild(QLineEdit, output_name)
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        filename, _ = QFileDialog.getOpenFileName(self,
-                                                  "Select file", "",
-                                                  "All Files (*)",
-                                                  options=options)
-        if filename:
-            self.type_contents(output, filename)
-
-    @pyqtSlot(name='on_output_btn_cytof_clicked')
-    def get_folder(self):
-        sender = self.sender()
-        output_name = sender.objectName().replace('btn', 'echo')
-        output = self.findChild(QLineEdit, output_name)
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        foldername = QFileDialog.getExistingDirectory(self, "Select Directory",
-                                                      options=options)
-        if foldername:
-            self.type_contents(output, foldername)
+        self.page.setCurrentWidget(self.analysis_page)
 
     @staticmethod
-    def type_contents(out, f):
-        out.setText(f)
+    def set_icon(widget, icon):
+        i = QIcon()
+        i.addPixmap(QPixmap(f'icons/{icon}.svg'))
+        widget.setIcon(i)
 
-    @pyqtSlot(name='on_add_btn_samples_clicked')
+    @staticmethod
+    def get_help():
+        webbrowser.open('http://www.google.com')
+
+    def set_analysis_page(self):
+        self.title = QLabel(self.analysis_page)
+        self.title.setGeometry(20, 10, 520, 60)
+        title_label = 'SCOUT - Single Cell OUTlier Analysis</p>'
+        self.title.setText(title_style + title_label)
+        self.title.adjustSize()
+
+        self.subtitle = QLabel(self.analysis_page)
+        self.subtitle.setGeometry(25, 60, 300, 50)
+        subtitle_label = 'Please choose the settings for the analysis:</p>'
+        self.subtitle.setText(subtitle_style + subtitle_label)
+        self.subtitle.adjustSize()
+
+        self.input_file = QPushButton(self.analysis_page)
+        self.input_file.setGeometry(20, 90, 300, 25)
+        self.set_icon(self.input_file, 'file')
+        self.input_file.setText(' Select input file (.xlsx or .csv) ...')
+        self.input_file.clicked.connect(self.get_path)
+
+        self.input_path = QLineEdit(self.analysis_page)
+        self.input_path.setGeometry(20, 120, 530, 25)
+        self.input_path.setObjectName('input_path')
+
+        self.output_folder = QPushButton(self.analysis_page)
+        self.output_folder.setGeometry(20, 150, 300, 25)
+        self.set_icon(self.output_folder, 'folder')
+        self.output_folder.setText(' Select folder to output analysis ...')
+        self.output_folder.clicked.connect(self.get_path)
+
+        self.output_path = QLineEdit(self.analysis_page)
+        self.output_path.setGeometry(20, 180, 530, 25)
+
+        self.samples = QPushButton(self.analysis_page)
+        self.samples.setGeometry(20, 210, 260, 25)
+        self.set_icon(self.samples, 'settings')
+        self.samples.setText(' Select sample names ...')
+        self.samples.clicked.connect(self.goto_page_samples)
+
+        self.gate = QPushButton(self.analysis_page)
+        self.gate.setGeometry(290, 210, 260, 25)
+        self.set_icon(self.gate, 'settings')
+        self.gate.setText(' Gate samples ...')
+        self.gate.clicked.connect(self.goto_page_gates)
+
+        self.analysis_text = QLabel(self.analysis_page)
+        self.analysis_text.setGeometry(20, 240, 190, 50)
+        self.analysis_text.setText('Select analysis settings:')
+
+        self.cutoff_text = QLabel(self.analysis_page)
+        self.cutoff_text.setGeometry(50, 262, 270, 50)
+        self.cutoff_text.setText('Consider outliers using cutoff from:')
+
+        self.cutoff_sample = QRadioButton(self.analysis_page)
+        self.cutoff_sample.setGeometry(275, 277, 80, 25)
+        self.cutoff_sample.setText('sample')
+        self.cutoff_sample.setChecked(True)
+
+        self.cutoff_control = QRadioButton(self.analysis_page)
+        self.cutoff_control.setGeometry(385, 277, 80, 25)
+        self.cutoff_control.setText('control')
+
+        self.cutoff_both = QRadioButton(self.analysis_page)
+        self.cutoff_both.setGeometry(495, 277, 80, 25)
+        self.cutoff_both.setText('both')
+
+        self.cutoff_group.addButton(self.cutoff_sample)
+        self.cutoff_group.addButton(self.cutoff_control)
+        self.cutoff_group.addButton(self.cutoff_both)
+
+        self.markers_text = QLabel(self.analysis_page)
+        self.markers_text.setGeometry(50, 284, 150, 50)
+        self.markers_text.setText('Consider outliers for:')
+
+        self.markers_single = QRadioButton(self.analysis_page)
+        self.markers_single.setGeometry(275, 299, 120, 25)
+        self.markers_single.setText('single marker')
+        self.markers_single.setChecked(True)
+
+        self.markers_any = QRadioButton(self.analysis_page)
+        self.markers_any.setGeometry(385, 299, 120, 25)
+        self.markers_any.setText('any marker')
+
+        self.markers_both = QRadioButton(self.analysis_page)
+        self.markers_both.setGeometry(495, 299, 60, 25)
+        self.markers_both.setText('both')
+
+        self.markers_group.addButton(self.markers_single)
+        self.markers_group.addButton(self.markers_any)
+        self.markers_group.addButton(self.markers_both)
+
+        self.tukey_text = QLabel(self.analysis_page)
+        self.tukey_text.setGeometry(50, 306, 150, 50)
+        self.tukey_text.setText('Tukey factor:')
+
+        self.tukey_low = QRadioButton(self.analysis_page)
+        self.tukey_low.setGeometry(275, 321, 120, 25)
+        self.tukey_low.setText('1.5')
+        self.tukey_low.setChecked(True)
+
+        self.tukey_high = QRadioButton(self.analysis_page)
+        self.tukey_high.setGeometry(385, 321, 120, 25)
+        self.tukey_high.setText('3.0')
+
+        self.tukey_group.addButton(self.tukey_low)
+        self.tukey_group.addButton(self.tukey_high)
+
+        self.output_text = QLabel(self.analysis_page)
+        self.output_text.setGeometry(20, 340, 330, 50)
+        self.output_text.setText('Select output settings:')
+
+        self.output_csv = QCheckBox(self.analysis_page)
+        self.output_csv.setGeometry(50, 380, 260, 25)
+        self.output_csv.setText('Export multiple text files (.csv)')
+
+        self.output_excel = QCheckBox(self.analysis_page)
+        self.output_excel.setGeometry(50, 410, 310, 25)
+        self.output_excel.setText('Export multiple Excel spreadsheets (.xlsx)')
+
+        self.group_excel = QCheckBox(self.analysis_page)
+        self.group_excel.setGeometry(50, 440, 510, 25)
+        long_mes = 'Also save one Excel spreadsheet with each analysis in '
+        long_mes2 = 'individual sheets'
+        self.group_excel.setText(long_mes + long_mes2)
+        self.group_excel.clicked.connect(self.memory_warning)
+
+        self.run_button = QPushButton(self.analysis_page)
+        self.run_button.setGeometry(20, 490, 400, 55)
+        self.set_icon(self.run_button, 'pipe')
+        self.run_button.setText(' Run !')
+        self.run_button.clicked.connect(self.analyse)
+
+        self.help_button = QPushButton(self.analysis_page)
+        self.help_button.setGeometry(430, 490, 120, 25)
+        self.set_icon(self.help_button, 'help')
+        self.help_button.setText(' Help')
+        self.help_button.clicked.connect(self.get_help)
+
+        self.quit_button = QPushButton(self.analysis_page)
+        self.quit_button.setGeometry(430, 520, 120, 25)
+        self.set_icon(self.quit_button, 'quit')
+        self.quit_button.setText(' Quit')
+        self.quit_button.clicked.connect(self.close)
+
+        self.credits = QLabel(self.analysis_page)
+        self.credits.setGeometry(20, 560, 190, 50)
+        credits_label = 'Juliano Luiz Faccioni - Labsinal/UFRGS 2018</p>'
+        self.credits.setText(credits_style + credits_label)
+        self.credits.adjustSize()
+
+    def set_samples_page(self):
+        self.samples_title = QLabel(self.samples_page)
+        self.samples_title.setGeometry(20, 10, 520, 60)
+        title_label = 'Select samples</p>'
+        self.samples_title.setText(title_style + title_label)
+        self.samples_title.adjustSize()
+
+        self.samples_subtitle = QLabel(self.samples_page)
+        self.samples_subtitle.setGeometry(25, 60, 300, 50)
+        sub_label = 'Please insert your sample names (e.g. Control, Drug_01, '
+        sub_label2 = 'Treatment_x ...).\n\nSCOUT locates the exact string as '
+        sub_label3 = 'part of the names on the first column of your data.'
+        self.samples_subtitle.setText(sub_label + sub_label2 + sub_label3)
+        self.samples_subtitle.adjustSize()
+
+        self.samplename = QLineEdit(self.samples_page)
+        self.samplename.setGeometry(20, 110, 300, 25)
+        self.samplename.setPlaceholderText('Insert sample name  ...')
+
+        self.iscontrol = QCheckBox(self.samples_page)
+        self.iscontrol.setGeometry(20, 140, 230, 25)
+        self.iscontrol.setText('This is my control sample')
+
+        self.add_row = QPushButton(self.samples_page)
+        self.add_row.setGeometry(330, 110, 250, 25)
+        self.set_icon(self.add_row, 'ok')
+        self.add_row.setText(' Add sample to list')
+        self.add_row.clicked.connect(self.write_to_sample_table)
+
+        self.remove_row = QPushButton(self.samples_page)
+        self.remove_row.setGeometry(330, 140, 250, 25)
+        self.set_icon(self.remove_row, 'back')
+        self.remove_row.setText(' Remove row from sample list')
+        self.remove_row.clicked.connect(self.write_to_sample_table)
+
+        self.sample_table = QTableWidget(self.samples_page)
+        self.sample_table.setGeometry(20, 180, 560, 290)
+        self.sample_table.setColumnCount(2)
+        n, m = QTableWidgetItem('Control?'), QTableWidgetItem('Sample name')
+        self.sample_table.setHorizontalHeaderItem(0, n)
+        self.sample_table.setHorizontalHeaderItem(1, m)
+        head = self.sample_table.horizontalHeader()
+        head.setDefaultSectionSize(100)
+        head.setMinimumSectionSize(100)
+        head.setStretchLastSection(True)
+
+        self.clear_samples = QPushButton(self.samples_page)
+        self.clear_samples.setGeometry(430, 480, 150, 40)
+        self.set_icon(self.clear_samples, 'clear')
+        self.clear_samples.setText(' Clear table')
+        self.clear_samples.clicked.connect(self.prompt_clear_data)
+
+        self.save_samples = QPushButton(self.samples_page)
+        self.save_samples.setGeometry(430, 530, 150, 40)
+        self.set_icon(self.save_samples, 'ok')
+        self.save_samples.setText(' Save changes')
+        self.save_samples.clicked.connect(self.goto_page_analysis)
+
+    def set_gates_page(self):
+        pass
+
+    def closeEvent(self, event):
+        title = 'Quit Application'
+        mes = "Are you sure you want to quit?"
+        reply = QMessageBox.question(self, title, mes,
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+
+    def goto_page_analysis(self):
+        self.page.setCurrentWidget(self.analysis_page)
+
+    def goto_page_samples(self):
+        self.page.setCurrentWidget(self.samples_page)
+
+    def goto_page_gates(self):
+        self.page.setCurrentWidget(self.gates_page)
+
+    def get_path(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        name = self.sender().objectName()
+        query = ''
+        echo = ''
+        if name == 'input':
+            echo = self.input_path
+            query, _ = QFileDialog.getOpenFileName(self,
+                                                   "Select file", "",
+                                                   "All Files (*)",
+                                                   options=options)
+        elif name == 'output':
+            echo = self.output_path
+            query = QFileDialog.getExistingDirectory(self,
+                                                     "Select Directory",
+                                                     options=options)
+        if query:
+            echo.setText(query)
+
     def write_to_sample_table(self):
-        table = self.ui.sample_table_samples
+        table = self.sample_table
         iscontrol = 'No'
-        sample = self.ui.samplename_samples.text()
+        sample = self.samplename.text()
         if sample:
             for cell in range(table.rowCount()):
                 item = table.item(cell, 1)
                 if item.text() == sample:
                     messages.same_sample(self)
                     return
-            if self.ui.iscontrol_checkbox_samples.isChecked():
+            if self.iscontrol.isChecked():
                 for cell in range(table.rowCount()):
                     item = table.item(cell, 0)
                     if item.text() == 'Yes':
@@ -96,23 +329,20 @@ class ColonyCounterApp(QMainWindow):
             table.insertRow(row_positon)
             table.setItem(row_positon, 1, sample)
             table.setItem(row_positon, 0, iscontrol)
-            self.ui.iscontrol_checkbox_samples.setCheckState(False)
-            self.ui.samplename_samples.setText('')
+            self.iscontrol.setChecked(False)
+            self.samplename.setText('')
 
-    @pyqtSlot(name='on_remove_btn_samples_clicked')
     def remove_from_sample_table(self):
-        table = self.ui.sample_table_samples
+        table = self.sample_table
         rows = set(index.row() for index in table.selectedIndexes())
         for index in rows:
-            self.ui.sample_table_samples.removeRow(index)
+            self.sample_table.removeRow(index)
 
-    @pyqtSlot(name='on_clear_btn_samples_clicked')
     def prompt_clear_data(self):
         if self.confirm_switch():
-            table = self.ui.sample_table_samples
+            table = self.sample_table
             while table.rowCount():
-                self.ui.sample_table_samples.removeRow(0)
-            self.goto_page_cytof()
+                self.sample_table.removeRow(0)
 
     def confirm_switch(self):
         title = 'Confirm Action'
@@ -124,17 +354,15 @@ class ColonyCounterApp(QMainWindow):
             return True
         return False
 
-    @pyqtSlot(name='on_output_excel_group_cytof_clicked')
     def memory_warning(self):
         if self.sender().isChecked():
             messages.memory_warning(self)
 
-    @pyqtSlot(name='on_run_cytof_clicked')
-    def run_cytof(self):
+    def analyse(self):
         try:
-            cytof_dict = self.parse_cytof_input()
-            assert cytof_dict
-            cytof_analysis.cytof(self, **cytof_dict)
+            input_dict = self.parse_input()
+            assert input_dict
+            cytof_analysis.cytof(self, **input_dict)
         except Exception as e:
             if type(e) not in CUSTOM_ERRORS and type(e) != AssertionError:
                 trace = traceback.format_exc()
@@ -142,44 +370,44 @@ class ColonyCounterApp(QMainWindow):
         else:
             messages.module_done(self)
 
-    def parse_cytof_input(self):
-        cytof_dict = {}
+    def parse_input(self):
+        input_dict = {}
         # input and output
-        input_file = str(self.ui.input_echo_cytof.text().replace('&', ''))
-        output_folder = str(self.ui.output_echo_cytof.text().replace('&', ''))
+        input_file = self.input_path.text()
+        output_folder = self.output_path.text()
         if not (input_file or output_folder):
             messages.no_file_folder_found(self)
             return
-        cytof_dict['input_file'] = input_file
-        cytof_dict['output_folder'] = output_folder
+        input_dict['input_file'] = input_file
+        input_dict['output_folder'] = output_folder
         # set cutoff by control or by sample rule
-        outlier_id = self.ui.OutliersBy.checkedId()
-        outlier_rule = self.ui.OutliersBy.button(outlier_id)
-        cytof_dict['outliers'] = str(outlier_rule.text().replace('&', ''))
+        cutoff_id = self.cutoff_group.checkedId()
+        cutoff_rule = self.cutoff_group.button(cutoff_id)
+        input_dict['cutoff_rule'] = cutoff_rule.text()
         # outliers for each individual marker or any marker in row
-        markers_id = self.ui.MarkersOutliers.checkedId()
-        markers_rule = self.ui.MarkersOutliers.button(markers_id)
-        cytof_dict['by_marker'] = str(markers_rule.text().replace('&', ''))
+        markers_id = self.markers_group.checkedId()
+        markers_rule = self.markers_group.button(markers_id)
+        input_dict['by_marker'] = markers_rule.text()
         # tuckey factor
-        tuckey_id = self.ui.TuckeyFactor.checkedId()
-        tuckey = self.ui.TuckeyFactor.button(tuckey_id)
-        cytof_dict['tuckey'] = float(tuckey.text().replace('&', ''))
+        tukey_id = self.tukey_group.checkedId()
+        tukey = self.tukey_group.button(tukey_id)
+        input_dict['tukey'] = float(tukey.text())
         # output settings
-        if self.ui.output_text_cytof.isChecked():
+        if self.output_csv.isChecked():
             export_csv = True
         else:
             export_csv = False
-        cytof_dict['export_csv'] = export_csv
-        if self.ui.output_excel_cytof.isChecked():
+        input_dict['export_csv'] = export_csv
+        if self.output_excel.isChecked():
             export_excel = True
         else:
             export_excel = False
-        cytof_dict['export_excel'] = export_excel
-        if self.ui.output_excel_group_cytof.isChecked():
+        input_dict['export_excel'] = export_excel
+        if self.group_excel.isChecked():
             group_excel = True
         else:
             group_excel = False
-        cytof_dict['group_excel'] = group_excel
+        input_dict['group_excel'] = group_excel
         # retrieve information about sample names and which sample is control
         sample_list = []
         for tuples in self.yield_samples():
@@ -187,36 +415,19 @@ class ColonyCounterApp(QMainWindow):
         if not sample_list:
             messages.no_samples(self)
             return
-        cytof_dict['sample_list'] = sample_list
-        return cytof_dict
+        input_dict['sample_list'] = sample_list
+        return input_dict
 
     def yield_samples(self):
-        table = self.ui.sample_table_samples
+        table = self.sample_table
         for cell in range(table.rowCount()):
             sample_type = table.item(cell, 0).text()
             sample_name = table.item(cell, 1).text()
             yield sample_type, sample_name
 
-    @pyqtSlot(name='on_help_main_clicked')
-    @pyqtSlot(name='on_help_cytof_clicked')
-    @pyqtSlot(name='on_help_rnaseq_clicked')
-    def get_help(self):
-        webbrowser.open('http://www.google.com')
-
-    def closeEvent(self, event):
-        title = 'Quit Application'
-        mes = "Are you sure you want to quit?"
-        reply = QMessageBox.question(self, title, mes,
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    gui = ColonyCounterApp()
+    gui = SCOUT()
     gui.show()
     sys.exit(app.exec_())

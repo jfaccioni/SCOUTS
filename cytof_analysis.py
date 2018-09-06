@@ -15,7 +15,7 @@ pd.set_option('expand_frame_repr', False)
 GATE_CUTOFF = 0.1
 
 
-def cytof(widget, input_file, output_folder, outliers, by_marker, tuckey,
+def cytof(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
           export_csv, export_excel, group_excel, sample_list):
     # get sample names and control sample
     samples = []
@@ -78,7 +78,7 @@ def cytof(widget, input_file, output_folder, outliers, by_marker, tuckey,
     for dataframe, m, s, n in yield_dataframes(log=f, df=df,
                                                sample_dict=sample_dict,
                                                control=control,
-                                               outliers=outliers,
+                                               outliers=cutoff_rule,
                                                by_marker=by_marker):
         if s not in os.listdir(os.getcwd()):
             os.mkdir(s)

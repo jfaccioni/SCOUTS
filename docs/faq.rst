@@ -1,4 +1,0 @@
-FAQ
-===
-
-Questions and answers
