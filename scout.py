@@ -7,7 +7,7 @@ from PyQt5.QtGui import (QIcon, QPixmap)
 from PyQt5.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QFileDialog,
                              QLabel, QLineEdit, QMainWindow, QMessageBox,
                              QPushButton, QRadioButton, QStackedWidget,
-                             QTableWidget, QTableWidgetItem, QWidget)
+                             QTableWidget, QTableWidgetItem, QWidget, QFrame)
 
 import cytof_analysis
 from ui import messages
@@ -17,18 +17,19 @@ from ui.custom_errors import (ControlNotFound, EmptySampleList,
 CUSTOM_ERRORS = (ControlNotFound, EmptySampleList, PandasInputError,
                  SampleNamingError)
 
-title_style = '<p style="font-size:22pt; font-weight:600;">'
-subtitle_style = '<p style="font-size:12pt; font-weight:500;">'
-credits_style = '<p style=" font-style:italic;">'
+title_style = '<p style="font-size:20pt; font-weight:600;">'
+subtitle_style = '<p style="font-size:12pt;">'
+info_style = '<p style="font-weight:600;">'
+credits_style = '<p style="font-style:italic;">'
 
 
 class SCOUT(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
         self.setWindowTitle("SCOUT")
-        self.resize(625, 590)
+        self.resize(590, 590)
         self.page = QStackedWidget(self)
-        self.page.resize(650, 600)
+        self.page.resize(590, 590)
         self.analysis_page = QWidget()
         self.samples_page = QWidget()
         self.gates_page = QWidget()
@@ -57,67 +58,78 @@ class SCOUT(QMainWindow):
 
     def set_analysis_page(self):
         self.title = QLabel(self.analysis_page)
-        self.title.setGeometry(20, 10, 520, 60)
+        self.title.setGeometry(15, 10, 520, 60)
         title_label = 'SCOUT - Single Cell OUTlier Analysis</p>'
         self.title.setText(title_style + title_label)
         self.title.adjustSize()
 
         self.subtitle = QLabel(self.analysis_page)
-        self.subtitle.setGeometry(25, 60, 300, 50)
+        self.subtitle.setGeometry(15, 50, 300, 50)
         subtitle_label = 'Please choose the settings for the analysis:</p>'
         self.subtitle.setText(subtitle_style + subtitle_label)
         self.subtitle.adjustSize()
 
+        self.input_frame = QFrame(self.analysis_page)
+        self.input_frame.setGeometry(15, 80, 560, 165)
+        self.input_frame.setFrameShape(QFrame.StyledPanel)
+
         self.input_file = QPushButton(self.analysis_page)
-        self.input_file.setGeometry(20, 90, 300, 25)
+        self.input_file.setGeometry(30, 90, 300, 25)
         self.set_icon(self.input_file, 'file')
+        self.input_file.setObjectName('input')
         self.input_file.setText(' Select input file (.xlsx or .csv) ...')
         self.input_file.clicked.connect(self.get_path)
 
         self.input_path = QLineEdit(self.analysis_page)
-        self.input_path.setGeometry(20, 120, 530, 25)
+        self.input_path.setGeometry(30, 120, 530, 25)
         self.input_path.setObjectName('input_path')
 
         self.output_folder = QPushButton(self.analysis_page)
-        self.output_folder.setGeometry(20, 150, 300, 25)
+        self.output_folder.setGeometry(30, 150, 300, 25)
         self.set_icon(self.output_folder, 'folder')
+        self.output_folder.setObjectName('output')
         self.output_folder.setText(' Select folder to output analysis ...')
         self.output_folder.clicked.connect(self.get_path)
 
         self.output_path = QLineEdit(self.analysis_page)
-        self.output_path.setGeometry(20, 180, 530, 25)
+        self.output_path.setGeometry(30, 180, 530, 25)
 
         self.samples = QPushButton(self.analysis_page)
-        self.samples.setGeometry(20, 210, 260, 25)
+        self.samples.setGeometry(30, 210, 260, 25)
         self.set_icon(self.samples, 'settings')
         self.samples.setText(' Select sample names ...')
         self.samples.clicked.connect(self.goto_page_samples)
 
         self.gate = QPushButton(self.analysis_page)
-        self.gate.setGeometry(290, 210, 260, 25)
+        self.gate.setGeometry(300, 210, 260, 25)
         self.set_icon(self.gate, 'settings')
         self.gate.setText(' Gate samples ...')
         self.gate.clicked.connect(self.goto_page_gates)
 
+        self.analysis_frame = QFrame(self.analysis_page)
+        self.analysis_frame.setGeometry(15, 250, 560, 100)
+        self.analysis_frame.setFrameShape(QFrame.StyledPanel)
+
         self.analysis_text = QLabel(self.analysis_page)
-        self.analysis_text.setGeometry(20, 240, 190, 50)
-        self.analysis_text.setText('Select analysis settings:')
+        self.analysis_text.setGeometry(30, 240, 190, 50)
+        analysis_text_label = 'Select analysis settings:</p>'
+        self.analysis_text.setText(info_style + analysis_text_label)
 
         self.cutoff_text = QLabel(self.analysis_page)
-        self.cutoff_text.setGeometry(50, 262, 270, 50)
+        self.cutoff_text.setGeometry(60, 262, 270, 50)
         self.cutoff_text.setText('Consider outliers using cutoff from:')
 
         self.cutoff_sample = QRadioButton(self.analysis_page)
-        self.cutoff_sample.setGeometry(275, 277, 80, 25)
+        self.cutoff_sample.setGeometry(285, 277, 80, 25)
         self.cutoff_sample.setText('sample')
         self.cutoff_sample.setChecked(True)
 
         self.cutoff_control = QRadioButton(self.analysis_page)
-        self.cutoff_control.setGeometry(385, 277, 80, 25)
+        self.cutoff_control.setGeometry(395, 277, 80, 25)
         self.cutoff_control.setText('control')
 
         self.cutoff_both = QRadioButton(self.analysis_page)
-        self.cutoff_both.setGeometry(495, 277, 80, 25)
+        self.cutoff_both.setGeometry(505, 277, 80, 25)
         self.cutoff_both.setText('both')
 
         self.cutoff_group.addButton(self.cutoff_sample)
@@ -125,20 +137,20 @@ class SCOUT(QMainWindow):
         self.cutoff_group.addButton(self.cutoff_both)
 
         self.markers_text = QLabel(self.analysis_page)
-        self.markers_text.setGeometry(50, 284, 150, 50)
+        self.markers_text.setGeometry(60, 284, 150, 50)
         self.markers_text.setText('Consider outliers for:')
 
         self.markers_single = QRadioButton(self.analysis_page)
-        self.markers_single.setGeometry(275, 299, 120, 25)
+        self.markers_single.setGeometry(285, 299, 120, 25)
         self.markers_single.setText('single marker')
         self.markers_single.setChecked(True)
 
         self.markers_any = QRadioButton(self.analysis_page)
-        self.markers_any.setGeometry(385, 299, 120, 25)
+        self.markers_any.setGeometry(395, 299, 120, 25)
         self.markers_any.setText('any marker')
 
         self.markers_both = QRadioButton(self.analysis_page)
-        self.markers_both.setGeometry(495, 299, 60, 25)
+        self.markers_both.setGeometry(505, 299, 60, 25)
         self.markers_both.setText('both')
 
         self.markers_group.addButton(self.markers_single)
@@ -146,60 +158,65 @@ class SCOUT(QMainWindow):
         self.markers_group.addButton(self.markers_both)
 
         self.tukey_text = QLabel(self.analysis_page)
-        self.tukey_text.setGeometry(50, 306, 150, 50)
+        self.tukey_text.setGeometry(60, 306, 150, 50)
         self.tukey_text.setText('Tukey factor:')
 
         self.tukey_low = QRadioButton(self.analysis_page)
-        self.tukey_low.setGeometry(275, 321, 120, 25)
+        self.tukey_low.setGeometry(285, 321, 120, 25)
         self.tukey_low.setText('1.5')
         self.tukey_low.setChecked(True)
 
         self.tukey_high = QRadioButton(self.analysis_page)
-        self.tukey_high.setGeometry(385, 321, 120, 25)
+        self.tukey_high.setGeometry(395, 321, 120, 25)
         self.tukey_high.setText('3.0')
 
         self.tukey_group.addButton(self.tukey_low)
         self.tukey_group.addButton(self.tukey_high)
 
+        self.output_frame = QFrame(self.analysis_page)
+        self.output_frame.setGeometry(15, 355, 560, 110)
+        self.output_frame.setFrameShape(QFrame.StyledPanel)
+
         self.output_text = QLabel(self.analysis_page)
-        self.output_text.setGeometry(20, 340, 330, 50)
-        self.output_text.setText('Select output settings:')
+        self.output_text.setGeometry(30, 345, 330, 50)
+        output_text_label = 'Select output settings:</p>'
+        self.output_text.setText(info_style + output_text_label)
 
         self.output_csv = QCheckBox(self.analysis_page)
-        self.output_csv.setGeometry(50, 380, 260, 25)
+        self.output_csv.setGeometry(60, 380, 260, 25)
         self.output_csv.setText('Export multiple text files (.csv)')
 
         self.output_excel = QCheckBox(self.analysis_page)
-        self.output_excel.setGeometry(50, 410, 310, 25)
+        self.output_excel.setGeometry(60, 410, 310, 25)
         self.output_excel.setText('Export multiple Excel spreadsheets (.xlsx)')
 
         self.group_excel = QCheckBox(self.analysis_page)
-        self.group_excel.setGeometry(50, 440, 510, 25)
+        self.group_excel.setGeometry(60, 440, 510, 25)
         long_mes = 'Also save one Excel spreadsheet with each analysis in '
         long_mes2 = 'individual sheets'
         self.group_excel.setText(long_mes + long_mes2)
         self.group_excel.clicked.connect(self.memory_warning)
 
         self.run_button = QPushButton(self.analysis_page)
-        self.run_button.setGeometry(20, 490, 400, 55)
+        self.run_button.setGeometry(30, 490, 400, 55)
         self.set_icon(self.run_button, 'pipe')
         self.run_button.setText(' Run !')
         self.run_button.clicked.connect(self.analyse)
 
         self.help_button = QPushButton(self.analysis_page)
-        self.help_button.setGeometry(430, 490, 120, 25)
+        self.help_button.setGeometry(440, 490, 120, 25)
         self.set_icon(self.help_button, 'help')
         self.help_button.setText(' Help')
         self.help_button.clicked.connect(self.get_help)
 
         self.quit_button = QPushButton(self.analysis_page)
-        self.quit_button.setGeometry(430, 520, 120, 25)
+        self.quit_button.setGeometry(440, 520, 120, 25)
         self.set_icon(self.quit_button, 'quit')
         self.quit_button.setText(' Quit')
         self.quit_button.clicked.connect(self.close)
 
         self.credits = QLabel(self.analysis_page)
-        self.credits.setGeometry(20, 560, 190, 50)
+        self.credits.setGeometry(30, 560, 190, 50)
         credits_label = 'Juliano Luiz Faccioni - Labsinal/UFRGS 2018</p>'
         self.credits.setText(credits_style + credits_label)
         self.credits.adjustSize()
