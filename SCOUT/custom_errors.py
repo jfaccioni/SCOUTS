@@ -1,4 +1,4 @@
-from ui import messages
+import messages
 
 
 class EmptySampleList(Exception):
