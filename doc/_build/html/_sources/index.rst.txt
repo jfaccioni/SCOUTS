@@ -14,8 +14,6 @@ Documentation
 
    Installation <install>
    Quickstart guide <start>
-   Cytof analysis <cytof>
-   RNAseq analysis <rna>
    How SCOUT works <work>
    FAQ <faq>
    Code documentation <docs>

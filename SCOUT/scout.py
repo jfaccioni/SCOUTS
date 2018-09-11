@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QButtonGroup, QCheckBox,
                              QRadioButton, QStackedWidget, QTableWidget,
                              QTableWidgetItem, QWidget)
 
-import cytof_analysis
+import scout_analysis
 import messages
 from custom_errors import (ControlNotFound, EmptySampleList, PandasInputError,
                            SampleNamingError)
@@ -310,8 +310,10 @@ class SCOUT(QMainWindow):
         self.yesno_gates.addButton(self.yes_gates)
 
         self.gates_cytof = QRadioButton(self.gates_page)
-        self.gates_cytof.setGeometry(50, 230, 120, 25)
-        self.gates_cytof.setText('Cytof - gate rows whose mean is lower than: ')
+        self.gates_cytof.setGeometry(40, 230, 120, 25)
+        m = 'Cytof - exclude poorly stained cells '
+        m2 = '(average row expression lower than): '
+        self.gates_cytof.setText(m + m2)
         self.gates_cytof.setObjectName('cytof')
         self.gates_cytof.setChecked(True)
         self.gates_cytof.setEnabled(False)
@@ -319,8 +321,8 @@ class SCOUT(QMainWindow):
         self.gates_cytof.clicked.connect(self.switch_gate)
 
         self.gates_rna = QRadioButton(self.gates_page)
-        self.gates_rna.setGeometry(50, 260, 120, 25)
-        self.gates_rna.setText('RNAseq - gate rows whose mean is lower than: ')
+        self.gates_rna.setGeometry(40, 260, 120, 25)
+        self.gates_rna.setText('RNAseq - exclude cells with mean lower than: ')
         self.gates_rna.setObjectName('rna')
         self.gates_rna.setEnabled(False)
         self.gates_rna.adjustSize()
@@ -330,7 +332,7 @@ class SCOUT(QMainWindow):
         self.gates_type.addButton(self.gates_cytof)
 
         self.gates_cytof_value = QDoubleSpinBox(self.gates_page)
-        self.gates_cytof_value.setGeometry(370, 230, 120, 25)
+        self.gates_cytof_value.setGeometry(500, 230, 120, 25)
         self.gates_cytof_value.setMinimum(0)
         self.gates_cytof_value.setMaximum(1)
         self.gates_cytof_value.setValue(0.1)
@@ -476,7 +478,7 @@ class SCOUT(QMainWindow):
         try:
             input_dict = self.parse_input()
             assert input_dict
-            cytof_analysis.cytof(self, **input_dict)
+            scout_analysis.analyse(self, **input_dict)
         except Exception as e:
             if type(e) not in CUSTOM_ERRORS and type(e) != AssertionError:
                 trace = traceback.format_exc()

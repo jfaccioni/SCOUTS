@@ -36,31 +36,31 @@ The easiest way to install SCOUT is using a Python package manager such as `Cond
 
 - clone the repository into your local machine:
 
-.. code-block:: bash
+.. code-block:: none
 
   $ git clone https://github.com/jfaccioni/scout
 
 - cd into the repository:
 
-.. code-block:: bash
+.. code-block:: none
 
   $ cd scout
 
 - use Conda to create a new environment with the required dependencies:
 
-.. code-block:: bash
+.. code-block:: none
 
   $ conda env create --name scout --file environment.yml
 
 - activate the newly created environment:
 
-.. code-block:: bash
+.. code-block:: none
 
   $ conda activate scout
 
 - finally, run SCOUT using your Python interpreter:
 
-.. code-block:: bash
+.. code-block:: none
 
   $ python scout.py
 

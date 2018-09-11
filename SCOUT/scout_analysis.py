@@ -13,8 +13,8 @@ pd.set_option('display.max_columns', 50)
 pd.set_option('expand_frame_repr', False)
 
 
-def cytof(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
-          export_csv, export_excel, group_excel, sample_list, gate_cutoff):
+def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
+            export_csv, export_excel, group_excel, sample_list, gate_cutoff):
     # get sample names and control sample
     samples = []
     control = ''
@@ -49,7 +49,7 @@ def cytof(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
     if gate_cutoff is not None:
         for index, row in df.iterrows():
             mean_row_value = np.mean(row[1:])
-            if mean_row_value < gate_cutoff:
+            if mean_row_value <= gate_cutoff:
                 df = df.drop(index, axis=0)
         df.reset_index(drop=True, inplace=True)
     # build cutoff values

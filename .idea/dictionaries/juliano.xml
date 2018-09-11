@@ -2,30 +2,56 @@
   <dictionary name="juliano">
     <words>
       <w>aseq</w>
+      <w>autodoc</w>
       <w>cytof</w>
       <w>dataframe</w>
       <w>dataframes</w>
+      <w>documentclass</w>
       <w>excepthook</w>
       <w>faccioni</w>
+      <w>filenames</w>
       <w>foldername</w>
       <w>fullmes</w>
+      <w>genindex</w>
+      <w>gettext</w>
+      <w>githubpages</w>
+      <w>howto</w>
+      <w>htbp</w>
+      <w>htmlhelp</w>
+      <w>imgmath</w>
+      <w>iocytof</w>
       <w>iscontrol</w>
       <w>labsinal</w>
+      <w>letterpaper</w>
+      <w>localtoc</w>
+      <w>mainapp</w>
       <w>mainmenu</w>
       <w>mainpage</w>
+      <w>modindex</w>
       <w>openpyxl</w>
+      <w>papersize</w>
+      <w>pointsize</w>
       <w>prog</w>
+      <w>pygments</w>
       <w>pyqt</w>
       <w>quantile</w>
+      <w>quickstart</w>
       <w>rnaseq</w>
       <w>samplename</w>
+      <w>samplenames</w>
       <w>saveback</w>
+      <w>searchbox</w>
       <w>sheetname</w>
+      <w>sourcelink</w>
       <w>subdict</w>
       <w>subsetting</w>
+      <w>tdoc</w>
+      <w>texinfo</w>
       <w>tlier</w>
+      <w>toctree</w>
       <w>tuckey</w>
       <w>tukey</w>
+      <w>viewcode</w>
       <w>xlsx</w>
     </words>
   </dictionary>
