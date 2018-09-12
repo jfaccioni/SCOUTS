@@ -311,8 +311,8 @@ class SCOUTS(QMainWindow):
 
         self.gates_cytof = QRadioButton(self.gates_page)
         self.gates_cytof.setGeometry(40, 230, 120, 25)
-        m = 'Cytof - exclude poorly stained cells '
-        m2 = '(average row expression lower than): '
+        m = 'Mass cytometry - exlcude cells with'
+        m2 = 'average row expression lower than: '
         self.gates_cytof.setText(m + m2)
         self.gates_cytof.setObjectName('cytof')
         self.gates_cytof.setChecked(True)
@@ -322,7 +322,7 @@ class SCOUTS(QMainWindow):
 
         self.gates_rna = QRadioButton(self.gates_page)
         self.gates_rna.setGeometry(40, 260, 120, 25)
-        m = 'RNAseq - exclude "zero" values when calculating cutoff'
+        m = 'scRNA-seq - exclude "zero" values when calculating cutoff'
         self.gates_rna.setText(m)
         self.gates_rna.setObjectName('rna')
         self.gates_rna.setEnabled(False)
