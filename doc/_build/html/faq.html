@@ -33,7 +33,21 @@
             
   <div class="section" id="faq">
 <h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
-<p>Questions and answers</p>
+<p><strong>My data is stored in multiple files. How do I use SCOUTS with it?</strong></p>
+<dl class="docutils">
+<dt>In this case you have basically two options:</dt>
+<dd><ul class="first last simple">
+<li>Ideally, you can merge your files into a single input file and use that to work with SCOUTS.</li>
+<li>When this is not possible, you can still use SCOUTS to analyse individual samples by passing one file at a time. This will not affect the output, <em>as long as all the cells from one sample are together in one file</em>. One side-effect of this method is that, in order to use the “<em>control</em>” option in the “<em>Consider outliers using cutoff from</em>” field, you need to make sure that the cells from the control sample are present in every file.</li>
+</ul>
+</dd>
+</dl>
+<p><strong>I do not have a control sample. Can I run SCOUTS without explicitly informing a control sample?</strong></p>
+<p>In order to run SCOUTS, you <strong>need</strong> to indicate one control sample; if you do not have a control sample, any sample will do. Simply add any sample as a control sample to the sample list. Don’t forget to check the “<em>samples</em>” option in the “<em>Consider outliers using cutoff from</em>” field.</p>
+<p><strong>I have another question/suggestion/issue when using SCOUTS. How do I contact you?</strong></p>
+<p>You can contact us through our <a class="reference external" href="https://github.com/jfaccioni/scouts">Github page</a>. Check the authors section for more information. Also remember that you can use the <a class="reference external" href="https://github.com/jfaccioni/scouts/issues">Github issues</a> to post about problems or suggestions for SCOUTS.</p>
+<p><strong>SCOUTS is working nicely, but can you implement X Y Z?</strong></p>
+<p>Maybe! Tell us more about it on the <a class="reference external" href="https://github.com/jfaccioni/scouts/issues">Github issues page</a> :-)</p>
 </div>
 
 
@@ -42,10 +56,22 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">SCOUTS</a></h1>
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/../_images/cells-transparent.png" alt="Logo"/>
+    
+  </a>
+</p>
 
 
 
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jfaccioni&repo=https://github.com/jfaccioni/scouts&type=follow&count=False&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
 
 
 
@@ -55,8 +81,6 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="start.html">Quickstart guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cytof.html">Cytof analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rna.html">RNAseq analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="work.html">How SCOUTS works</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">Code documentation</a></li>
@@ -99,6 +123,10 @@
           rel="nofollow">Page source</a>
     </div>
 
+    
+    <a href="https://github.com/jfaccioni/https://github.com/jfaccioni/scouts" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
     
 
     

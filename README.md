@@ -1,7 +1,7 @@
-# SCOUTS - Single Cell OUTlier analysis
+# SCOUTS - Single Cell OUTlier Selector
 
 <p align="middle">
-<img src="/images/cells-white.png" alt="SCOUTS" width="400"/>
+<img src="images/cells-white.png" alt="SCOUTS" width="400"/>
 </p>
 
 **SCOUTS** is a tool that quickly finds outliers in your single-cell data, generating information about your population organized by targeted molecules.
@@ -16,7 +16,7 @@ SCOUTS is available as a binary file, which bundles all information needed to ru
 * [Mac](link) (v1.0)
 * [Linux](link) (v1.0)
 
-Be aware that this is an experimental release of SCOUTS and, as such, is prone to bugs and errors. We kindly suggest you to [report](https://github.com/jfaccioni/scout/issues) any problems that you come across.
+Be aware that this is an experimental release of SCOUTS and, as such, is prone to bugs and errors. We kindly suggest you to [report](https://github.com/jfaccioni/scouts/issues) any problems that you come across.
 
 #### Installation from this repository
 SCOUTS is written in Python 3.6. If your system does not have Python 3.6 or higher, [click here to download it](https://www.python.org/downloads/).
@@ -35,25 +35,25 @@ The easiest way to install SCOUTS is using a Python package manager such as [Con
 * clone the repository into your local machine:
 
 ```
-$ git clone https://github.com/jfaccioni/scout
+$ git clone https://github.com/jfaccioni/scouts
 ```
 
 * cd into the repository:
 
 ```
-$ cd scout
+$ cd scouts
 ```
 
 * use Conda to create a new environment with the required dependencies:
 
 ```
-$ conda env create --name scout --file environment.yml
+$ conda env create --name scouts --file environment.yml
 ```
 
 * activate the newly created environment:
 
 ```
-$ conda activate scout
+$ conda activate scouts
 ```
 
 * finally, run SCOUTS using your Python interpreter:
@@ -69,33 +69,50 @@ Of course, you can also download the source code and use pip to install the requ
 Information about how to use SCOUTS can be found in this section.
 
 ### Quick Start
-Open the application and select which analysis to perform (e.g. Cytof):
+
+When you start SCOUTS, you should see this:
 
 <p align="middle">
-<img src="/images/mainapp.png" alt="Main App Window" width="400"/>
+<img src="images/SCOUTS_main.png" alt="SCOUTS main window" scale="90%"/>
 </p>
 
-Select your input and output:
+These are your main options for the analysis:
 
 <p align="middle">
-<img src="/images/iocytof.png" alt="Cytof Analysis Window" width="600"/>
+<img src="images/SCOUTS_info.png" alt="SCOUTS main window - information" scale="90%"/>
 </p>
 
-Sample names are particularly important (if the application does not find a given sample, it throws an error):
+Sample names are particularly important (if the application does not find a given sample, it warns you and stops the analysis). Click here to select and edit them:
 
 <p align="middle">
-<img src="/images/samplenames.png" alt="Sample Selection Window" width="650"/>
+<img src="images/SCOUTS_samples.png" alt="SCOUTS main window - sample button" scale="90%"/>
 </p>
 
-The [full documentation](www.google.com) explains how the program works with sample names.
-
-Next, select your analysis parameters:
+In this window you can inform your sample names. You don't have to use the full sample name - any identifier exclusive to each sample is enough, as long as it is part of your samples in the input file. Don't forget to add a control sample, too.
 
 <p align="middle">
-<img src="/images/cytof_analysis.png" alt="Cytof Parameters" width="650"/>
+<img src="images/SCOUTS_samplepage.png" alt="sample selection window" scale="90%"/>
+</p>
+
+[How SCOUTS works](link) has a detailed explanation of how the program reads and parses sample names.
+
+You can also gate your samples, if you want:
+
+<p align="middle">
+<img src="images/SCOUTS_gates.png" alt="SCOUTS main window - gates button" scale="90%"/>
+</p>
+
+The gating functionality works differently for mass cytometry and scRNA-seq samples. Refer to [How SCOUTS works](link) for details.
+
+<p align="middle">
+<img src="images/SCOUTS_gatepage.png" alt="Gates selection window" scale="90%"/>
 </p>
 
 Ready? Click **Run**!
+
+<p align="middle">
+<img src="images/SCOUTS_run.png" alt="SCOUTS main window - run button" scale="90%"/>
+</p>
 
 ### Documentation
 [Read the full SCOUTS documentation here](link).
@@ -115,4 +132,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * Prof. Dr. Guido Lenz
 * Prof. Dr. Harley Kornblum
 * CAPES/CNPq
-* NIH <project-no>
+* NIH *project-number*

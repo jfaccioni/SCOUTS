@@ -61,7 +61,7 @@ class SCOUTS(QMainWindow):
 
     def set_analysis_page(self):
         self.title = QLabel(self.analysis_page)
-        self.title.setGeometry(15, 10, 520, 60)
+        self.title.setGeometry(10, 10, 520, 60)
         title_label = 'SCOUTS - Single Cell OUTlier Selector</p>'
         self.title.setText(title_style + title_label)
         self.title.adjustSize()

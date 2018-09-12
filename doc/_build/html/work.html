@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FAQ" href="faq.html" />
-    <link rel="prev" title="RNAseq analysis" href="rna.html" />
+    <link rel="prev" title="Quickstart" href="start.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -31,9 +31,120 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="how-scout-works">
-<h1>How SCOUTS works<a class="headerlink" href="#how-scout-works" title="Permalink to this headline">¶</a></h1>
-<p>it goes like this:</p>
+  <div class="section" id="how-scouts-works">
+<h1>How SCOUTS works<a class="headerlink" href="#how-scouts-works" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="page-elements">
+<h2>Page elements<a class="headerlink" href="#page-elements" title="Permalink to this headline">¶</a></h2>
+<p>This section explains what each and every element of the program does.</p>
+<div class="section" id="main-page">
+<h3>Main Page<a class="headerlink" href="#main-page" title="Permalink to this headline">¶</a></h3>
+<p>These are the elements of the main page:</p>
+<a class="reference internal image-reference" href="_images/SCOUTS_main_numbered.png"><img alt="SCOUTS main window - numbered" class="align-center" src="_images/SCOUTS_main_numbered.png" style="width: 576.9px; height: 598.5px;" /></a>
+<p><strong>1) Input file</strong>: this button opens up a dialog to select your input file. Valid input file formats are .xlsx and .csv.</p>
+<p><strong>2) input file text</strong>: this field shows your input file path. It updates after clicking on the input file button and selecting a file. You can also type the path directly here.</p>
+<p><strong>3) Output folder</strong>: this button opens up a dialog to select your output folder. We recommend using an empty folder to avoid confusion.</p>
+<p><strong>4) Output folder text</strong>: this field shows your output folder path. It updates after clicking on the output folder button and selecting a folder. You can also type the path directly here.</p>
+<p><strong>5) Select sample names</strong>: this opens the sample selection window (see below).</p>
+<p><strong>6) Gate samples</strong>: this opens the gate selection window (see below).</p>
+<dl class="docutils">
+<dt><strong>7) Consider outliers using cutoff from</strong>: here you can select which cutoff value SCOUTS uses to consider whether a given sample is an outlier or not.</dt>
+<dd><ul class="first last simple">
+<li><strong>by sample</strong>: by default, SCOUTS will consider the sample population when calculating cutoff values. This means that each sample population (control, treatment 1, treatment 2, …) will have a specific cutoff value for each marker.</li>
+<li><strong>by control</strong>: using this option, SCOUTS applies the cutoff value from the control sample to all samples. This means that cells of any sample are treated as outliers for a given marker as long as they present a <em>higher expression than the control</em> - and not the sample population itself.</li>
+<li><strong>both</strong>: this option combines both previously described analyses. Results are saved into different files, with the filename representing the analysis performed.</li>
+</ul>
+</dd>
+<dt><strong>8) Consider outliers for</strong>: here you can select how SCOUTS determines if a cell is an outlier or not.</dt>
+<dd><ul class="first last simple">
+<li><strong>single marker</strong>: by default, SCOUTS will locate outliers for each and every marker. If a given cell is an outlier for 2+ markers, it appears in the output table for each one of these markers. SCOUTS generates one output file for each marker/sample combination.</li>
+<li><strong>any marker</strong>: this option considers that cells belong to the outlier population as long as they are above the cutoff value for <em>at least one marker</em>. In contrast to the previous analysis, the output generated in this analysis is a single file containing all cells that are outliers for a single marker.</li>
+<li><strong>both</strong>: this option combines both previously described analyses. Results are saved into different files, with the filename representing the analysis performed.</li>
+</ul>
+</dd>
+</dl>
+<p><strong>9) Tukey factor</strong>: by default, SCOUTS uses a Tukey factor of 1.5 when calculating the cutoffs for outliers. You can perform a more robust outlier selection by specifying a Tukey factor of 3.0.</p>
+<p><strong>10) Export csv</strong>: this option generates .csv files of the outliers for each marker/sample combination. The output is placed on subfolders organized by sample.</p>
+<p><strong>11) Export Excel</strong>: this option generates .xlsx files of the outliers for each marker/sample combination. The output is placed on subfolders organized by sample.</p>
+<p><strong>12) Generate multisheet Excel</strong>: this option generates one large .xlsx file, in which the outliers for each marker/sample combination are represented by a different sheet. This option is included for user that want to have all analyses on a single file. <strong>Beware: this option consumes a lot of RAM</strong>, and may slow down your PC/crash SCOUTS depending on your setup.</p>
+<p><strong>13) Run</strong>: click here to start SCOUTS. In general, SCOUTS won’t let you start if there are empty fields for input, output, samples, etc.</p>
+<p><strong>14) Help</strong>: click here to open this online documentation.</p>
+<p><strong>15) Quit</strong>: click here to exit SCOUTS.</p>
+</div>
+<div class="section" id="samples-page">
+<h3>Samples page<a class="headerlink" href="#samples-page" title="Permalink to this headline">¶</a></h3>
+<p>These are the elements of the samples page:</p>
+<a class="reference internal image-reference" href="_images/SCOUTS_samplepage_numbered.png"><img alt="Samples selection window - numbered" class="align-center" src="_images/SCOUTS_samplepage_numbered.png" style="width: 662.4px; height: 634.5px;" /></a>
+<p><strong>1) Sample name</strong>: type your sample name here.</p>
+<p><strong>2) Control checkbox</strong>: check this box to mark the sample as control (before clicking to add the sample to the list).</p>
+<p><strong>3) Add sample</strong>: click here to add the sample to the list.</p>
+<p><strong>4) Remove sample</strong>: click here to remove a highlighted sample from the list.</p>
+<p><strong>5) Control column</strong>: this column indicates whether this sample should be treated as the control.</p>
+<p><strong>6) Sample name column</strong>: this column displays the name of the sample.</p>
+<p><strong>7) Clear table</strong>: click this button to clear all samples from the table (you will be asked to confirm this action).</p>
+<p><strong>8) Save samples</strong>: click this button to go back to the main page, saving current sample names.</p>
+</div>
+<div class="section" id="gates-page">
+<h3>Gates page<a class="headerlink" href="#gates-page" title="Permalink to this headline">¶</a></h3>
+<p>These are the elements of the gates page:</p>
+<a class="reference internal image-reference" href="_images/SCOUTS_gatepage_numbered.png"><img alt="Gates selection window - numbered" class="align-center" src="_images/SCOUTS_gatepage_numbered.png" style="width: 600.3000000000001px; height: 620.1px;" /></a>
+<p><strong>1) No gating</strong>: Do not gate your input. This is the default option.</p>
+<p><strong>2) Gate samples</strong>: Select this option to allow gating (see below).</p>
+<p><strong>3) Gate mass cytometry</strong>: This gating option aims to exclude poorly stained cells from a mass cytometry experiment. Cells that have an average row expression lower than the value on the box <strong>5</strong> will be excluded from the analysis.</p>
+<p><strong>4) Gate scRNA-seq</strong>: This gating option excludes cells with 0 expression for a given marker from being part of the subpopulation when calculating the cutoff value for that marker. This means that cutoff values won’t be “dragged down” due to many cells having 0 expression.</p>
+<p><strong>5) Mass cytometry gate value</strong>: Value used by <strong>3</strong> to exclude cells from analysis (default: 0.1).</p>
+<p><strong>8) Save gate options</strong>: click this button to go back to the main page, saving current gate settings.</p>
+</div>
+</div>
+<div class="section" id="how-scouts-selects-outliers">
+<h2>How SCOUTS selects outliers<a class="headerlink" href="#how-scouts-selects-outliers" title="Permalink to this headline">¶</a></h2>
+<p>SCOUTS starts by selecting all cells that belong to the same sample. From this subset of the original data, SCOUTS calculates the first quartile (Q1) and third quartile (Q3) for each marker – that is, <strong>SCOUTS treats each marker/sample combination as being a subpopulation</strong>, and calculates Q1 and Q3 for this subpopulation.</p>
+<p>The cutoff value for each marker/sample combination is, in turn, calculated using the following formula:</p>
+<p><cite>cutoff = (IQR * t) + Q1</cite></p>
+<dl class="docutils">
+<dt>where:</dt>
+<dd><ul class="first last simple">
+<li><cite>IQR</cite> = interquartile range (defined as <cite>Q3 - Q1</cite>);</li>
+<li><cite>t</cite> = Tukey factor;</li>
+<li><cite>Q1</cite> = first quartile.</li>
+</ul>
+</dd>
+</dl>
+<p>Having the cutoff value from each marker/sample combination, SCOUTS proceeds to select cells from the input table with expression values higher than the cutoff. This is either done for each marker individually or for any marker, depending on the settings chosen by the user.</p>
+</div>
+<div class="section" id="about-input-and-output">
+<h2>About input and output<a class="headerlink" href="#about-input-and-output" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>SCOUTS expects a certain pattern for the input file. Namely, the input should have:</dt>
+<dd><ul class="first last simple">
+<li>a header, containing all markers. This is the first line of a .csv file, or the first row of an Excel spreadsheet;</li>
+<li>sample names in the first (leftmost) column. This is the field that SCOUTS uses to search for sample names;</li>
+<li>expression values for all other positions in the input data.</li>
+</ul>
+</dd>
+</dl>
+<p>The <a class="reference external" href="https://github.com/jfaccioni/scouts/input-template">Github repository</a> has an example file showing what the input should ideally look like.</p>
+<p>The output from SCOUTS is organized in multiple folders, each folder correspoding to a sample name. The .csv/.xlsx files are within each folder, depending on the settings chosen by the user. SCOUTS has no checks before overwriting files; that being said, the filenames are specific enough so that it is unlikely to overwrite files (other than its own files, generated by a previous run). Still, we recommend creating an empty output folder to organize your results.</p>
+</div>
+<div class="section" id="about-sample-names">
+<h2>About sample names<a class="headerlink" href="#about-sample-names" title="Permalink to this headline">¶</a></h2>
+<p>SCOUTS also expects sample names to be somewhat organized. Names passed as samples will be searched for in the first column of the input data, and rows containing that name will be used when calculating cutoff values for those samples. Sample names are <strong>case-sensitive</strong>, so be sure to type them correctly.</p>
+<dl class="docutils">
+<dt>SCOUTS will throw explicit errors if you do one of the following:</dt>
+<dd><ul class="first last simple">
+<li>try to run the program with an empty sample list;</li>
+<li>try to run the program with no samples passed as control.</li>
+</ul>
+</dd>
+<dt>SCOUTS will <strong>not</strong> stop the analysis nor warn you if the following happens:</dt>
+<dd><ul class="first last simple">
+<li>a given sample name is not found in the input data;</li>
+<li>a given sample name appears in more than one subset of samples;</li>
+<li>no sample names from the sample list are found in the input data (the program will perform an empty run in this case).</li>
+</ul>
+</dd>
+</dl>
+<p>Good sample names are <strong>crucial</strong> to a good output from SCOUTS.</p>
+</div>
 </div>
 
 
@@ -42,10 +153,22 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">SCOUTS</a></h1>
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/../_images/cells-transparent.png" alt="Logo"/>
+    
+  </a>
+</p>
 
 
 
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jfaccioni&repo=https://github.com/jfaccioni/scouts&type=follow&count=False&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
 
 
 
@@ -55,9 +178,13 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="start.html">Quickstart guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cytof.html">Cytof analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rna.html">RNAseq analysis</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">How SCOUTS works</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How SCOUTS works</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#page-elements">Page elements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-scouts-selects-outliers">How SCOUTS selects outliers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#about-input-and-output">About input and output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#about-sample-names">About sample names</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs.html">Code documentation</a></li>
 </ul>
@@ -66,7 +193,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="rna.html" title="previous chapter">RNAseq analysis</a></li>
+      <li>Previous: <a href="start.html" title="previous chapter">Quickstart</a></li>
       <li>Next: <a href="faq.html" title="next chapter">FAQ</a></li>
   </ul></li>
 </ul>
@@ -99,6 +226,10 @@
           rel="nofollow">Page source</a>
     </div>
 
+    
+    <a href="https://github.com/jfaccioni/https://github.com/jfaccioni/scouts" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
     
 
     

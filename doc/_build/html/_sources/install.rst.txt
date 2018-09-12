@@ -13,7 +13,7 @@ SCOUTS is available as a binary file, which bundles all information needed to ru
 
 - `Linux <link>`_ (v1.0)
 
-Be aware that this is an experimental release of SCOUTS and, as such, is prone to bugs and errors. We kindly suggest you to `report <https://github.com/jfaccioni/scout/issues>`_ any problems that you come across.
+Be aware that this is an experimental release of SCOUTS and, as such, is prone to bugs and errors. We kindly suggest you to `report <https://github.com/jfaccioni/scouts/issues>`_ any problems that you come across.
 
 Installation from Github repository
 -----------------------------------
@@ -28,7 +28,7 @@ Third-party modules used by SCOUTS:
 - `Pyqt5 <https://pypi.org/project/PyQt5/>`_
 
 
-A full list of the third-party packages (and their dependencies) in a known working environment are listed in the `environment.yml <https://github.com/jfaccioni/scout/environment.yml>`_ file (tested in Ubuntu 18.04).
+A full list of the third-party packages (and their dependencies) in a known working environment are listed in the `environment.yml <https://github.com/jfaccioni/scouts/environment.yml>`_ file (tested in Ubuntu 18.04).
 
 Install with Conda
 *******************
@@ -38,25 +38,25 @@ The easiest way to install SCOUTS is using a Python package manager such as `Con
 
 .. code-block:: none
 
-  $ git clone https://github.com/jfaccioni/scout
+  $ git clone https://github.com/jfaccioni/scouts
 
 - cd into the repository:
 
 .. code-block:: none
 
-  $ cd scout
+  $ cd scouts
 
 - use Conda to create a new environment with the required dependencies:
 
 .. code-block:: none
 
-  $ conda env create --name scout --file environment.yml
+  $ conda env create --name scouts --file environment.yml
 
 - activate the newly created environment:
 
 .. code-block:: none
 
-  $ conda activate scout
+  $ conda activate scouts
 
 - finally, run SCOUTS using your Python interpreter:
 

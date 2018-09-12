@@ -85,7 +85,15 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+'logo': '../_images/cells-transparent.png',
+'body_text_align':'justify',
+'github_button': True,
+'github_type': 'follow',
+'github_count': False,
+'github_banner': True,
+'github_user': 'jfaccioni',
+'github_repo':'https://github.com/jfaccioni/scouts'}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

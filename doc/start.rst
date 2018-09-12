@@ -3,28 +3,28 @@ Quickstart
 When you start SCOUTS, you should see this:
 
 .. image:: ../images/SCOUTS_main.png
-   :scale: 75%
+   :scale: 90%
    :alt: SCOUTS main window
    :align: center
 
 These are your main options for the analysis:
 
-.. image:: ../images/SCOUTS_main_info.png
-   :scale: 70%
+.. image:: ../images/SCOUTS_info.png
+   :scale: 80%
    :alt: SCOUTS main window - information
    :align: center
 
 Sample names are particularly important (if the application does not find a given sample, it warns you and stops the analysis). Click here to select and edit them:
 
-.. image:: ../images/SCOUTS_main_samples.png
-   :scale: 70%
+.. image:: ../images/SCOUTS_samples.png
+   :scale: 90%
    :alt: SCOUTS main window - sample button
    :align: center
 
 In this window you can inform SCOUTS what your samples are named. You don't have to use the full sample name - any identifier exclusive to each sample is enough, as long as it is part of your samples in your input. Don't forget to add a control sample, too.
 
-.. image:: ../images/SCOUTS_samples.png
-   :scale: 80%
+.. image:: ../images/SCOUTS_samplepage.png
+   :scale: 90%
    :alt: Sample selection window
    :align: center
 
@@ -32,16 +32,21 @@ In this window you can inform SCOUTS what your samples are named. You don't have
 
 You can also gate your samples, if you want:
 
-.. image:: ../images/SCOUTS_main_gates.png
-   :scale: 80%
+.. image:: ../images/SCOUTS_gates.png
+   :scale: 90%
    :alt: SCOUTS main window - gates button
    :align: center
 
 The gating functionality works differently for Cytof and RNAseq samples. Refer to `How SCOUTS works <./work.html>`_ for details.
 
-.. image:: ../images/SCOUTS_gates.png
+.. image:: ../images/SCOUTS_gatepage.png
    :scale: 90%
    :alt: Gates selection window
    :align: center
 
 Ready? Click **Run**!
+
+.. image:: ../images/SCOUTS_run.png
+   :scale: 90%
+   :alt: SCOUTS main window - run button
+   :align: center

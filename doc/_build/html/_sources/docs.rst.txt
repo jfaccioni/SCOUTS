@@ -1,6 +1,4 @@
 Code Documentation
 ==================
 
-This is a function:
-
-`f(x)`
+Section under construction!
