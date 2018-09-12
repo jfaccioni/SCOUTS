@@ -1,34 +1,47 @@
 Quickstart
 ==========
+When you start SCOUT, you should see this:
 
-Open the application and select which analysis to perform (e.g. Cytof):
-
-.. image:: ../images/mainapp.png
-   :width: 400 px
-   :alt: Main App Window
+.. image:: ../images/SCOUT_main.png
+   :scale: 75%
+   :alt: SCOUT main window
    :align: center
 
-Select your input and output:
+These are your main options for the analysis:
 
-.. image:: ../images/iocytof.png
-   :width: 600 px
-   :alt: Cytof Analysis Window
+.. image:: ../images/SCOUT_main_info.png
+   :scale: 70%
+   :alt: SCOUT main window - information
    :align: center
 
-Sample names are particularly important (if the application does not find a given sample, it throws an error):
+Sample names are particularly important (if the application does not find a given sample, it warns you and stops the analysis). Click here to select and edit them:
 
-.. image:: ../images/samplenames.png
-   :width: 650 px
-   :alt: Sample Selection Window
+.. image:: ../images/SCOUT_main_samples.png
+   :scale: 70%
+   :alt: SCOUT main window - sample button
    :align: center
 
-The `full documentation <./work.html>`_ explains how the program works with sample names.
+In this window you can inform SCOUT what your samples are named. You don't have to use the full sample name - any identifier exclusive to each sample is enough, as long as it is part of your samples in your input. Don't forget to add a control sample, too.
 
-Next, select your analysis parameters:
+.. image:: ../images/SCOUT_samples.png
+   :scale: 80%
+   :alt: Sample selection window
+   :align: center
 
-.. image:: ../images/cytof_analysis.png
-   :width: 650 px
-   :alt: Cytof Parameters
+`How SCOUT works <./work.html>`_ has a detailed explanation of how the program reads and parses sample names.
+
+You can also gate your samples, if you want:
+
+.. image:: ../images/SCOUT_main_gates.png
+   :scale: 80%
+   :alt: SCOUT main window - gates button
+   :align: center
+
+The gating functionality works differently for Cytof and RNAseq samples. Refer to `How SCOUT works <./work.html>`_ for details.
+
+.. image:: ../images/SCOUT_gates.png
+   :scale: 90%
+   :alt: Gates selection window
    :align: center
 
 Ready? Click **Run**!

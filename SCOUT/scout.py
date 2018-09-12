@@ -322,7 +322,8 @@ class SCOUT(QMainWindow):
 
         self.gates_rna = QRadioButton(self.gates_page)
         self.gates_rna.setGeometry(40, 260, 120, 25)
-        self.gates_rna.setText('RNAseq - exclude cells with mean lower than: ')
+        m = 'RNAseq - exclude "zero" values when calculating cutoff'
+        self.gates_rna.setText(m)
         self.gates_rna.setObjectName('rna')
         self.gates_rna.setEnabled(False)
         self.gates_rna.adjustSize()
@@ -332,22 +333,13 @@ class SCOUT(QMainWindow):
         self.gates_type.addButton(self.gates_cytof)
 
         self.gates_cytof_value = QDoubleSpinBox(self.gates_page)
-        self.gates_cytof_value.setGeometry(500, 230, 120, 25)
+        self.gates_cytof_value.setGeometry(502, 228, 120, 25)
         self.gates_cytof_value.setMinimum(0)
         self.gates_cytof_value.setMaximum(1)
         self.gates_cytof_value.setValue(0.1)
         self.gates_cytof_value.setSingleStep(0.05)
         self.gates_cytof_value.setEnabled(False)
         self.gates_cytof_value.adjustSize()
-
-        self.gates_rna_value = QDoubleSpinBox(self.gates_page)
-        self.gates_rna_value.setGeometry(370, 260, 120, 25)
-        self.gates_rna_value.setMinimum(0)
-        self.gates_rna_value.setMaximum(1)
-        self.gates_rna_value.setValue(0.0)
-        self.gates_rna_value.setSingleStep(0.05)
-        self.gates_rna_value.setEnabled(False)
-        self.gates_rna_value.adjustSize()
 
         self.save_gates = QPushButton(self.gates_page)
         self.save_gates.setGeometry(430, 530, 150, 40)
@@ -453,24 +445,16 @@ class SCOUT(QMainWindow):
             self.gates_cytof.setEnabled(False)
             self.gates_rna.setEnabled(False)
             self.gates_cytof_value.setEnabled(False)
-            self.gates_cytof_value.setValue(0.1)
-            self.gates_rna_value.setEnabled(False)
-            self.gates_rna_value.setValue(0.0)
         elif self.sender().objectName() == 'yes':
             self.gates_cytof.setEnabled(True)
             if self.gates_cytof.isChecked():
                 self.gates_cytof_value.setEnabled(True)
             self.gates_rna.setEnabled(True)
-            if self.gates_rna.isChecked():
-                self.gates_rna_value.setEnabled(True)
 
     def switch_gate(self):
         if self.sender().objectName() == 'cytof':
             self.gates_cytof_value.setEnabled(True)
-            self.gates_rna_value.setEnabled(False)
-            self.gates_rna_value.setValue(0.0)
         elif self.sender().objectName() == 'rna':
-            self.gates_rna_value.setEnabled(True)
             self.gates_cytof_value.setEnabled(False)
             self.gates_cytof_value.setValue(0.1)
 
@@ -540,7 +524,7 @@ class SCOUT(QMainWindow):
             if gate_option.objectName() == 'cytof':
                 gate_cutoff = self.gates_cytof_value.value()
             elif gate_option.objectName() == 'rna':
-                gate_cutoff = self.gates_rna_value.value()
+                gate_cutoff = 'no-zero'
         input_dict['gate_cutoff'] = gate_cutoff
         return input_dict
 

@@ -45,8 +45,8 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
             assert any(sample in text for text in list(df.iloc[:, 0]))
         except AssertionError:
             raise SampleNamingError(widget)
-    # gate rows
-    if gate_cutoff is not None:
+    # apply gate (Cytof)
+    if gate_cutoff is not None and type(gate_cutoff) != str:
         for index, row in df.iterrows():
             mean_row_value = np.mean(row[1:])
             if mean_row_value <= gate_cutoff:
@@ -58,6 +58,9 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
         marker_dict = {}  # dict -> { 'marker' : (Q1, Q3, IQR, cutoff value) }
         # select rows containing the string stored in "sample"
         filtered_df = df[df[list(df)[0]].str.contains(sample)]  # don't ask!
+        # apply gate (RNAseq)
+        if type(gate_cutoff) == str:
+            filtered_df = filtered_df.replace(0, np.nan)
         quantile_df = filtered_df.quantile([0.25, 0.75])
         for marker in quantile_df:
             first_quartile, third_quartile = quantile_df[marker]
