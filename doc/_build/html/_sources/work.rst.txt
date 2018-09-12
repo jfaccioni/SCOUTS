@@ -1,4 +1,4 @@
-How SCOUT works
+How SCOUTS works
 ===============
 
 it goes like this:

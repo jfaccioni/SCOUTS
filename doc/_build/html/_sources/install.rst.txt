@@ -1,11 +1,11 @@
 Installation
 ============
 
-SCOUT is available both as a **binary stand-alone release** and as a **Python package**, which can be downloaded from this repository and run with your local Python interpreter.
+SCOUTS is available both as a **binary stand-alone release** and as a **Python package**, which can be downloaded from this repository and run with your local Python interpreter.
 
 Download as a binary executable
 -------------------------------
-SCOUT is available as a binary file, which bundles all information needed to run the program. Simply download the file for your OS and execute it.
+SCOUTS is available as a binary file, which bundles all information needed to run the program. Simply download the file for your OS and execute it.
 
 - `Windows <link>`_ (v1.0)
 
@@ -13,13 +13,13 @@ SCOUT is available as a binary file, which bundles all information needed to run
 
 - `Linux <link>`_ (v1.0)
 
-Be aware that this is an experimental release of SCOUT and, as such, is prone to bugs and errors. We kindly suggest you to `report <https://github.com/jfaccioni/scout/issues>`_ any problems that you come across.
+Be aware that this is an experimental release of SCOUTS and, as such, is prone to bugs and errors. We kindly suggest you to `report <https://github.com/jfaccioni/scout/issues>`_ any problems that you come across.
 
 Installation from Github repository
 -----------------------------------
-SCOUT is written in Python 3.6. If your system does not have Python 3.6 or higher, `click here to download it <https://www.python.org/downloads/>`_.
+SCOUTS is written in Python 3.6. If your system does not have Python 3.6 or higher, `click here to download it <https://www.python.org/downloads/>`_.
 
-Third-party modules used by SCOUT:
+Third-party modules used by SCOUTS:
 
 - `Numpy <http://www.numpy.org/>`_
 
@@ -32,7 +32,7 @@ A full list of the third-party packages (and their dependencies) in a known work
 
 Install with Conda
 *******************
-The easiest way to install SCOUT is using a Python package manager such as `Conda <https://conda.io/docs/>`_.
+The easiest way to install SCOUTS is using a Python package manager such as `Conda <https://conda.io/docs/>`_.
 
 - clone the repository into your local machine:
 
@@ -58,11 +58,11 @@ The easiest way to install SCOUT is using a Python package manager such as `Cond
 
   $ conda activate scout
 
-- finally, run SCOUT using your Python interpreter:
+- finally, run SCOUTS using your Python interpreter:
 
 .. code-block:: none
 
-  $ python scout.py
+  $ python scouts.py
 
 Install from source
 *******************
