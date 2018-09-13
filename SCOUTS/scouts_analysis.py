@@ -76,9 +76,9 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
     f = open(os.path.join('log', 'outlier_analysis_log.txt'), 'w')
     # Save all cutoff values as pretty-printed dictionary
     f.write('CUTOFF VALUES AS A DICTIONARY:\n')
-    f.write('the data is ordered as:\n')
+    f.write('the data is ordered as:\n\n')
     f.write("{ 'sample' : { 'marker' : (. . .) } }\n")
-    f.write("(. . .) represent this tuple: (Q1, Q3, IQR, cutoff value)\n")
+    f.write("(. . .) represent this tuple: (Q1, Q3, IQR, cutoff value)\n\n")
     pprint(sample_dict, stream=f, width=100)
     f.write('\n\n')
     # Iterate over yield_dataframes function, subsetting DataFrames and saving
@@ -104,7 +104,6 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
             if group_excel:
                 df_list.append((dataframe, main_name))
     # Close log file
-
     f.close()
     # Save master excel file
     if df_list:
