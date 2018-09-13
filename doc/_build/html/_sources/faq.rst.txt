@@ -1,9 +1,15 @@
 FAQ
 ===
 
+**What type of pre-processing does SCOUTS perform on my input, if any?**
+
+By default, SCOUTS does not perform any pre-processing prior to analysing the input data. This means that transformations like data normalization and scaling should be performed by the user prior to using SCOUTS.
+
+SCOUTS does, however, include a simple module for gating mass cytometry and scRNAseq samples, should the user want to do so. Refer to `How SCOUTS works <./work.html>`_ for details.
+
 **My data is stored in multiple files. How do I use SCOUTS with it?**
 
-In this case you have basically two options:
+In this case you have two options:
   - Ideally, you can merge your files into a single input file and use that to work with SCOUTS.
   - When this is not possible, you can still use SCOUTS to analyse individual samples by passing one file at a time. This will not affect the output, *as long as all the cells from one sample are together in one file*. One side-effect of this method is that, in order to use the "*control*" option in the "*Consider outliers using cutoff from*" field, you need to make sure that the cells from the control sample are present in every file.
 

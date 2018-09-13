@@ -10,8 +10,8 @@ from PyQt5.QtWidgets import (QApplication, QButtonGroup, QCheckBox,
                              QRadioButton, QStackedWidget, QTableWidget,
                              QTableWidgetItem, QWidget)
 
-import scouts_analysis
 import messages
+import scouts_analysis
 from custom_errors import (ControlNotFound, EmptySampleList, PandasInputError,
                            SampleNamingError)
 
@@ -29,7 +29,9 @@ class SCOUTS(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("SCOUTS")
-        self.resize(590, 590)
+        self.setWindowIcon(QIcon('../images/scouts.ico'))
+        self.setMinimumSize(590, 590)
+
         self.page = QStackedWidget(self)
         self.page.resize(590, 590)
         self.analysis_page = QWidget()
@@ -38,12 +40,14 @@ class SCOUTS(QMainWindow):
         self.page.addWidget(self.analysis_page)
         self.page.addWidget(self.samples_page)
         self.page.addWidget(self.gates_page)
+
         self.cutoff_group = QButtonGroup(self)
         self.markers_group = QButtonGroup(self)
         self.tukey_group = QButtonGroup(self)
         self.yesno_gates = QButtonGroup(self)
         self.gates_type = QButtonGroup(self)
 
+        # Call functions to build interface
         self.set_analysis_page()
         self.set_samples_page()
         self.set_gates_page()
