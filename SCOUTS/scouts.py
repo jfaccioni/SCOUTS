@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QApplication, QButtonGroup, QCheckBox,
                              QLineEdit, QMainWindow, QMessageBox, QPushButton,
                              QRadioButton, QStackedWidget, QTableWidget,
                              QTableWidgetItem, QWidget)
-
+import os
 import messages
 import scouts_analysis
 from custom_errors import (ControlNotFound, EmptySampleList, PandasInputError,
@@ -29,7 +29,7 @@ class SCOUTS(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("SCOUTS")
-        self.setWindowIcon(QIcon('../images/scouts.ico'))
+        self.setWindowIcon(QIcon(os.path.join('..', 'images', 'scouts.ico')))
         self.setMinimumSize(590, 590)
 
         self.page = QStackedWidget(self)
@@ -57,7 +57,7 @@ class SCOUTS(QMainWindow):
     @staticmethod
     def set_icon(widget, icon):
         i = QIcon()
-        i.addPixmap(QPixmap(f'icons/{icon}.svg'))
+        i.addPixmap(QPixmap(os.path.join('icons', f'{icon}.svg')))
         widget.setIcon(i)
 
     @staticmethod

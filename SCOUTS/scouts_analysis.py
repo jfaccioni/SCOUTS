@@ -74,6 +74,13 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
     if 'log' not in os.listdir(os.getcwd()):
         os.mkdir('log')
     f = open(os.path.join('log', 'outlier_analysis_log.txt'), 'w')
+    # Save all cutoff values as pretty-printed dictionary
+    f.write('CUTOFF VALUES AS A DICTIONARY:\n')
+    f.write('the data is ordered as:\n')
+    f.write("{ 'sample' : { 'marker' : (. . .) } }\n")
+    f.write("(. . .) represent this tuple: (Q1, Q3, IQR, cutoff value)\n")
+    pprint(sample_dict, stream=f, width=100)
+    f.write('\n\n')
     # Iterate over yield_dataframes function, subsetting DataFrames and saving
     # each DataFrame to a different file
     df_list = []
@@ -86,6 +93,9 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
         if s not in os.listdir(os.getcwd()):
             os.mkdir(s)
         main_name = f'{m}_{s}_cutoff_by_{n}'
+        # avoids error when marker name has / or \ in it
+        main_name = main_name.replace('\\', '_')
+        main_name = main_name.replace('/', '_')
         output = os.path.join(s, f'{main_name}')
         if export_csv:
             dataframe.to_csv(f'{output}.csv', index=False)
@@ -93,9 +103,8 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
             dataframe.to_excel(f'{output}.xlsx', sheet_name=m, index=False)
             if group_excel:
                 df_list.append((dataframe, main_name))
-    # Save all cutoff values and close log file
-    f.write('\n\n CUTOFF VALUES AS A DICTIONARY:\n')
-    pprint(sample_dict, stream=f, width=100)
+    # Close log file
+
     f.close()
     # Save master excel file
     if df_list:
