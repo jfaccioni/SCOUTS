@@ -18,6 +18,7 @@ from custom_errors import (ControlNotFound, EmptySampleList, PandasInputError,
 CUSTOM_ERRORS = (ControlNotFound, EmptySampleList, PandasInputError,
                  SampleNamingError)
 
+# Styles used by QLabel widgets in the app
 title_style = '<p style="font-size:20pt; font-weight:600;">'
 subtitle_style = '<p style="font-size:12pt;">'
 info_style = '<p style="font-weight:600;">'
@@ -311,7 +312,7 @@ class SCOUTS(QMainWindow):
 
         self.gates_cytof = QRadioButton(self.gates_page)
         self.gates_cytof.setGeometry(40, 230, 120, 25)
-        m = 'Mass cytometry - exlcude cells with'
+        m = 'Mass cytometry - exclude cells with '
         m2 = 'average row expression lower than: '
         self.gates_cytof.setText(m + m2)
         self.gates_cytof.setObjectName('cytof')
@@ -472,7 +473,7 @@ class SCOUTS(QMainWindow):
 
     def parse_input(self):
         input_dict = {}
-        # input and output
+        # Input and output
         input_file = self.input_path.text()
         output_folder = self.output_path.text()
         if not (input_file or output_folder):
@@ -480,19 +481,19 @@ class SCOUTS(QMainWindow):
             return
         input_dict['input_file'] = input_file
         input_dict['output_folder'] = output_folder
-        # set cutoff by control or by sample rule
+        # Set cutoff by control or by sample rule
         cutoff_id = self.cutoff_group.checkedId()
         cutoff_rule = self.cutoff_group.button(cutoff_id)
         input_dict['cutoff_rule'] = cutoff_rule.text()
-        # outliers for each individual marker or any marker in row
+        # Outliers for each individual marker or any marker in row
         markers_id = self.markers_group.checkedId()
         markers_rule = self.markers_group.button(markers_id)
         input_dict['by_marker'] = markers_rule.text()
-        # tuckey factor
+        # Tukey factor used for calculating cutoff
         tukey_id = self.tukey_group.checkedId()
         tukey = self.tukey_group.button(tukey_id)
         input_dict['tukey'] = float(tukey.text())
-        # output settings
+        # Output settings
         if self.output_csv.isChecked():
             export_csv = True
         else:
@@ -508,7 +509,7 @@ class SCOUTS(QMainWindow):
         else:
             group_excel = False
         input_dict['group_excel'] = group_excel
-        # retrieve information about sample names and which sample is control
+        # Retrieve information about sample names and which sample is control
         sample_list = []
         for tuples in self.yield_samples():
             sample_list.append(tuples)
@@ -516,7 +517,7 @@ class SCOUTS(QMainWindow):
             messages.no_samples(self)
             return
         input_dict['sample_list'] = sample_list
-        # get gate cutoff
+        # Set gate cutoff, if any
         gate_cutoff = None
         if not self.no_gates.isChecked():
             gate_id = self.gates_type.checkedId()

@@ -139,11 +139,10 @@ SCOUTS also expects sample names to be somewhat organized. Names passed as sampl
 
 SCOUTS will throw explicit errors if you do one of the following:
   - try to run the program with an empty sample list;
-  - try to run the program with no samples passed as control.
+  - try to run the program with no samples passed as control;
+  - a given sample name is not found in the input data.
 
 SCOUTS will **not** stop the analysis nor warn you if the following happens:
-  - a given sample name is not found in the input data;
-  - a given sample name appears in more than one subset of samples;
-  - no sample names from the sample list are found in the input data (the program will perform an empty run in this case).
+  - a given sample name appears in more than one subset of samples.
 
 Good sample names are **crucial** to a good output from SCOUTS.

@@ -87,7 +87,11 @@ html_theme = 'alabaster'
 #
 html_theme_options = {
 'logo': '../_images/cells-transparent.png',
+'logo_name': True,
+'logo_text_align': 'center',
 'body_text_align':'justify',
+'description': 'Single Cell OUTlier Selector',
+'description_font_style': 'center',
 'github_button': True,
 'github_type': 'follow',
 'github_count': False,

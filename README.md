@@ -6,6 +6,8 @@
 
 **SCOUTS** is a tool that quickly finds outliers in your single-cell data, generating information about your population organized by targeted molecules.
 
+SCOUTS takes your single-cell input and generates output files containing only outliers. The method used by SCOUTS to subset the population and find the outliers is customizable through the program's interface. 
+
 ## Getting Started
 SCOUTS is available both as a **binary stand-alone release** and as a **Python package**, which can be downloaded from this repository and run with your local Python interpreter.
 
