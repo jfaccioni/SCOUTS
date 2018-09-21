@@ -86,7 +86,7 @@ html_theme = 'alabaster'
 # documentation.
 #
 html_theme_options = {
-'logo': '../images/cells-transparent.png',
+'logo': '../_images/cells-transparent.png',
 'logo_name': True,
 'logo_text_align': 'center',
 'body_text_align':'justify',
