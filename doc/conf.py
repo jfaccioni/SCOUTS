@@ -86,18 +86,17 @@ html_theme = 'alabaster'
 # documentation.
 #
 html_theme_options = {
-'logo': '../_images/cells-transparent.png',
+'logo': 'cells-transparent.png',
 'logo_name': True,
 'logo_text_align': 'center',
 'body_text_align':'justify',
-'description': 'Single Cell OUTlier Selector',
+'description': 'quickly find outliers in your single-cell data',
 'description_font_style': 'center',
 'github_button': True,
 'github_type': 'follow',
 'github_count': False,
 'github_banner': True,
-'github_user': 'jfaccioni',
-'github_repo':'https://github.com/jfaccioni/scouts'}
+'github_user': 'jfaccioni'}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
