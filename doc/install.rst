@@ -7,11 +7,11 @@ Download as a binary executable
 -------------------------------
 SCOUTS is available as a binary file, which bundles all information needed to run the program. Simply download the file for your OS and execute it.
 
-- `Windows <link>`_ (v1.0)
+- `Windows <https://github.com/jfaccioni/scouts/tree/master/executables/windows>`_
 
-- `MacOS <link>`_ (v1.0)
+- `Linux <https://github.com/jfaccioni/scouts/tree/master/executables/linux>`_
 
-- `Linux <link>`_ (v1.0)
+- MacOS (coming soon!)
 
 Be aware that this is an experimental release of SCOUTS and, as such, is prone to bugs and errors. We kindly suggest you to `report <https://github.com/jfaccioni/scouts/issues>`_ any problems that you come across.
 

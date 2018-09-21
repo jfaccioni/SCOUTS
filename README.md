@@ -19,9 +19,9 @@ SCOUTS is available both as a **binary stand-alone release** and as a **Python p
 ### Download as an executable binary
 SCOUTS is available as a binary file, which bundles all information needed to run the program. Simply download the file for your OS and execute it.
 
-* [Windows](link) (available soon!)
-* [Mac](link) (available soon!)
-* [Linux](link) (available soon!)
+* [Windows](https://github.com/jfaccioni/scouts/tree/master/executables/windows)
+* [Linux](https://github.com/jfaccioni/scouts/tree/master/executables/linux)
+* MacOS (coming soon!)
 
 Be aware that this is an experimental release of SCOUTS and, as such, is prone to bugs and errors. We kindly suggest you to [report](https://github.com/jfaccioni/scouts/issues) any problems that you come across.
 
