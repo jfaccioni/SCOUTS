@@ -34,7 +34,6 @@ dependencies:
   - ncurses=6.1=hf484d3e_0
   - numpy=1.15.0=py36h1b885b7_0
   - numpy-base=1.15.0=py36h3dfced4_0
-  - openpyxl=2.5.5=py36_0
   - openssl=1.0.2p=h14c3975_0
   - pandas=0.23.4=py36h04863e7_0
   - pcre=8.42=h439df22_0

@@ -117,6 +117,8 @@ where:
   - `t` = Tukey factor;
   - `Q1` = first quartile.
 
+The quantiles are, in turn, calculated using a linear interpolation. This specifies how the quantile is calculated when it falls between two data points *a* and *b*. See the `Pandas documentation on quantiles <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.quantile.html>`_ to learn more about this.
+
 Having the cutoff value from each marker/sample combination, SCOUTS proceeds to select cells from the input table with expression values higher than the cutoff. This is either done for each marker individually or for any marker, depending on the settings chosen by the user.
 
 
