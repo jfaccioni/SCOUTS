@@ -62,7 +62,7 @@ class SCOUTS(QMainWindow):
 
     @staticmethod
     def get_help():
-        webbrowser.open('http://www.google.com')
+        webbrowser.open('https://scouts.readthedocs.io/en/master/')
 
     def set_analysis_page(self):
         self.title = QLabel(self.analysis_page)
