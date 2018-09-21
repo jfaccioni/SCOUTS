@@ -5,7 +5,7 @@ FAQ
 
 By default, SCOUTS does not perform any pre-processing prior to analysing the input data. This means that transformations like data normalization and scaling should be performed by the user prior to using SCOUTS.
 
-SCOUTS does, however, include a simple module for gating mass cytometry and scRNAseq samples, should the user want to do so. Refer to `How SCOUTS works <./work.html>`_ for details.
+SCOUTS does, however, include a simple module for gating mass cytometry and scRNA-seq samples, should the user want to do so. Refer to `How SCOUTS works <./work.html>`_ for details.
 
 **My data is stored in multiple files. How do I use SCOUTS with it?**
 
