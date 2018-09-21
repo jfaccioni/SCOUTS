@@ -19,9 +19,9 @@ SCOUTS is available both as a **binary stand-alone release** and as a **Python p
 ### Download as an executable binary
 SCOUTS is available as a binary file, which bundles all information needed to run the program. Simply download the file for your OS and execute it.
 
-* [Windows](link) (v1.0)
-* [Mac](link) (v1.0)
-* [Linux](link) (v1.0)
+* [Windows](link) (available soon!)
+* [Mac](link) (available soon!)
+* [Linux](link) (available soon!)
 
 Be aware that this is an experimental release of SCOUTS and, as such, is prone to bugs and errors. We kindly suggest you to [report](https://github.com/jfaccioni/scouts/issues) any problems that you come across.
 
@@ -101,7 +101,7 @@ In this window you can inform your sample names. You don't have to use the full 
 <img src="images/SCOUTS_samplepage.png" alt="sample selection window" scale="90%"/>
 </p>
 
-[How SCOUTS works](link) has a detailed explanation of how the program reads and parses sample names.
+[How SCOUTS works](https://scouts.readthedocs.io/en/master/work.html) has a detailed explanation of how the program reads and parses sample names.
 
 You can also gate your samples, if you want:
 
@@ -109,7 +109,7 @@ You can also gate your samples, if you want:
 <img src="images/SCOUTS_gates.png" alt="SCOUTS main window - gates button" scale="90%"/>
 </p>
 
-The gating functionality works differently for mass cytometry and scRNA-seq samples. Refer to [How SCOUTS works](link) for details.
+The gating functionality works differently for mass cytometry and scRNA-seq samples. Refer to [How SCOUTS works](https://scouts.readthedocs.io/en/master/work.html) for details.
 
 <p align="middle">
 <img src="images/SCOUTS_gatepage.png" alt="Gates selection window" scale="90%"/>
@@ -122,10 +122,10 @@ Ready? Click **Run**!
 </p>
 
 ### Documentation
-[Read the full SCOUTS documentation here](link).
+[Read the full SCOUTS documentation here](https://scouts.readthedocs.io/en/master/).
 
 ### FAQ
-[Frequently asked questions can be found here](link).
+[Frequently asked questions can be found here](https://scouts.readthedocs.io/en/master/faq.html).
 
 
 ## Authors
@@ -139,4 +139,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * Prof. Dr. Guido Lenz
 * Prof. Dr. Harley Kornblum
 * CAPES/CNPq
-* NIH *project-number*
+* NIH
