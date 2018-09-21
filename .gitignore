@@ -6,8 +6,9 @@ __pycache__/
 # PyCharm files
 .idea/
 
-# things I don't want to track
+# local files I don't want to track
 deprecated/
+images/
 input-template/out/
 
 # C extensions
