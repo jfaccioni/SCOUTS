@@ -1,7 +1,7 @@
 # SCOUTS - Single Cell OUTlier Selector
 
 <p align="middle">
-<img src="images/cells-white.png" alt="SCOUTS" width="400"/>
+<img src="doc/\_images/cells-white.png" alt="SCOUTS" width="400"/>
 </p>
 
 **SCOUTS** is a tool that quickly finds outliers in your single-cell data, generating information about your population organized by target molecules.
@@ -80,25 +80,25 @@ Information about how to use SCOUTS can be found in this section.
 When you start SCOUTS, you should see this:
 
 <p align="middle">
-<img src="images/SCOUTS_main.png" alt="SCOUTS main window" scale="90%"/>
+<img src="doc/\_images/SCOUTS_main.png" alt="SCOUTS main window" scale="90%"/>
 </p>
 
 These are your main options for the analysis:
 
 <p align="middle">
-<img src="images/SCOUTS_info.png" alt="SCOUTS main window - information" scale="90%"/>
+<img src="doc/\_images/SCOUTS_info.png" alt="SCOUTS main window - information" scale="90%"/>
 </p>
 
 Sample names are particularly important (if the application does not find a given sample, it warns you and stops the analysis). Click here to select and edit them:
 
 <p align="middle">
-<img src="images/SCOUTS_samples.png" alt="SCOUTS main window - sample button" scale="90%"/>
+<img src="doc/\_images/SCOUTS_samples.png" alt="SCOUTS main window - sample button" scale="90%"/>
 </p>
 
 In this window you can inform your sample names. You don't have to use the full sample name - any identifier exclusive to each sample is enough, as long as it is part of your samples in the input file. Don't forget to add a control sample, too.
 
 <p align="middle">
-<img src="images/SCOUTS_samplepage.png" alt="sample selection window" scale="90%"/>
+<img src="doc/\_images/SCOUTS_samplepage.png" alt="sample selection window" scale="90%"/>
 </p>
 
 [How SCOUTS works](https://scouts.readthedocs.io/en/master/work.html) has a detailed explanation of how the program reads and parses sample names.
@@ -106,19 +106,19 @@ In this window you can inform your sample names. You don't have to use the full 
 You can also gate your samples, if you want:
 
 <p align="middle">
-<img src="images/SCOUTS_gates.png" alt="SCOUTS main window - gates button" scale="90%"/>
+<img src="doc/\_images/SCOUTS_gates.png" alt="SCOUTS main window - gates button" scale="90%"/>
 </p>
 
 The gating functionality works differently for mass cytometry and scRNA-seq samples. Refer to [How SCOUTS works](https://scouts.readthedocs.io/en/master/work.html) for details.
 
 <p align="middle">
-<img src="images/SCOUTS_gatepage.png" alt="Gates selection window" scale="90%"/>
+<img src="doc/\_images/SCOUTS_gatepage.png" alt="Gates selection window" scale="90%"/>
 </p>
 
 Ready? Click **Run**!
 
 <p align="middle">
-<img src="images/SCOUTS_run.png" alt="SCOUTS main window - run button" scale="90%"/>
+<img src="doc/\_images/SCOUTS_run.png" alt="SCOUTS main window - run button" scale="90%"/>
 </p>
 
 ### Documentation

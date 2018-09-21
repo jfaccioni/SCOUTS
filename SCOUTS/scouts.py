@@ -29,7 +29,7 @@ class SCOUTS(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("SCOUTS")
-        self.setWindowIcon(QIcon(os.path.join('..', 'images', 'scouts.ico')))
+        self.setWindowIcon(QIcon(os.path.join('icons', 'scouts.ico')))
         self.setMinimumSize(590, 590)
 
         self.page = QStackedWidget(self)
