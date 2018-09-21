@@ -6,6 +6,10 @@ __pycache__/
 # PyCharm files
 .idea/
 
+# things I don't want to track
+deprecated/
+input-template/out/
+
 # C extensions
 *.so
 
@@ -67,7 +71,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+doc/_build/
 
 # PyBuilder
 target/

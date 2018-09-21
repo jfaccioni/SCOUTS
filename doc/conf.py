@@ -96,7 +96,8 @@ html_theme_options = {
 'github_type': 'follow',
 'github_count': False,
 'github_banner': True,
-'github_user': 'jfaccioni'}
+'github_user': 'jfaccioni',
+'github_repo': 'scouts'}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
