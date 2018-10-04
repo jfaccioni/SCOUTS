@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 import webbrowser
@@ -9,7 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QButtonGroup, QCheckBox,
                              QLineEdit, QMainWindow, QMessageBox, QPushButton,
                              QRadioButton, QStackedWidget, QTableWidget,
                              QTableWidgetItem, QWidget)
-import os
+
 import messages
 import scouts_analysis
 from custom_errors import (ControlNotFound, EmptySampleList, PandasInputError,
@@ -295,7 +296,7 @@ class SCOUTS(QMainWindow):
         self.gates_title.adjustSize()
 
         self.gate_frame = QFrame(self.gates_page)
-        self.gate_frame.setGeometry(15, 140, 560, 165)
+        self.gate_frame.setGeometry(15, 140, 560, 225)
         self.gate_frame.setFrameShape(QFrame.StyledPanel)
 
         self.no_gates = QRadioButton(self.gates_page)
@@ -336,6 +337,20 @@ class SCOUTS(QMainWindow):
 
         self.gates_type.addButton(self.gates_rna)
         self.gates_type.addButton(self.gates_cytof)
+
+        self.not_outliers = QCheckBox(self.gates_page)
+        self.not_outliers.setGeometry(40, 290, 230, 25)
+        m = 'Also generate results for non-outliers'
+        self.not_outliers.setText(m)
+        self.not_outliers.setEnabled(False)
+        self.not_outliers.adjustSize()
+
+        self.bottom_outliers = QCheckBox(self.gates_page)
+        self.bottom_outliers.setGeometry(40, 320, 230, 25)
+        m = 'Also generate results for low outliers'
+        self.bottom_outliers.setText(m)
+        self.bottom_outliers.setEnabled(False)
+        self.bottom_outliers.adjustSize()
 
         self.gates_cytof_value = QDoubleSpinBox(self.gates_page)
         self.gates_cytof_value.setGeometry(502, 228, 120, 25)
@@ -450,11 +465,17 @@ class SCOUTS(QMainWindow):
             self.gates_cytof.setEnabled(False)
             self.gates_rna.setEnabled(False)
             self.gates_cytof_value.setEnabled(False)
+            self.not_outliers.setChecked(False)
+            self.not_outliers.setEnabled(False)
+            self.bottom_outliers.setEnabled(False)
+            self.bottom_outliers.setChecked(False)
         elif self.sender().objectName() == 'yes':
             self.gates_cytof.setEnabled(True)
             if self.gates_cytof.isChecked():
                 self.gates_cytof_value.setEnabled(True)
             self.gates_rna.setEnabled(True)
+            self.not_outliers.setEnabled(True)
+            self.bottom_outliers.setEnabled(True)
 
     def switch_gate(self):
         if self.sender().objectName() == 'cytof':
@@ -523,6 +544,8 @@ class SCOUTS(QMainWindow):
         input_dict['sample_list'] = sample_list
         # Set gate cutoff, if any
         gate_cutoff = None
+        not_outliers = False
+        bottom_outliers = False
         if not self.no_gates.isChecked():
             gate_id = self.gates_type.checkedId()
             gate_option = self.gates_type.button(gate_id)
@@ -530,7 +553,13 @@ class SCOUTS(QMainWindow):
                 gate_cutoff = self.gates_cytof_value.value()
             elif gate_option.objectName() == 'rna':
                 gate_cutoff = 'no-zero'
+            if self.not_outliers.isChecked():
+                not_outliers = True
+            if self.bottom_outliers.isChecked():
+                bottom_outliers = True
         input_dict['gate_cutoff'] = gate_cutoff
+        input_dict['not_outliers'] = not_outliers
+        input_dict['bottom_outliers'] = bottom_outliers
         return input_dict
 
     def yield_samples(self):
