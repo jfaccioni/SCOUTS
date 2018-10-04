@@ -19,6 +19,7 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
     df, control, samples = check_input(sample_list=sample_list,
                                        input_file=input_file, widget=widget)
     df = apply_ms_gate(df=df, gate_cutoff=gate_cutoff)
+    # df.to_excel('gated_test.xlsx', index=False)
     sample_dict, marker_dict = get_cutoff_values(df=df, samples=samples,
                                                  gate_cutoff=gate_cutoff,
                                                  tukey=tukey)
@@ -47,8 +48,7 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
         m, s, n, c = names
         population_df = None
         if not_outliers:
-            pass
-            # population_df = df[~dataframe.isin(df)].dropna()
+            population_df = get_inverse_df(df, dataframe)
         # Create subfolder in output directory for each sample
         if s not in os.listdir(os.getcwd()):
             os.mkdir(s)
@@ -121,7 +121,7 @@ def apply_ms_gate(df, gate_cutoff):
             if mean_row_value <= gate_cutoff:
                 df = df.drop(index, axis=0)
         df.reset_index(drop=True, inplace=True)
-        return df
+    return df
 
 
 def apply_rnaseq_gate(filtered_df, gate_cutoff):
@@ -283,3 +283,10 @@ def yield_dataframes(log, df, sample_dict, control,
                 log.write(str(output_df))
                 log.write('\n\n\n\n')
                 yield output_df, 'all_markers', sample, 'sample', cut_text
+
+
+def get_inverse_df(full_df, partial_df):
+    df_merge = full_df.merge(partial_df.drop_duplicates(), on=list(full_df),
+                             how='left', indicator=True)
+    inverse_df = full_df[df_merge['_merge'] == 'left_only']
+    return inverse_df

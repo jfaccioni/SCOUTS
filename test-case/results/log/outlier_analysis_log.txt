@@ -1,0 +1,422 @@
+CUTOFF VALUES AS A DICTIONARY:
+the data is ordered as:
+
+{ 'sample' : { 'marker' : (. . .) } }
+(. . .) represent this tuple: (Q1, Q3, IQR, (upper cutoff, lower cutoff)
+
+{'ct': {'Marker01': (-0.847797615309007,
+                     1.4031751216108366,
+                     2.2509727369198433,
+                     (4.779634226990602, -4.224256720688772)),
+        'Marker02': (0.5760694149473745,
+                     1.18214276843511,
+                     0.6060733534877355,
+                     (2.091252798666713, -0.3330406152842288)),
+        'Marker03': (-0.47526013069733103,
+                     1.2289835209538276,
+                     1.7042436516511585,
+                     (3.7853489984305653, -3.031625608174069)),
+        'Marker04': (-0.410401474639637,
+                     0.6067292792612345,
+                     1.0171307539008716,
+                     (2.132425410112542, -1.9360976054909445)),
+        'Marker05': (-0.32242839959535896,
+                     0.289800485057656,
+                     0.612228884653015,
+                     (1.2081438120371786, -1.2407717265748814))},
+ 'patient': {'Marker01': (-0.0111576932899728,
+                          0.545048642358614,
+                          0.5562063356485869,
+                          (1.3793581458314943, -0.8454671967628532)),
+             'Marker02': (0.18882046354434,
+                          0.746095804584435,
+                          0.557275341040095,
+                          (1.5820088161445776, -0.6470925480158025)),
+             'Marker03': (-0.321182590907182,
+                          0.398887547077006,
+                          0.7200701379841881,
+                          (1.4789927540532881, -1.401287797883464)),
+             'Marker04': (-0.145432089542613,
+                          0.871751571468783,
+                          1.017183661011396,
+                          (2.397527062985877, -1.671207581059707)),
+             'Marker05': (0.410037464144795,
+                          1.4540892156596,
+                          1.044051751514805,
+                          (3.0201668429318076, -1.1560401631274124))},
+ 'treat': {'Marker01': (0.2839892212430247,
+                        1.5175284984710726,
+                        1.233539277228048,
+                        (3.3678374143131444, -1.5663196945990472)),
+           'Marker02': (-0.6584508327878767,
+                        0.4422819825947093,
+                        1.1007328153825862,
+                        (2.0933812056685888, -2.309550055861756)),
+           'Marker03': (0.18148633118587765,
+                        1.154722734566985,
+                        0.9732364033811074,
+                        (2.6145773396386462, -1.2783682738857836)),
+           'Marker04': (0.06520526847518524,
+                        1.001484483741615,
+                        0.9362792152664298,
+                        (2.4059033066412594, -1.3392135544244594)),
+           'Marker05': (-0.17013866302863723,
+                        0.9830135256843242,
+                        1.1531521887129614,
+                        (2.7127418087537665, -1.8998669460980795))}}
+
+
+------- CUTOFF BY SAMPLE, OUTLIERS BY MARKER -------
+
+
+MARKER: Marker01
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (4.779634226990602, -4.224256720688772)
+OUTLIERS: from top
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker01
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (4.779634226990602, -4.224256720688772)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker02
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.091252798666713, -0.3330406152842288)
+OUTLIERS: from top
+
+  Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+6  ct_10 -1.350647      12.0 -0.263446   0.17837  -0.24567
+
+
+
+MARKER: Marker02
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.091252798666713, -0.3330406152842288)
+OUTLIERS: from bottom
+
+  Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+0   ct_1 -1.244723 -1.124477       6.0  1.035089 -0.171792
+
+
+
+MARKER: Marker03
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (3.7853489984305653, -3.031625608174069)
+OUTLIERS: from top
+
+  Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+0   ct_1 -1.244723 -1.124477       6.0  1.035089 -0.171792
+
+
+
+MARKER: Marker03
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (3.7853489984305653, -3.031625608174069)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker04
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.132425410112542, -1.9360976054909445)
+OUTLIERS: from top
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker04
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.132425410112542, -1.9360976054909445)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker05
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (1.2081438120371786, -1.2407717265748814)
+OUTLIERS: from top
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker05
+SAMPLE: ct
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (1.2081438120371786, -1.2407717265748814)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker01
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (3.3678374143131444, -1.5663196945990472)
+OUTLIERS: from top
+
+      Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+14  treat_15      14.0 -0.538723   1.13106  0.164089 -0.589765
+
+
+
+MARKER: Marker01
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (3.3678374143131444, -1.5663196945990472)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker02
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.0933812056685888, -2.309550055861756)
+OUTLIERS: from top
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker02
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.0933812056685888, -2.309550055861756)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker03
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.6145773396386462, -1.2783682738857836)
+OUTLIERS: from top
+
+    Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+7  treat_1  0.025067 -0.502032  2.666386  0.796043 -0.349429
+
+
+
+MARKER: Marker03
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.6145773396386462, -1.2783682738857836)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker04
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.4059033066412594, -1.3392135544244594)
+OUTLIERS: from top
+
+      Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+11  treat_11  1.452962 -1.218824  0.818871  2.655166  0.639901
+
+
+
+MARKER: Marker04
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.4059033066412594, -1.3392135544244594)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker05
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.7127418087537665, -1.8998669460980795)
+OUTLIERS: from top
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker05
+SAMPLE: treat
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.7127418087537665, -1.8998669460980795)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker01
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (1.3793581458314943, -0.8454671967628532)
+OUTLIERS: from top
+
+       Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+20  patient_8  1.430285  0.746096  0.951117 -1.527844      19.0
+
+
+
+MARKER: Marker01
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (1.3793581458314943, -0.8454671967628532)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker02
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (1.5820088161445776, -0.6470925480158025)
+OUTLIERS: from top
+
+       Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+18  patient_5  0.071002  2.187864 -0.101536  0.768474  0.410037
+
+
+
+MARKER: Marker02
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (1.5820088161445776, -0.6470925480158025)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker03
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (1.4789927540532881, -1.401287797883464)
+OUTLIERS: from top
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker03
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (1.4789927540532881, -1.401287797883464)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker04
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.397527062985877, -1.671207581059707)
+OUTLIERS: from top
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker04
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (2.397527062985877, -1.671207581059707)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+
+MARKER: Marker05
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (3.0201668429318076, -1.1560401631274124)
+OUTLIERS: from top
+
+       Sample  Marker01  Marker02  Marker03  Marker04  Marker05
+20  patient_8  1.430285  0.746096  0.951117 -1.527844      19.0
+
+
+
+MARKER: Marker05
+SAMPLE: patient
+METHOD: use sample cutoff, check outliers for current marker only
+CUTOFF: (3.0201668429318076, -1.1560401631274124)
+OUTLIERS: from bottom
+
+Empty DataFrame
+Columns: [Sample, Marker01, Marker02, Marker03, Marker04, Marker05]
+Index: []
+
+
+

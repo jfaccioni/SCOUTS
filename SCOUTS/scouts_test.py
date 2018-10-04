@@ -12,18 +12,18 @@ from scouts_analysis import analyse
 CUSTOM_ERRORS = (ControlNotFound, EmptySampleList, PandasInputError,
                  SampleNamingError)
 
-in_path = '/home/juliano/PycharmProjects/SCOUTS/SCOUTS/input-template/mass-cytometry template.xlsx'
-out_path = '/home/juliano/Desktop/scouts-out'
+in_path = '/home/juliano/PycharmProjects/SCOUTS/SCOUTS/test-case/test-case.xlsx'
+out_path = '/home/juliano/PycharmProjects/SCOUTS/SCOUTS/test-case/results'
 
 test_dict = {'input_file': in_path,
              'output_folder': out_path,
-             'cutoff_rule': 'both',
-             'by_marker': 'both',
+             'cutoff_rule': 'sample',
+             'by_marker': 'marker',
              'tukey': 1.5,
-             'export_csv': True,
+             'export_csv': False,
              'export_excel': True,
              'group_excel': False,
-             'sample_list': [('Yes', 'Ct'), ('No', 'RT'), ('No', 'Torin')],
+             'sample_list': [('Yes', 'ct'), ('No', 'treat'), ('No', 'patient')],
              'gate_cutoff': 0.1,
              'not_outliers': True,
              'bottom_outliers': True}
