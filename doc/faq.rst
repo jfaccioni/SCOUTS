@@ -15,6 +15,10 @@ Ideally, you can merge your files into a single input file and use that to work 
 
 In order to run SCOUTS, you **need** to indicate one control sample; if you do not have a control sample, any sample will do. Simply add any sample as a control sample to the sample list. Don't forget to check the "*samples*" option in the "*Consider outliers using cutoff from*" field.
 
+**Does the output for non-outliers exclude both top and bottom outliers?**
+
+No. Output for non-outliers is generated on a per-condition basis, which means that two different files are generated for non-outliers: one excluding the top outliers and one excluding the bottom outliers (given you chose this option on the gate page).
+
 **I have another question/suggestion/issue when using SCOUTS. How do I contact you?**
 
 You can contact us through our `Github page <https://github.com/jfaccioni/scouts>`_. Check the authors section for more information. Also remember that you can use the `Github issues <https://github.com/jfaccioni/scouts/issues>`_ to post about problems or suggestions for SCOUTS.

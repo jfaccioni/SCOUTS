@@ -32,7 +32,7 @@ In this window you can inform SCOUTS what your samples are named. You don't have
 
 You can also gate your samples, if you want:
 
-.. image:: _static/SCOUTS_gates.png
+.. image:: _static/SCOUTS_main_gates.png
    :scale: 90%
    :alt: SCOUTS main window - gates button
    :align: center
