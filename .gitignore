@@ -3,13 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# PyCharm files
+# PyCharm environment files
 .idea/
 
 # local files I don't want to track
-deprecated/
-images/
-input-template/out/
+local/
 
 # C extensions
 *.so
@@ -86,11 +84,6 @@ ipython_config.py
 
 # pyenv
 .python-version
-
-# pipenv
-Pipfile
-Pipfile.lock
-
 
 # celery beat schedule file
 celerybeat-schedule
