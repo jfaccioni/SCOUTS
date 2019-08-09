@@ -4,8 +4,7 @@ from pprint import pprint
 import numpy as np
 import pandas as pd
 
-from custom_errors import (ControlNotFound, EmptySampleList, PandasInputError,
-                           SampleNamingError)
+from src.custom_errors import ControlNotFound, EmptySampleList, PandasInputError, SampleNamingError
 
 # Pandas DataFrame options (this goes to logfile)
 pd.set_option('display.max_rows', 50)

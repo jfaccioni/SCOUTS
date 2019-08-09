@@ -1,4 +1,4 @@
-import messages
+from src import messages
 
 
 class EmptySampleList(Exception):
