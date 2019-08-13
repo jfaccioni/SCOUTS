@@ -1,59 +1,486 @@
 import os
 import sys
-import traceback
 import webbrowser
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import (QIcon, QPixmap)
-from PyQt5.QtWidgets import (QApplication, QButtonGroup, QCheckBox,
-                             QDoubleSpinBox, QFileDialog, QFrame, QLabel,
-                             QLineEdit, QMainWindow, QMessageBox, QPushButton,
-                             QRadioButton, QStackedWidget, QTableWidget,
-                             QTableWidgetItem, QWidget)
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon, QPixmap
+from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog, QFormLayout, QFrame,
+                               QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton,
+                               QRadioButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
-import messages
-import scouts_analysis
-from custom_errors import (ControlNotFound, EmptySampleList, PandasInputError,
-                           SampleNamingError)
+from src.custom_exceptions import (EmptySampleListError, GenericError, NoIOPathError, NoSampleError, PandasInputError,
+                                   SampleNamingError)
 
-CUSTOM_ERRORS = (ControlNotFound, EmptySampleList, PandasInputError,
-                 SampleNamingError)
-
-# Styles used by QLabel widgets in the app
-title_style = '<p style="font-size:20pt; font-weight:600;">'
-subtitle_style = '<p style="font-size:12pt;">'
-info_style = '<p style="font-weight:600;">'
-credits_style = '<p style="font-style:italic;">'
+CUSTOM_ERRORS = (EmptySampleListError, NoIOPathError, NoSampleError, PandasInputError, SampleNamingError)
 
 
 class SCOUTS(QMainWindow):
+    margin = {
+        'left': 10,
+        'top': 5,
+        'right': 10,
+        'bottom': 10
+    }
+    size = {
+        'width': 480,
+        'height': 640
+    }
+    style = {
+        'title': 'QLabel {font-size:18pt; font-weight:700}',
+        'subtitle': 'QLabel {font-size:12pt}',
+        'header': 'QLabel {font-weight:600}',
+        'button': 'QPushButton {font-size: 10pt}',
+        'label': 'QLabel {font-size: 10pt}',
+        'bold-label': 'QLabel {font-size: 10pt; font-weight:500}',
+        'radio button': 'QRadioButton {font-size: 10pt}',
+        'checkbox': 'QCheckBox {font-size: 10pt}',
+        'line edit': 'QLineEdit {font-size: 10pt}',
+        'credits': 'QLabel {font-style:italic; font-size:10pt}',
+    }
+
     def __init__(self):
+        # ###
+        # ### Main Window setup
+        # ###
+
+        # Inherits from QMainWindow
         super().__init__()
+        # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
         self.setWindowIcon(QIcon(os.path.join('icons', 'scouts.ico')))
-        self.setMinimumSize(590, 590)
-
-        self.page = QStackedWidget(self)
-        self.page.resize(590, 590)
-        self.analysis_page = QWidget()
+        self.resize(*self.size.values())
+        # Creates StackedWidget as QMainWindow's central widget
+        self.stacked_pages = QStackedWidget(self)
+        self.setCentralWidget(self.stacked_pages)
+        # Creates Widgets for individual "pages" and adds them to the StackedWidget
+        self.main_page = QWidget()
         self.samples_page = QWidget()
         self.gates_page = QWidget()
-        self.page.addWidget(self.analysis_page)
-        self.page.addWidget(self.samples_page)
-        self.page.addWidget(self.gates_page)
+        self.pages = (self.main_page, self.samples_page, self.gates_page)
+        for page in self.pages:
+            self.stacked_pages.addWidget(page)
+        self.stacked_pages.setMinimumSize(*self.size.values())
+        # ## Sets widget at program startup
+        self.stacked_pages.setCurrentWidget(self.main_page)
 
+        # ###
+        # ### MAIN PAGE
+        # ###
+
+        # Title section
+        # Title
+        self.title = QLabel(self.main_page)
+        self.title.move(self.margin['left'], self.margin['top'])
+        self.title.setText('SCOUTS - Single Cell Outlier Selector')
+        self.title.setStyleSheet(self.style['title'])
+        self.title.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+
+        # ## Input section
+        # Input header
+        self.input_header = QLabel(self.main_page)
+        self.input_header.move(self.margin['left'], self.widget_vposition(self.title) + 5)
+        self.input_header.setText('Input settings')
+        self.input_header.setStyleSheet(self.style['header'])
+        self.input_header.adjustSize()
+        # Input frame
+        self.input_frame = QFrame(self.main_page)
+        self.input_frame.setGeometry(self.margin['left'],
+                                     self.widget_vposition(self.input_header) + 5, self.stretch(), 105)
+        self.input_frame.setFrameShape(QFrame.StyledPanel)
+        self.input_frame.setLayout(QFormLayout())
+        # Input button
+        self.input_button = QPushButton(self.main_page)
+        self.input_button.setStyleSheet(self.style['button'])
+        self.set_icon(self.input_button, 'file')
+        self.input_button.setObjectName('input')
+        self.input_button.setText(' Select input file (.xlsx or .csv)')
+        self.input_button.clicked.connect(self.get_path)
+        # Input path box
+        self.input_path = QLineEdit(self.main_page)
+        self.input_path.setObjectName('input_path')
+        self.input_path.setStyleSheet(self.style['line edit'])
+        # Go to sample naming page
+        self.samples_button = QPushButton(self.main_page)
+        self.samples_button.setStyleSheet(self.style['button'])
+        self.set_icon(self.samples_button, 'settings')
+        self.samples_button.setText(' Select sample names...')
+        self.samples_button.clicked.connect(self.goto_samples_page)
+        # Go to gating page
+        self.gates_button = QPushButton(self.main_page)
+        self.gates_button.setStyleSheet(self.style['button'])
+        self.set_icon(self.gates_button, 'settings')
+        self.gates_button.setText(' Gating && outlier options...')
+        self.gates_button.clicked.connect(self.goto_gates_page)
+        # Add widgets above to input frame Layout
+        self.input_frame.layout().addRow(self.input_button, self.input_path)
+        self.input_frame.layout().addRow(self.samples_button)
+        self.input_frame.layout().addRow(self.gates_button)
+
+        # ## Analysis section
+        # Analysis header
+        self.analysis_header = QLabel(self.main_page)
+        self.analysis_header.move(self.margin['left'], self.widget_vposition(self.input_frame) + 15)
+        self.analysis_header.setText('Analysis settings')
+        self.analysis_header.setStyleSheet(self.style['header'])
+        self.analysis_header.adjustSize()
+        # Analysis frame
+        self.analysis_frame = QFrame(self.main_page)
+        self.analysis_frame.setGeometry(self.margin['left'],
+                                        self.widget_vposition(self.analysis_header) + 5, self.stretch(), 155)
+        self.analysis_frame.setFrameShape(QFrame.StyledPanel)
+        QVBoxLayout()
+        self.analysis_frame.setLayout(QVBoxLayout())
+        # Cutoff text
+        self.cutoff_text = QLabel(self.main_page)
+        self.cutoff_text.setText('Consider outliers using cutoff from:')
+        self.cutoff_text.setStyleSheet(self.style['bold-label'])
+        # Cutoff button group
         self.cutoff_group = QButtonGroup(self)
+        # Cutoff by sample
+        self.cutoff_sample = QRadioButton(self.main_page)
+        self.cutoff_sample.setText('sample')
+        self.cutoff_sample.setStyleSheet(self.style['radio button'])
+        self.cutoff_sample.setChecked(True)
+        self.cutoff_group.addButton(self.cutoff_sample)
+        # Cutoff by reference
+        self.cutoff_reference = QRadioButton(self.main_page)
+        self.cutoff_reference.setText('reference')
+        self.cutoff_reference.setStyleSheet(self.style['radio button'])
+        self.cutoff_group.addButton(self.cutoff_reference)
+        # Both cutoffs
+        self.cutoff_both = QRadioButton(self.main_page)
+        self.cutoff_both.setText('both')
+        self.cutoff_both.setStyleSheet(self.style['radio button'])
+        self.cutoff_group.addButton(self.cutoff_both)
+        # Markers text
+        self.markers_text = QLabel(self.main_page)
+        self.markers_text.setStyleSheet(self.style['bold-label'])
+        self.markers_text.setText('Consider outliers for:')
+        # Markers button group
         self.markers_group = QButtonGroup(self)
+        # Single marker
+        self.single_marker = QRadioButton(self.main_page)
+        self.single_marker.setText('single marker')
+        self.single_marker.setStyleSheet(self.style['radio button'])
+        self.single_marker.setChecked(True)
+        self.markers_group.addButton(self.single_marker)
+        # Any marker
+        self.any_marker = QRadioButton(self.main_page)
+        self.any_marker.setText('any marker')
+        self.any_marker.setStyleSheet(self.style['radio button'])
+        self.markers_group.addButton(self.any_marker)
+        # Both methods
+        self.both_methods = QRadioButton(self.main_page)
+        self.both_methods.setText('both methods')
+        self.both_methods.setStyleSheet(self.style['radio button'])
+        self.markers_group.addButton(self.both_methods)
+        # Tukey text
+        self.tukey_text = QLabel(self.main_page)
+        self.tukey_text.setStyleSheet(self.style['bold-label'])
+        # Tukey button group
+        self.tukey_text.setText('Tukey factor:')
         self.tukey_group = QButtonGroup(self)
-        self.yesno_gates = QButtonGroup(self)
-        self.gates_type = QButtonGroup(self)
+        # Low Tukey value
+        self.tukey_low = QRadioButton(self.main_page)
+        self.tukey_low.setText('1.5')
+        self.tukey_low.setStyleSheet(self.style['radio button'])
+        self.tukey_low.setChecked(True)
+        self.tukey_group.addButton(self.tukey_low)
+        # High Tukey value
+        self.tukey_high = QRadioButton(self.main_page)
+        self.tukey_high.setText('3.0')
+        self.tukey_high.setStyleSheet(self.style['radio button'])
+        self.tukey_group.addButton(self.tukey_high)
+        # Add widgets above to analysis frame layout
+        self.analysis_frame.layout().addWidget(self.cutoff_text)
+        self.cutoff_buttons = QHBoxLayout()
+        for button in self.cutoff_group.buttons():
+            self.cutoff_buttons.addWidget(button)
+        self.analysis_frame.layout().addLayout(self.cutoff_buttons)
+        self.analysis_frame.layout().addWidget(self.markers_text)
+        self.markers_buttons = QHBoxLayout()
+        for button in self.markers_group.buttons():
+            self.markers_buttons.addWidget(button)
+        self.analysis_frame.layout().addLayout(self.markers_buttons)
+        self.analysis_frame.layout().addWidget(self.tukey_text)
+        self.tukey_buttons = QHBoxLayout()
+        for button in self.tukey_group.buttons():
+            self.tukey_buttons.addWidget(button)
+        self.tukey_buttons.addWidget(QLabel())  # aligns row with 2 buttons
+        self.analysis_frame.layout().addLayout(self.tukey_buttons)
 
-        # Call functions to build interface
-        self.set_analysis_page()
-        self.set_samples_page()
-        self.set_gates_page()
+        # ## Output section
+        # Output header
+        self.output_header = QLabel(self.main_page)
+        self.output_header.move(self.margin['left'], self.widget_vposition(self.analysis_frame) + 15)
+        self.output_header.setText('Output settings')
+        self.output_header.setStyleSheet(self.style['header'])
+        self.output_header.adjustSize()
+        # Output frame
+        self.output_frame = QFrame(self.main_page)
+        self.output_frame.setGeometry(self.margin['left'],
+                                      self.widget_vposition(self.output_header) + 5, self.stretch(), 140)
+        self.output_frame.setFrameShape(QFrame.StyledPanel)
+        self.output_frame.setLayout(QFormLayout())
+        # Output button
+        self.output_button = QPushButton(self.main_page)
+        self.output_button.setStyleSheet(self.style['button'])
+        self.set_icon(self.output_button, 'folder')
+        self.output_button.setObjectName('output')
+        self.output_button.setText(' Select output folder')
+        self.output_button.clicked.connect(self.get_path)
+        # Output path box
+        self.output_path = QLineEdit(self.main_page)
+        self.output_path.setStyleSheet(self.style['line edit'])
+        # Generate CSV checkbox
+        self.output_csv = QCheckBox(self.main_page)
+        self.output_csv.setText('Export multiple text files (.csv)')
+        self.output_csv.setStyleSheet(self.style['checkbox'])
+        # Generate XLSX checkbox
+        self.output_excel = QCheckBox(self.main_page)
+        self.output_excel.setText('Export multiple Excel spreadsheets (.xlsx)')
+        self.output_excel.setStyleSheet(self.style['checkbox'])
+        # Generate single, large XLSX checkbox
+        self.single_excel = QCheckBox(self.main_page)
+        self.single_excel.setText('Also save one Excel spreadsheet with each analysis in individual sheets')
+        self.single_excel.setStyleSheet(self.style['checkbox'])
+        self.single_excel.clicked.connect(self.memory_warning)
+        # Add widgets above to output frame layout
+        self.output_frame.layout().addRow(self.output_button, self.output_path)
+        self.output_frame.layout().addRow(self.output_csv)
+        self.output_frame.layout().addRow(self.output_excel)
+        self.output_frame.layout().addRow(self.single_excel)
 
-        self.page.setCurrentWidget(self.analysis_page)
+        # ## Run & help-quit section
+        # Run button (stand-alone)
+        self.run_button = QPushButton(self.main_page)
+        self.run_button.setGeometry(self.margin['left'],
+                                    self.widget_vposition(self.output_frame) + 5, self.stretch(), 30)
+        self.set_icon(self.run_button, 'pipe')
+        self.run_button.setText(' Run!')
+        self.run_button.setText(' Run!')
+        self.run_button.clicked.connect(self.analyse)
+        # Help-quit frame (invisible)
+        self.helpquit_frame = QFrame(self.main_page)
+        self.helpquit_frame.setGeometry(self.margin['left'],
+                                        self.widget_vposition(self.run_button) + 5, self.stretch(), 30)
+        helpquit_layout = QHBoxLayout()
+        helpquit_layout.setMargin(0)
+        self.helpquit_frame.setLayout(helpquit_layout)
+        # Help button
+        self.help_button = QPushButton(self.main_page)
+        self.set_icon(self.help_button, 'help')
+        self.help_button.setText(' Help')
+        self.help_button.clicked.connect(self.get_help)
+        # Quit button
+        self.quit_button = QPushButton(self.main_page)
+        self.set_icon(self.quit_button, 'quit')
+        self.quit_button.setText(' Quit')
+        self.quit_button.clicked.connect(self.close)
+        # Add widgets above to help-quit layout
+        self.helpquit_frame.layout().addWidget(self.help_button)
+        self.helpquit_frame.layout().addWidget(self.quit_button)
+
+        # ###
+        # ### SAMPLES PAGE
+        # ###
+
+        # ## Title section
+        # Title
+        self.samples_title = QLabel(self.samples_page)
+        self.samples_title.move(self.margin['left'], self.margin['top'])
+        self.samples_title.setText('Sample names')
+        self.samples_title.setStyleSheet(self.style['title'])
+        self.samples_title.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        # Subtitle
+        self.samples_subtitle = QLabel(self.samples_page)
+        self.samples_subtitle.move(self.margin['left'], self.widget_vposition(self.samples_title) + 5)
+        string = ('Please insert your sample names\ne.g. Control, Drug-01, '
+                  'Treatment_X ...\n\nSCOUTS locates the exact string as '
+                  'part of\nthe names on the first column of your data.')
+        self.samples_subtitle.setText(string)
+        self.samples_subtitle.setStyleSheet(self.style['bold-label'])
+        self.samples_subtitle.adjustSize()
+
+        # ## Sample addition section
+        # Sample addition frame
+        self.samples_frame = QFrame(self.samples_page)
+        self.samples_frame.setGeometry(self.margin['left'],
+                                       self.widget_vposition(self.samples_subtitle) + 5, self.stretch(), 80)
+        self.samples_frame.setFrameShape(QFrame.StyledPanel)
+        self.samples_frame.setLayout(QFormLayout())
+        # Sample name box
+        self.sample_name = QLineEdit(self.samples_page)
+        self.sample_name.setStyleSheet(self.style['line edit'])
+        self.sample_name.resize(400, self.sample_name.height())
+        self.sample_name.setPlaceholderText('Insert sample name  ...')
+        # Reference check
+        self.is_reference = QCheckBox(self.samples_page)
+        self.is_reference.setText('This is my reference sample')
+        self.is_reference.setStyleSheet(self.style['checkbox'])
+        # Add sample to table
+        self.add_sample_button = QPushButton(self.samples_page)
+        self.set_icon(self.add_sample_button, 'ok')
+        self.add_sample_button.setText(' Add sample to table')
+        self.add_sample_button.setStyleSheet(self.style['button'])
+        self.add_sample_button.clicked.connect(self.write_to_sample_table)
+        # Remove sample from table
+        self.remove_sample_button = QPushButton(self.samples_page)
+        self.set_icon(self.remove_sample_button, 'back')
+        self.remove_sample_button.setText(' Remove sample from table')
+        self.remove_sample_button.setStyleSheet(self.style['button'])
+        self.remove_sample_button.clicked.connect(self.remove_from_sample_table)
+        # Add widgets above to sample addition layout
+        self.samples_frame.layout().addRow(self.sample_name, self.is_reference)
+        self.samples_frame.layout().addRow(self.add_sample_button, self.remove_sample_button)
+
+        # ## Sample table
+        self.sample_table = QTableWidget(self.samples_page)
+        self.sample_table.setGeometry(self.margin['left'],
+                                      self.widget_vposition(self.samples_frame) + 5, self.stretch(), 350)
+        self.sample_table.setColumnCount(2)
+        self.sample_table.setHorizontalHeaderItem(0, QTableWidgetItem('Sample'))
+        self.sample_table.setHorizontalHeaderItem(1, QTableWidgetItem('Reference?'))
+        head = self.sample_table.horizontalHeader()
+        head.setSectionResizeMode(0, QHeaderView.Stretch)
+        head.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+
+        # ## Save & clear buttons
+        # Save & clear frame (invisible)
+        self.saveclear_frame = QFrame(self.samples_page)
+        self.saveclear_frame.setGeometry(self.margin['left'],
+                                         self.widget_vposition(self.sample_table) + 5, self.stretch(), 30)
+        saveclear_layout = QHBoxLayout()
+        saveclear_layout.setMargin(0)
+        self.saveclear_frame.setLayout(saveclear_layout)
+        # Clear samples button
+        self.clear_samples = QPushButton(self.samples_page)
+        self.set_icon(self.clear_samples, 'clear')
+        self.clear_samples.setText(' Clear table')
+        self.clear_samples.setStyleSheet(self.style['button'])
+        self.clear_samples.clicked.connect(self.prompt_clear_data)
+        # Save samples button
+        self.save_samples = QPushButton(self.samples_page)
+        self.set_icon(self.save_samples, 'ok')
+        self.save_samples.setText(' Save samples')
+        self.save_samples.setStyleSheet(self.style['button'])
+        self.save_samples.clicked.connect(self.goto_main_page)
+        # Add widgets above to save & clear layout
+        self.saveclear_frame.layout().addWidget(self.clear_samples)
+        self.saveclear_frame.layout().addWidget(self.save_samples)
+
+        # ###
+        # ### GATING PAGE
+        # ###
+
+        # ## Title section
+        # Title
+        self.gates_title = QLabel(self.gates_page)
+        self.gates_title.move(self.margin['left'], self.margin['top'])
+        self.gates_title.setText('Gating & outlier options')
+        self.gates_title.setStyleSheet(self.style['title'])
+        self.gates_title.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.gates_title.adjustSize()
+
+        # ## Gating options section
+        # Gating header
+        self.gate_header = QLabel(self.gates_page)
+        self.gate_header.move(self.margin['left'], self.widget_vposition(self.gates_title) + 25)
+        self.gate_header.setText('Gating')
+        self.gate_header.setStyleSheet(self.style['header'])
+        self.gate_header.adjustSize()
+        # Gating frame
+        self.gate_frame = QFrame(self.gates_page)
+        self.gate_frame.setGeometry(self.margin['left'],
+                                    self.widget_vposition(self.gate_header) + 5, self.stretch(), 150)
+        self.gate_frame.setFrameShape(QFrame.StyledPanel)
+        self.gate_frame.setLayout(QFormLayout())
+        # Gating button group
+        self.gating_group = QButtonGroup(self)
+        # Do not gate samples
+        self.no_gates = QRadioButton(self.gates_page)
+        self.no_gates.setObjectName('no')
+        self.no_gates.setText("Don't gate samples")
+        self.no_gates.setChecked(True)
+        self.gating_group.addButton(self.no_gates)
+        self.no_gates.clicked.connect(self.activate_gate)
+        # CyToF gating
+        self.cytof_gates = QRadioButton(self.gates_page)
+        self.cytof_gates.setObjectName('cytof')
+        cytof_info = ('Mass Cytometry gating - exclude samples with\n'
+                      'average expression for all markers below:')
+        self.cytof_gates.setText(cytof_info)
+        self.gating_group.addButton(self.cytof_gates)
+        self.cytof_gates.clicked.connect(self.activate_gate)
+        # CyToF gating spinbox
+        self.cytof_gates_value = QDoubleSpinBox(self.gates_page)
+        self.cytof_gates_value.setMinimum(0)
+        self.cytof_gates_value.setMaximum(1)
+        self.cytof_gates_value.setValue(0.1)
+        self.cytof_gates_value.setSingleStep(0.05)
+        self.cytof_gates_value.setEnabled(False)
+        # scRNA-Seq gating
+        self.rnaseq_gates = QRadioButton(self.gates_page)
+        rnaseq_info = ('scRNA-Seq gating - when calculating cutoff,'
+                       '\nexclude number of reads below:')
+        self.rnaseq_gates.setText(rnaseq_info)
+        self.rnaseq_gates.setObjectName('rnaseq')
+        self.gating_group.addButton(self.rnaseq_gates)
+        self.rnaseq_gates.clicked.connect(self.activate_gate)
+        # scRNA-Seq gating spinbox
+        self.rnaseq_gates_value = QDoubleSpinBox(self.gates_page)
+        self.rnaseq_gates_value.setMinimum(0)
+        self.rnaseq_gates_value.setMaximum(10)
+        self.rnaseq_gates_value.setValue(1)
+        self.rnaseq_gates_value.setSingleStep(1)
+        self.rnaseq_gates_value.setEnabled(False)
+        # Add widgets above to Gate frame layout
+        self.gate_frame.layout().addRow(self.no_gates, QLabel())
+        self.gate_frame.layout().addRow(self.cytof_gates, self.cytof_gates_value)
+        self.gate_frame.layout().addRow(self.rnaseq_gates, self.rnaseq_gates_value)
+
+        # ## Outlier options section
+        # Outlier header
+        self.outlier_header = QLabel(self.gates_page)
+        self.outlier_header.move(self.margin['left'], self.widget_vposition(self.gate_frame) + 25)
+        self.outlier_header.setText('Outliers')
+        self.outlier_header.setStyleSheet(self.style['header'])
+        self.outlier_header.adjustSize()
+        # Outlier frame
+        self.outlier_frame = QFrame(self.gates_page)
+        self.outlier_frame.setGeometry(self.margin['left'],
+                                       self.widget_vposition(self.outlier_header) + 5, self.stretch(), 100)
+        self.outlier_frame.setFrameShape(QFrame.StyledPanel)
+        self.outlier_frame.setLayout(QVBoxLayout())
+        # Bottom outliers data
+        self.bottom_outliers = QCheckBox(self.gates_page)
+        self.bottom_outliers.setText('Also generate results for low outliers')
+        # Non-outliers data
+        self.not_outliers = QCheckBox(self.gates_page)
+        self.not_outliers.setText('Also generate results for non-outliers')
+        # Add widgets above to Gate frame layout
+        self.outlier_frame.layout().addWidget(self.bottom_outliers)
+        self.outlier_frame.layout().addWidget(self.not_outliers)
+
+        # ## Save/back button
+        self.save_gates = QPushButton(self.gates_page)
+        self.save_gates.setGeometry(self.margin['left'],
+                                    self.widget_vposition(self.outlier_frame) + 25, self.stretch(), 40)
+        self.set_icon(self.save_gates, 'ok')
+        self.save_gates.setText(' Back to main page')
+        self.save_gates.clicked.connect(self.goto_main_page)
+
+    # ###
+    # ### STATIC METHODS
+    # ###
+
+    @staticmethod
+    def widget_hposition(widget):
+        return widget.width() + widget.x()
+
+    @staticmethod
+    def widget_vposition(widget):
+        return widget.height() + widget.y()
 
     @staticmethod
     def set_icon(widget, icon):
@@ -65,307 +492,8 @@ class SCOUTS(QMainWindow):
     def get_help():
         webbrowser.open('https://scouts.readthedocs.io/en/master/')
 
-    def set_analysis_page(self):
-        self.title = QLabel(self.analysis_page)
-        self.title.setGeometry(10, 10, 520, 60)
-        title_label = 'SCOUTS - Single Cell OUTlier Selector</p>'
-        self.title.setText(title_style + title_label)
-        self.title.adjustSize()
-
-        self.subtitle = QLabel(self.analysis_page)
-        self.subtitle.setGeometry(15, 50, 300, 50)
-        subtitle_label = 'Please choose the settings for the analysis:</p>'
-        self.subtitle.setText(subtitle_style + subtitle_label)
-        self.subtitle.adjustSize()
-
-        self.input_frame = QFrame(self.analysis_page)
-        self.input_frame.setGeometry(15, 80, 560, 165)
-        self.input_frame.setFrameShape(QFrame.StyledPanel)
-
-        self.input_file = QPushButton(self.analysis_page)
-        self.input_file.setGeometry(30, 90, 300, 25)
-        self.set_icon(self.input_file, 'file')
-        self.input_file.setObjectName('input')
-        self.input_file.setText(' Select input file (.xlsx or .csv) ...')
-        self.input_file.clicked.connect(self.get_path)
-
-        self.input_path = QLineEdit(self.analysis_page)
-        self.input_path.setGeometry(30, 120, 530, 25)
-        self.input_path.setObjectName('input_path')
-
-        self.output_folder = QPushButton(self.analysis_page)
-        self.output_folder.setGeometry(30, 150, 300, 25)
-        self.set_icon(self.output_folder, 'folder')
-        self.output_folder.setObjectName('output')
-        self.output_folder.setText(' Select folder to output analysis ...')
-        self.output_folder.clicked.connect(self.get_path)
-
-        self.output_path = QLineEdit(self.analysis_page)
-        self.output_path.setGeometry(30, 180, 530, 25)
-
-        self.samples = QPushButton(self.analysis_page)
-        self.samples.setGeometry(30, 210, 260, 25)
-        self.set_icon(self.samples, 'settings')
-        self.samples.setText(' Select sample names ...')
-        self.samples.clicked.connect(self.goto_page_samples)
-
-        self.gate = QPushButton(self.analysis_page)
-        self.gate.setGeometry(300, 210, 260, 25)
-        self.set_icon(self.gate, 'settings')
-        self.gate.setText(' Gate samples ...')
-        self.gate.clicked.connect(self.goto_page_gates)
-
-        self.analysis_frame = QFrame(self.analysis_page)
-        self.analysis_frame.setGeometry(15, 250, 560, 100)
-        self.analysis_frame.setFrameShape(QFrame.StyledPanel)
-
-        self.analysis_text = QLabel(self.analysis_page)
-        self.analysis_text.setGeometry(30, 240, 190, 50)
-        analysis_text_label = 'Select analysis settings:</p>'
-        self.analysis_text.setText(info_style + analysis_text_label)
-
-        self.cutoff_text = QLabel(self.analysis_page)
-        self.cutoff_text.setGeometry(60, 262, 270, 50)
-        self.cutoff_text.setText('Consider outliers using cutoff from:')
-
-        self.cutoff_sample = QRadioButton(self.analysis_page)
-        self.cutoff_sample.setGeometry(285, 277, 80, 25)
-        self.cutoff_sample.setText('sample')
-        self.cutoff_sample.setChecked(True)
-
-        self.cutoff_control = QRadioButton(self.analysis_page)
-        self.cutoff_control.setGeometry(395, 277, 80, 25)
-        self.cutoff_control.setText('control')
-
-        self.cutoff_both = QRadioButton(self.analysis_page)
-        self.cutoff_both.setGeometry(505, 277, 80, 25)
-        self.cutoff_both.setText('both')
-
-        self.cutoff_group.addButton(self.cutoff_sample)
-        self.cutoff_group.addButton(self.cutoff_control)
-        self.cutoff_group.addButton(self.cutoff_both)
-
-        self.markers_text = QLabel(self.analysis_page)
-        self.markers_text.setGeometry(60, 284, 150, 50)
-        self.markers_text.setText('Consider outliers for:')
-
-        self.markers_single = QRadioButton(self.analysis_page)
-        self.markers_single.setGeometry(285, 299, 120, 25)
-        self.markers_single.setText('single marker')
-        self.markers_single.setChecked(True)
-
-        self.markers_any = QRadioButton(self.analysis_page)
-        self.markers_any.setGeometry(395, 299, 120, 25)
-        self.markers_any.setText('any marker')
-
-        self.markers_both = QRadioButton(self.analysis_page)
-        self.markers_both.setGeometry(505, 299, 60, 25)
-        self.markers_both.setText('both')
-
-        self.markers_group.addButton(self.markers_single)
-        self.markers_group.addButton(self.markers_any)
-        self.markers_group.addButton(self.markers_both)
-
-        self.tukey_text = QLabel(self.analysis_page)
-        self.tukey_text.setGeometry(60, 306, 150, 50)
-        self.tukey_text.setText('Tukey factor:')
-
-        self.tukey_low = QRadioButton(self.analysis_page)
-        self.tukey_low.setGeometry(285, 321, 120, 25)
-        self.tukey_low.setText('1.5')
-        self.tukey_low.setChecked(True)
-
-        self.tukey_high = QRadioButton(self.analysis_page)
-        self.tukey_high.setGeometry(395, 321, 120, 25)
-        self.tukey_high.setText('3.0')
-
-        self.tukey_group.addButton(self.tukey_low)
-        self.tukey_group.addButton(self.tukey_high)
-
-        self.output_frame = QFrame(self.analysis_page)
-        self.output_frame.setGeometry(15, 355, 560, 115)
-        self.output_frame.setFrameShape(QFrame.StyledPanel)
-
-        self.output_text = QLabel(self.analysis_page)
-        self.output_text.setGeometry(30, 345, 330, 50)
-        output_text_label = 'Select output settings:</p>'
-        self.output_text.setText(info_style + output_text_label)
-
-        self.output_csv = QCheckBox(self.analysis_page)
-        self.output_csv.setGeometry(60, 380, 260, 25)
-        self.output_csv.setText('Export multiple text files (.csv)')
-
-        self.output_excel = QCheckBox(self.analysis_page)
-        self.output_excel.setGeometry(60, 410, 310, 25)
-        self.output_excel.setText('Export multiple Excel spreadsheets (.xlsx)')
-
-        self.group_excel = QCheckBox(self.analysis_page)
-        self.group_excel.setGeometry(60, 440, 510, 25)
-        long_mes = 'Also save one Excel spreadsheet with each analysis in '
-        long_mes2 = 'individual sheets'
-        self.group_excel.setText(long_mes + long_mes2)
-        self.group_excel.clicked.connect(self.memory_warning)
-
-        self.run_button = QPushButton(self.analysis_page)
-        self.run_button.setGeometry(30, 490, 400, 55)
-        self.set_icon(self.run_button, 'pipe')
-        self.run_button.setText(' Run !')
-        self.run_button.clicked.connect(self.analyse)
-
-        self.help_button = QPushButton(self.analysis_page)
-        self.help_button.setGeometry(440, 490, 120, 25)
-        self.set_icon(self.help_button, 'help')
-        self.help_button.setText(' Help')
-        self.help_button.clicked.connect(self.get_help)
-
-        self.quit_button = QPushButton(self.analysis_page)
-        self.quit_button.setGeometry(440, 520, 120, 25)
-        self.set_icon(self.quit_button, 'quit')
-        self.quit_button.setText(' Quit')
-        self.quit_button.clicked.connect(self.close)
-
-        self.credits = QLabel(self.analysis_page)
-        self.credits.setGeometry(30, 560, 190, 50)
-        credits_label = 'Juliano Luiz Faccioni - Labsinal/UFRGS 2018</p>'
-        self.credits.setText(credits_style + credits_label)
-        self.credits.adjustSize()
-
-    def set_samples_page(self):
-        self.samples_title = QLabel(self.samples_page)
-        self.samples_title.setGeometry(20, 10, 520, 60)
-        title_label = 'Select samples</p>'
-        self.samples_title.setText(title_style + title_label)
-        self.samples_title.adjustSize()
-
-        self.samples_subtitle = QLabel(self.samples_page)
-        self.samples_subtitle.setGeometry(25, 60, 300, 50)
-        sub_label = 'Please insert your sample names (e.g. Control, Drug_01, '
-        sub_2 = 'Treatment_x ...)</p>SCOUTS locates the exact string as '
-        sub_3 = 'part of the names on the first column of your data.'
-        self.samples_subtitle.setText(info_style + sub_label + sub_2 + sub_3)
-        self.samples_subtitle.adjustSize()
-
-        self.samplename = QLineEdit(self.samples_page)
-        self.samplename.setGeometry(20, 110, 300, 25)
-        self.samplename.setPlaceholderText('Insert sample name  ...')
-
-        self.iscontrol = QCheckBox(self.samples_page)
-        self.iscontrol.setGeometry(20, 140, 230, 25)
-        self.iscontrol.setText('This is my control sample')
-
-        self.add_row = QPushButton(self.samples_page)
-        self.add_row.setGeometry(330, 110, 250, 25)
-        self.set_icon(self.add_row, 'ok')
-        self.add_row.setText(' Add sample to list')
-        self.add_row.clicked.connect(self.write_to_sample_table)
-
-        self.remove_row = QPushButton(self.samples_page)
-        self.remove_row.setGeometry(330, 140, 250, 25)
-        self.set_icon(self.remove_row, 'back')
-        self.remove_row.setText(' Remove row from sample list')
-        self.remove_row.clicked.connect(self.write_to_sample_table)
-
-        self.sample_table = QTableWidget(self.samples_page)
-        self.sample_table.setGeometry(20, 180, 560, 290)
-        self.sample_table.setColumnCount(2)
-        n, m = QTableWidgetItem('Control?'), QTableWidgetItem('Sample name')
-        self.sample_table.setHorizontalHeaderItem(0, n)
-        self.sample_table.setHorizontalHeaderItem(1, m)
-        head = self.sample_table.horizontalHeader()
-        head.setDefaultSectionSize(100)
-        head.setMinimumSectionSize(100)
-        head.setStretchLastSection(True)
-
-        self.clear_samples = QPushButton(self.samples_page)
-        self.clear_samples.setGeometry(430, 480, 150, 40)
-        self.set_icon(self.clear_samples, 'clear')
-        self.clear_samples.setText(' Clear table')
-        self.clear_samples.clicked.connect(self.prompt_clear_data)
-
-        self.save_samples = QPushButton(self.samples_page)
-        self.save_samples.setGeometry(430, 530, 150, 40)
-        self.set_icon(self.save_samples, 'ok')
-        self.save_samples.setText(' Save samples')
-        self.save_samples.clicked.connect(self.goto_page_analysis)
-
-    def set_gates_page(self):
-        self.gates_title = QLabel(self.gates_page)
-        self.gates_title.setGeometry(20, 10, 520, 60)
-        title_label = 'Select gate options</p>'
-        self.gates_title.setText(title_style + title_label)
-        self.gates_title.adjustSize()
-
-        self.gate_frame = QFrame(self.gates_page)
-        self.gate_frame.setGeometry(15, 140, 560, 225)
-        self.gate_frame.setFrameShape(QFrame.StyledPanel)
-
-        self.no_gates = QRadioButton(self.gates_page)
-        self.no_gates.setGeometry(30, 150, 220, 25)
-        self.no_gates.setObjectName('no')
-        self.no_gates.setText("Don't gate samples")
-        self.no_gates.setChecked(True)
-        self.no_gates.clicked.connect(self.activate_gate)
-
-        self.yes_gates = QRadioButton(self.gates_page)
-        self.yes_gates.setGeometry(30, 200, 120, 25)
-        self.yes_gates.setObjectName('yes')
-        self.yes_gates.setText('Gate samples')
-        self.yes_gates.clicked.connect(self.activate_gate)
-
-        self.yesno_gates.addButton(self.no_gates)
-        self.yesno_gates.addButton(self.yes_gates)
-
-        self.gates_cytof = QRadioButton(self.gates_page)
-        self.gates_cytof.setGeometry(40, 230, 120, 25)
-        m = 'Mass cytometry - exclude cells with '
-        m2 = 'average row expression lower than: '
-        self.gates_cytof.setText(m + m2)
-        self.gates_cytof.setObjectName('cytof')
-        self.gates_cytof.setChecked(True)
-        self.gates_cytof.setEnabled(False)
-        self.gates_cytof.adjustSize()
-        self.gates_cytof.clicked.connect(self.switch_gate)
-
-        self.gates_rna = QRadioButton(self.gates_page)
-        self.gates_rna.setGeometry(40, 260, 120, 25)
-        m = 'scRNA-seq - exclude "zero" values when calculating cutoff'
-        self.gates_rna.setText(m)
-        self.gates_rna.setObjectName('rna')
-        self.gates_rna.setEnabled(False)
-        self.gates_rna.adjustSize()
-        self.gates_rna.clicked.connect(self.switch_gate)
-
-        self.gates_type.addButton(self.gates_rna)
-        self.gates_type.addButton(self.gates_cytof)
-
-        self.not_outliers = QCheckBox(self.gates_page)
-        self.not_outliers.setGeometry(40, 290, 230, 25)
-        m = 'Also generate results for non-outliers'
-        self.not_outliers.setText(m)
-        self.not_outliers.setEnabled(False)
-        self.not_outliers.adjustSize()
-
-        self.bottom_outliers = QCheckBox(self.gates_page)
-        self.bottom_outliers.setGeometry(40, 320, 230, 25)
-        m = 'Also generate results for low outliers'
-        self.bottom_outliers.setText(m)
-        self.bottom_outliers.setEnabled(False)
-        self.bottom_outliers.adjustSize()
-
-        self.gates_cytof_value = QDoubleSpinBox(self.gates_page)
-        self.gates_cytof_value.setGeometry(502, 228, 120, 25)
-        self.gates_cytof_value.setMinimum(0)
-        self.gates_cytof_value.setMaximum(1)
-        self.gates_cytof_value.setValue(0.1)
-        self.gates_cytof_value.setSingleStep(0.05)
-        self.gates_cytof_value.setEnabled(False)
-        self.gates_cytof_value.adjustSize()
-
-        self.save_gates = QPushButton(self.gates_page)
-        self.save_gates.setGeometry(430, 530, 150, 40)
-        self.set_icon(self.save_gates, 'ok')
-        self.save_gates.setText(' Save gate options')
-        self.save_gates.clicked.connect(self.goto_page_analysis)
+    def stretch(self):
+        return self.size['width'] - (self.margin['left'] + self.margin['right'])
 
     def closeEvent(self, event):
         title = 'Quit Application'
@@ -378,123 +506,109 @@ class SCOUTS(QMainWindow):
         else:
             event.ignore()
 
-    def goto_page_analysis(self):
-        self.page.setCurrentWidget(self.analysis_page)
+    # ###
+    # ### STACKED WIDGET PAGE SWITCHING
+    # ###
 
-    def goto_page_samples(self):
-        self.page.setCurrentWidget(self.samples_page)
+    def goto_main_page(self):
+        self.stacked_pages.setCurrentWidget(self.main_page)
 
-    def goto_page_gates(self):
-        self.page.setCurrentWidget(self.gates_page)
+    def goto_samples_page(self):
+        self.stacked_pages.setCurrentWidget(self.samples_page)
+
+    def goto_gates_page(self):
+        self.stacked_pages.setCurrentWidget(self.gates_page)
+
+    # ###
+    # ### I/O PATH LOGIC
+    # ###
 
     def get_path(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         name = self.sender().objectName()
-        query = ''
-        echo = ''
         if name == 'input':
             echo = self.input_path
-            query, _ = QFileDialog.getOpenFileName(self,
-                                                   "Select file", "",
-                                                   "All Files (*)",
-                                                   options=options)
+            query, _ = QFileDialog.getOpenFileName(self, "Select file", "", "All Files (*)", options=options)
         elif name == 'output':
             echo = self.output_path
-            query = QFileDialog.getExistingDirectory(self,
-                                                     "Select Directory",
-                                                     options=options)
+            query = QFileDialog.getExistingDirectory(self, "Select Directory", options=options)
+        else:
+            return
         if query:
             echo.setText(query)
 
-    def memory_warning(self):
-        if self.sender().isChecked():
-            messages.memory_warning(self)
+    # ###
+    # ### SAMPLE NAME/SAMPLE TABLE GUI LOGIC
+    # ###
 
     def write_to_sample_table(self):
         table = self.sample_table
-        iscontrol = 'No'
-        sample = self.samplename.text()
+        ref = 'No'
+        sample = self.sample_name.text()
         if sample:
             for cell in range(table.rowCount()):
-                item = table.item(cell, 1)
+                item = table.item(cell, 0)
                 if item.text() == sample:
-                    messages.same_sample(self)
+                    self.same_sample()
                     return
-            if self.iscontrol.isChecked():
+            if self.is_reference.isChecked():
                 for cell in range(table.rowCount()):
-                    item = table.item(cell, 0)
+                    item = table.item(cell, 1)
                     if item.text() == 'Yes':
-                        messages.more_than_one_control(self)
+                        self.more_than_one_reference()
                         return
-                iscontrol = 'Yes'
+                ref = 'Yes'
             sample = QTableWidgetItem(sample)
-            iscontrol = QTableWidgetItem(iscontrol)
-            iscontrol.setFlags(Qt.ItemIsEnabled)
-            row_positon = table.rowCount()
-            table.insertRow(row_positon)
-            table.setItem(row_positon, 1, sample)
-            table.setItem(row_positon, 0, iscontrol)
-            self.iscontrol.setChecked(False)
-            self.samplename.setText('')
+            is_reference = QTableWidgetItem(ref)
+            is_reference.setFlags(Qt.ItemIsEnabled)
+            row_position = table.rowCount()
+            table.insertRow(row_position)
+            table.setItem(row_position, 0, sample)
+            table.setItem(row_position, 1, is_reference)
+            self.is_reference.setChecked(False)
+            self.sample_name.setText('')
 
     def remove_from_sample_table(self):
         table = self.sample_table
         rows = set(index.row() for index in table.selectedIndexes())
-        for index in rows:
+        for index in sorted(rows, reverse=True):
             self.sample_table.removeRow(index)
 
     def prompt_clear_data(self):
-        if self.confirm_switch():
+        if self.confirm_clear_data():
             table = self.sample_table
             while table.rowCount():
                 self.sample_table.removeRow(0)
 
-    def confirm_switch(self):
-        title = 'Confirm Action'
-        mes = "Settings will be lost. Are you sure?"
-        reply = QMessageBox.question(self, title, mes,
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            return True
-        return False
+    # ###
+    # ### GATING GUI LOGIC
+    # ###
 
     def activate_gate(self):
         if self.sender().objectName() == 'no':
-            self.gates_cytof.setEnabled(False)
-            self.gates_rna.setEnabled(False)
-            self.gates_cytof_value.setEnabled(False)
-            self.not_outliers.setChecked(False)
-            self.not_outliers.setEnabled(False)
-            self.bottom_outliers.setEnabled(False)
-            self.bottom_outliers.setChecked(False)
-        elif self.sender().objectName() == 'yes':
-            self.gates_cytof.setEnabled(True)
-            if self.gates_cytof.isChecked():
-                self.gates_cytof_value.setEnabled(True)
-            self.gates_rna.setEnabled(True)
-            self.not_outliers.setEnabled(True)
-            self.bottom_outliers.setEnabled(True)
+            self.cytof_gates_value.setEnabled(False)
+            self.rnaseq_gates_value.setEnabled(False)
+        elif self.sender().objectName() == 'cytof':
+            self.cytof_gates_value.setEnabled(True)
+            self.rnaseq_gates_value.setEnabled(False)
+        elif self.sender().objectName() == 'rnaseq':
+            self.cytof_gates_value.setEnabled(False)
+            self.rnaseq_gates_value.setEnabled(True)
 
-    def switch_gate(self):
-        if self.sender().objectName() == 'cytof':
-            self.gates_cytof_value.setEnabled(True)
-        elif self.sender().objectName() == 'rna':
-            self.gates_cytof_value.setEnabled(False)
-            self.gates_cytof_value.setValue(0.1)
+    # ###
+    # ### CONNECT SCOUTS TO ANALYTICAL MODULES
+    # ###
 
     def analyse(self):
         try:
             input_dict = self.parse_input()
-            assert input_dict
             scouts_analysis.analyse(self, **input_dict)
         except Exception as e:
-            if type(e) not in CUSTOM_ERRORS and type(e) != AssertionError:
-                trace = traceback.format_exc()
-                messages.generic_error_message(self, trace, e)
+            if type(e) == GenericError:
+                raise GenericError(widget)
         else:
-            messages.module_done(self)
+            self.module_done()
 
     def parse_input(self):
         input_dict = {}
@@ -502,22 +616,21 @@ class SCOUTS(QMainWindow):
         input_file = self.input_path.text()
         output_folder = self.output_path.text()
         if not (input_file or output_folder):
-            messages.no_file_folder_found(self)
-            return
+            raise NoIOPathError(self)
         input_dict['input_file'] = input_file
         input_dict['output_folder'] = output_folder
-        # Set cutoff by control or by sample rule
+        # Set cutoff by reference or by sample rule
         cutoff_id = self.cutoff_group.checkedId()
         cutoff_rule = self.cutoff_group.button(cutoff_id)
-        input_dict['cutoff_rule'] = cutoff_rule.text()
+        input_dict['cutoff_rule'] = cutoff_rule.text()  # 'sample', 'reference', 'both'
         # Outliers for each individual marker or any marker in row
         markers_id = self.markers_group.checkedId()
         markers_rule = self.markers_group.button(markers_id)
-        input_dict['by_marker'] = markers_rule.text()
+        input_dict['marker_rule'] = markers_rule.text()  # 'single marker', 'any marker', 'both methods'
         # Tukey factor used for calculating cutoff
         tukey_id = self.tukey_group.checkedId()
         tukey = self.tukey_group.button(tukey_id)
-        input_dict['tukey'] = float(tukey.text())
+        input_dict['tukey_factor'] = float(tukey.text())  # '1.5', '3.0'
         # Output settings
         if self.output_csv.isChecked():
             export_csv = True
@@ -529,49 +642,84 @@ class SCOUTS(QMainWindow):
         else:
             export_excel = False
         input_dict['export_excel'] = export_excel
-        if self.group_excel.isChecked():
-            group_excel = True
+        if self.single_excel.isChecked():
+            single_excel = True
         else:
-            group_excel = False
-        input_dict['group_excel'] = group_excel
-        # Retrieve information about sample names and which sample is control
+            single_excel = False
+        input_dict['single_excel'] = single_excel
+        # Retrieve samples from sample table
         sample_list = []
-        for tuples in self.yield_samples():
+        for tuples in self.yield_samples_from_table():
             sample_list.append(tuples)
         if not sample_list:
-            messages.no_samples(self)
-            return
+            raise NoSampleError(self)
         input_dict['sample_list'] = sample_list
-        # Set gate cutoff, if any
-        gate_cutoff = None
-        not_outliers = False
-        bottom_outliers = False
+        # Set gate cutoff (if any)
+        input_dict['gate_cutoff'] = None
         if not self.no_gates.isChecked():
-            gate_id = self.gates_type.checkedId()
-            gate_option = self.gates_type.button(gate_id)
-            if gate_option.objectName() == 'cytof':
-                gate_cutoff = self.gates_cytof_value.value()
-            elif gate_option.objectName() == 'rna':
-                gate_cutoff = 'no-zero'
-            if self.not_outliers.isChecked():
-                not_outliers = True
-            if self.bottom_outliers.isChecked():
-                bottom_outliers = True
-        input_dict['gate_cutoff'] = gate_cutoff
+            if self.cytof_gates.isChecked():
+                input_dict['gate_cutoff'] = self.gates_cytof_value.value()
+            if self.rnaseq_gates.isChecked():
+                input_dict['gate_cutoff'] = self.rnaseq_gates_value.value()
+        # Generate results for non-outliers
+        not_outliers = False
+        if self.not_outliers.isChecked():
+            not_outliers = True
         input_dict['not_outliers'] = not_outliers
+        # Generate results for bottom outliers
+        bottom_outliers = False
+        if self.bottom_outliers.isChecked():
+            bottom_outliers = True
         input_dict['bottom_outliers'] = bottom_outliers
+        # return dictionary with all gathered inputs
         return input_dict
 
-    def yield_samples(self):
+    def yield_samples_from_table(self):
         table = self.sample_table
         for cell in range(table.rowCount()):
-            sample_type = table.item(cell, 0).text()
-            sample_name = table.item(cell, 1).text()
-            yield sample_type, sample_name
+            sample_name = table.item(cell, 0).text()
+            sample_type = table.item(cell, 1).text()
+            yield sample_name, sample_type
+
+    # ###
+    # ### MESSAGE BOXES
+    # ###
+
+    def module_done(self):
+        title = "Analysis finished!"
+        mes = "Your analysis has finished. No errors were reported."
+        QMessageBox.information(self, title, mes)
+
+    def memory_warning(self):
+        if self.sender().isChecked():
+            title = 'Warning!'
+            mes = ("Depending on your dataset, this option can consume a LOT of memory. "
+                   "Please make sure that your computer can handle it!")
+            QMessageBox.critical(self, title, mes)
+
+    def same_sample(self):
+        title = 'Error: sample name already in table'
+        mes = ("Sorry, you can't do this because this sample name is already in the table. "
+               "Please select a different name.")
+        QMessageBox.critical(self, title, mes)
+
+    def more_than_one_reference(self):
+        title = "Error: more than one reference selected"
+        mes = ("Sorry, you can't do this because there is already a reference column in the table. "
+               "Please remove it before adding a reference.")
+        QMessageBox.critical(self, title, mes)
+
+    def confirm_clear_data(self):
+        title = 'Confirm Action'
+        mes = "Table will be cleared. Are you sure?"
+        reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            return True
+        return False
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    gui = SCOUTS()
-    gui.show()
+    scouts = SCOUTS()
+    scouts.show()
     sys.exit(app.exec_())
