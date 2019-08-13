@@ -664,7 +664,7 @@ class SCOUTS(QMainWindow):
         if not self.no_gates.isChecked():
             if self.cytof_gates.isChecked():
                 input_dict['gate_cutoff'] = self.gates_cytof_value.value()
-            if self.rnaseq_gates.isChecked():
+            elif self.rnaseq_gates.isChecked():
                 input_dict['gate_cutoff'] = self.rnaseq_gates_value.value()
         # Generate results for non-outliers
         non_outliers = False

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import os
 from pprint import pprint
-from typing import List, Tuple, TYPE_CHECKING, Optional
+from typing import List, Tuple, TYPE_CHECKING, Optional, Dict
 
 import numpy as np
 import pandas as pd
 
-from src.custom_exceptions import PandasInputError, SampleNamingError, EmptySampleListError
+from src.custom_exceptions import PandasInputError, SampleNamingError, NoReferenceError
 
 # Pandas DataFrame options (this goes to logfile)
 pd.set_option('display.max_rows', 50)
@@ -22,10 +22,23 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
             marker_rule: str, tukey_factor: float, export_csv: bool, export_excel: bool,
             single_excel: bool, sample_list: List[Tuple[str, str]], gate_cutoff: Optional[float],
             non_outliers: bool, bottom_outliers: bool):
-    df, control, samples = check_input(sample_list=sample_list, input_file=input_file, widget=widget)
-    df = apply_ms_gate(df=df, gate_cutoff=gate_cutoff)
-    # df.to_excel('gated_test.xlsx', index=False)
-    sample_dict, marker_dict = get_cutoff_values(df=df, samples=samples, gate_cutoff=gate_cutoff, tukey=tukey_factor)
+    df = load_dataframe(input_file=input_file)
+    if df is None:
+        raise PandasInputError(widget)
+    all_sample_names_are_in_df = check_sample_names(sample_list=sample_list, df=df)
+    if all_sample_names_are_in_df is False:
+        raise SampleNamingError(widget)
+    if gate_cutoff is not None:
+        if widget.cytof_gates.isChecked():
+            apply_cytof_gating(df=df, cutoff=gate_cutoff)
+        elif widget.rnaseq_gates.isChecked():
+            apply_rnaseq_gating(df=df, cutoff=gate_cutoff)
+    if cutoff_rule == 'reference':
+        ref = get_reference_sample(sample_list)
+        if ref is None:
+            raise NoReferenceError
+        cutoff_dict = get_cutoff_values(df, ref)
+    sample_dict, marker_dict = get_cutoff_valuess(df=df, samples=samples, gate_cutoff=gate_cutoff, tukey=tukey_factor)
     # Change directory to output directory, open log file
     os.chdir(output_folder)
     if 'log' not in os.listdir(os.getcwd()):
@@ -80,51 +93,46 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
         writer.save()
 
 
-def check_input(sample_list, input_file, widget):
-    samples = []
-    control = ''
-    for sample_type, sample in sample_list:
-        if sample_type == 'Yes':
-            control = sample
-        samples.append(sample)
-    # Check if samples were passed on the input table at all
-    try:
-        assert samples
-    except AssertionError:
-        raise EmptySampleListError
-    # Check if there is one sample passed as control
-    # Read input as pandas DataFrame, fails if file has unsupported extension
+def check_sample_names(sample_list: List[Tuple[str, str]], df: pd.DataFrame) -> Optional[int]:
+    sample_names = list(df.iloc[:, 0])  # Assumes first column = sample names (as per documentation)
+    for sample,  _ in sample_list:
+        if not any(sample in name for name in sample_names):
+            return False
+    return True
+
+
+def load_dataframe(input_file: str) -> Optional[pd.DataFrame]:
     if input_file.endswith('.xlsx') or input_file.endswith('xls'):
-        df = pd.read_excel(input_file)
+        return pd.read_excel(input_file, header=True)
     elif input_file.endswith('.csv'):
-        df = pd.read_csv(input_file)
-    else:
-        raise PandasInputError(widget)
-    # Check if sample names are part of any string in first row
-    for sample in samples:
-        try:
-            assert any(sample in text for text in list(df.iloc[:, 0]))
-        except AssertionError:
-            raise SampleNamingError(widget)
-    return df, control, samples
+        return pd.read_csv(input_file, header=True)
+    return None
 
 
-def apply_ms_gate(df, gate_cutoff):
-    if gate_cutoff is not None and type(gate_cutoff) != str:
-        for index, row in df.iterrows():
-            mean_row_value = np.mean(row[1:])
-            if mean_row_value <= gate_cutoff:
-                df = df.drop(index, axis=0)
-        df.reset_index(drop=True, inplace=True)
-    return df
+def apply_cytof_gating(df: pd.DataFrame, cutoff: float) -> None:
+    indices_to_drop = []
+    for index, row in df.iterrows():
+        mean_row_value = np.mean(row[1:])  # first row contains sample names
+        if mean_row_value <= cutoff:
+            indices_to_drop.append(index)
+    df.drop(indices_to_drop, axis=0, inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
 
-def apply_rnaseq_gate(filtered_df, gate_cutoff):
-    if type(gate_cutoff) == str:
-        return filtered_df.replace(0, np.nan)
+def apply_rnaseq_gating(df: pd.DataFrame, cutoff: float) -> None:
+    df.mask(df <= cutoff, np.nan, inplace=True)
 
 
-def get_cutoff_values(df, samples, gate_cutoff, tukey):
+def get_reference_sample(sample_list: List[Tuple[str, str]]) -> Optional[str]:
+    for sample, sample_type in sample_list:
+        if sample_type == 'Yes':
+            return sample
+    return None
+
+def get_cutoff_values(df: pd.DataFrame, ref: str) -> Dict:
+    filtered_df = df[df[list(df)[0]].str.contains(sample)]
+
+def get_cutoff_valuess(df, samples, gate_cutoff, tukey):
     # Build cutoff values
     marker_dict = {}
     sample_dict = {}  # Dict -> { 'sample' : { 'marker' : (. . .) } }

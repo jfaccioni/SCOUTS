@@ -43,6 +43,14 @@ class SampleNamingError(CustomException):
 class NoSampleError(CustomException):
     def __init__(self, widget):
         title = "Error: No samples selected"
-        message = ("Sorry, the analysis cannot be performed because no sample names were input."
+        message = ("Sorry, the analysis cannot be performed because no sample names were input. "
                    "Please add your sample names.")
+        super().__init__(widget, title, message)
+
+
+class NoReferenceError(CustomException):
+    def __init__(self, widget):
+        title = "Error: No samples selected"
+        message = ("Sorry, no reference sample was found on the sample list, but analysis was set to "
+                   "reference. Please add a reference sample, or change the rule for cutoff calculation.")
         super().__init__(widget, title, message)
