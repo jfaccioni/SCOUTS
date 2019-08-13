@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import os
 from pprint import pprint
+from typing import List, Tuple, TYPE_CHECKING, Optional
 
 import numpy as np
 import pandas as pd
 
-from src.custom_exceptions import PandasInputError, SampleNamingError
+from src.custom_exceptions import PandasInputError, SampleNamingError, EmptySampleListError
 
 # Pandas DataFrame options (this goes to logfile)
 pd.set_option('display.max_rows', 50)
 pd.set_option('display.max_columns', 50)
 pd.set_option('expand_frame_repr', False)
+
+if TYPE_CHECKING:
+    from PySide2.QtWidgets import QMainWindow
 
 
 def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rule: str,
@@ -87,7 +91,7 @@ def check_input(sample_list, input_file, widget):
     try:
         assert samples
     except AssertionError:
-        raise EmptySampleList
+        raise EmptySampleListError
     # Check if there is one sample passed as control
     # Read input as pandas DataFrame, fails if file has unsupported extension
     if input_file.endswith('.xlsx') or input_file.endswith('xls'):

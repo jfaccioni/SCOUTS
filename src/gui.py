@@ -10,6 +10,7 @@ from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog, QFormLayout, QFrame,
                                QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton,
                                QRadioButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+
 from src.analysis import analyse
 from src.custom_exceptions import (EmptySampleListError, GenericError, NoIOPathError, NoSampleError, PandasInputError,
                                    SampleNamingError)
