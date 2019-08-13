@@ -2,20 +2,20 @@ from __future__ import annotations
 
 import os
 import sys
+import traceback
 import webbrowser
-from typing import Dict, Generator, Tuple, TYPE_CHECKING
+from typing import Dict, Generator, TYPE_CHECKING, Tuple
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog, QFormLayout, QFrame,
-                               QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton,
-                               QRadioButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog,
+                               QFormLayout, QFrame, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow,
+                               QMessageBox, QPushButton, QRadioButton, QStackedWidget, QTableWidget,
+                               QTableWidgetItem, QVBoxLayout, QWidget)
 
 from src.analysis import analyse
-from src.custom_exceptions import (EmptySampleListError, GenericError, NoIOPathError, NoSampleError, PandasInputError,
-                                   SampleNamingError)
+from src.custom_exceptions import (CustomException, NoSampleError)
 
-CUSTOM_ERRORS = (EmptySampleListError, NoIOPathError, NoSampleError, PandasInputError, SampleNamingError)
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
 
@@ -609,9 +609,9 @@ class SCOUTS(QMainWindow):
         try:
             input_dict = self.parse_input()
             analyse(self, **input_dict)
-        except Exception as e:
-            if type(e) not in CUSTOM_ERRORS:
-                raise GenericError(self)
+        except Exception as error:
+            if not isinstance(error, CustomException):
+                self.generic_error_message(error)
         else:
             self.module_done()
 
@@ -621,7 +621,7 @@ class SCOUTS(QMainWindow):
         input_file = self.input_path.text()
         output_folder = self.output_path.text()
         if not (input_file or output_folder):
-            raise NoIOPathError(self)
+            raise self.no_io_path_error()
         input_dict['input_file'] = input_file
         input_dict['output_folder'] = output_folder
         # Set cutoff by reference or by sample rule
@@ -722,9 +722,15 @@ class SCOUTS(QMainWindow):
             return True
         return False
 
+    def generic_error_message(self, error) -> None:
+        trace = traceback.format_exc()
+        title = 'An error occurred!'
+        QMessageBox.critical(self, title, f"\n{str(error)}\n\nfull stack trace:\n\n{str(trace)}")
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     scouts = SCOUTS()
     scouts.show()
+
     sys.exit(app.exec_())
