@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sys
 import webbrowser
-from typing import Dict, Generator, Tuple
+from typing import Dict, Generator, Tuple, TYPE_CHECKING
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QPixmap
@@ -15,6 +15,8 @@ from src.custom_exceptions import (EmptySampleListError, GenericError, NoIOPathE
                                    SampleNamingError)
 
 CUSTOM_ERRORS = (EmptySampleListError, NoIOPathError, NoSampleError, PandasInputError, SampleNamingError)
+if TYPE_CHECKING:
+    from PySide2.QtCore import QEvent
 
 
 class SCOUTS(QMainWindow):
