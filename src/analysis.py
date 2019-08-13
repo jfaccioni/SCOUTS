@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import os
 from pprint import pprint
 
 import numpy as np
 import pandas as pd
+
+from src.custom_exceptions import PandasInputError, SampleNamingError
 
 # Pandas DataFrame options (this goes to logfile)
 pd.set_option('display.max_rows', 50)
@@ -10,16 +14,14 @@ pd.set_option('display.max_columns', 50)
 pd.set_option('expand_frame_repr', False)
 
 
-def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
-            export_csv, export_excel, group_excel, sample_list, gate_cutoff,
-            not_outliers, bottom_outliers):
-    df, control, samples = check_input(sample_list=sample_list,
-                                       input_file=input_file, widget=widget)
+def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rule: str,
+            marker_rule: str, tukey_factor: float, export_csv: bool, export_excel: bool,
+            single_excel: bool, sample_list: List[Tuple[str, str]], gate_cutoff: Optional[float],
+            non_outliers: bool, bottom_outliers: bool):
+    df, control, samples = check_input(sample_list=sample_list, input_file=input_file, widget=widget)
     df = apply_ms_gate(df=df, gate_cutoff=gate_cutoff)
     # df.to_excel('gated_test.xlsx', index=False)
-    sample_dict, marker_dict = get_cutoff_values(df=df, samples=samples,
-                                                 gate_cutoff=gate_cutoff,
-                                                 tukey=tukey)
+    sample_dict, marker_dict = get_cutoff_values(df=df, samples=samples, gate_cutoff=gate_cutoff, tukey=tukey_factor)
     # Change directory to output directory, open log file
     os.chdir(output_folder)
     if 'log' not in os.listdir(os.getcwd()):
@@ -36,15 +38,12 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
     # Iterate over yield_dataframes function, subsetting DataFrames and saving
     # each DataFrame to a different file
     df_list = []
-    for dataframe, *names in yield_dataframes(log=f, df=df,
-                                              sample_dict=sample_dict,
-                                              control=control,
-                                              outliers=cutoff_rule,
-                                              by_marker=by_marker,
+    for dataframe, *names in yield_dataframes(log=f, df=df, sample_dict=sample_dict, control=control,
+                                              outliers=cutoff_rule, by_marker=marker_rule,
                                               bottom_outliers=bottom_outliers):
         m, s, n, c = names
         population_df = None
-        if not_outliers:
+        if non_outliers:
             population_df = get_inverse_df(df, dataframe)
         # Create subfolder in output directory for each sample
         if s not in os.listdir(os.getcwd()):
@@ -61,9 +60,8 @@ def analyse(widget, input_file, output_folder, cutoff_rule, by_marker, tukey,
         if export_excel:
             dataframe.to_excel(f'{output}.xlsx', sheet_name=m, index=False)
             if population_df is not None:
-                population_df.to_excel(f'{output}_pop.xlsx', sheet_name=m,
-                                       index=False)
-            if group_excel:
+                population_df.to_excel(f'{output}_pop.xlsx', sheet_name=m, index=False)
+            if single_excel:
                 df_list.append((dataframe, main_name))
                 if population_df is not None:
                     df_list.append((population_df, main_name + '_pop'))
@@ -91,10 +89,6 @@ def check_input(sample_list, input_file, widget):
     except AssertionError:
         raise EmptySampleList
     # Check if there is one sample passed as control
-    try:
-        assert control
-    except AssertionError:
-        raise ControlNotFound
     # Read input as pandas DataFrame, fails if file has unsupported extension
     if input_file.endswith('.xlsx') or input_file.endswith('xls'):
         df = pd.read_excel(input_file)
@@ -151,10 +145,10 @@ def get_cutoff_values(df, samples, gate_cutoff, tukey):
     return sample_dict, marker_dict
 
 
-def yield_dataframes(log, df, sample_dict, control,
-                     outliers, by_marker, bottom_outliers):
-
-    # RULE: outliers by control cutoff, outliers for a single marker
+def yield_dataframes(log, df, sample_dict, control, outliers, by_marker, bottom_outliers):
+    # ###
+    # ### RULE: outliers by control cutoff, outliers for a single marker
+    # ###
     if outliers in ('control', 'both') and by_marker in ('marker', 'both'):
         log.write('------- CUTOFF BY CONTROL, OUTLIERS BY MARKER -------\n\n\n')
         for sample, _ in sample_dict.items():
@@ -185,8 +179,9 @@ def yield_dataframes(log, df, sample_dict, control,
                     log.write(str(output_df))
                     log.write('\n\n\n\n')
                     yield output_df, marker, sample, 'control', cut_text
-
-    # RULE: outliers by control cutoff, outliers for any marker in row
+    # ###
+    # ### RULE: outliers by control cutoff, outliers for any marker in row
+    # ###
     if outliers in ('control', 'both') and by_marker in ('row', 'both'):
         log.write('------- CUTOFF BY CONTROL, OUTLIERS BY ROW -------\n\n\n')
         for sample, _ in sample_dict.items():
@@ -218,8 +213,9 @@ def yield_dataframes(log, df, sample_dict, control,
                 log.write(str(output_df))
                 log.write('\n\n\n\n')
                 yield output_df, 'all_markers', sample, 'control', cut_text
-
-    # RULE: outliers by sample cutoff, outliers for a single marker
+    # ###
+    # ### RULE: outliers by sample cutoff, outliers for a single marker
+    # ###
     if outliers in ('sample', 'both') and by_marker in ('marker', 'both'):
         log.write('------- CUTOFF BY SAMPLE, OUTLIERS BY MARKER -------\n\n\n')
         for sample, mkdict in sample_dict.items():
@@ -250,8 +246,9 @@ def yield_dataframes(log, df, sample_dict, control,
                     log.write(str(output_df))
                     log.write('\n\n\n\n')
                     yield output_df, marker, sample, 'sample', cut_text
-
-    # RULE: outliers by sample cutoff, outliers for any marker in row
+    # ###
+    # ### RULE: outliers by sample cutoff, outliers for any marker in row
+    # ###
     if outliers in ('sample', 'both') and by_marker in ('row', 'both'):
         log.write('------- CUTOFF BY SAMPLE, OUTLIERS BY ROW -------\n\n\n')
         for sample, mkdict in sample_dict.items():
@@ -283,7 +280,6 @@ def yield_dataframes(log, df, sample_dict, control,
 
 
 def get_inverse_df(full_df, partial_df):
-    df_merge = full_df.merge(partial_df.drop_duplicates(), on=list(full_df),
-                             how='left', indicator=True)
+    df_merge = full_df.merge(partial_df.drop_duplicates(), on=list(full_df), how='left', indicator=True)
     inverse_df = full_df[df_merge['_merge'] == 'left_only']
     return inverse_df

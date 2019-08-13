@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 import os
 import sys
 import webbrowser
+from typing import Dict, Generator, Tuple
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog, QFormLayout, QFrame,
                                QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton,
                                QRadioButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
-
+from src.analysis import analyse
 from src.custom_exceptions import (EmptySampleListError, GenericError, NoIOPathError, NoSampleError, PandasInputError,
                                    SampleNamingError)
 
@@ -38,7 +41,7 @@ class SCOUTS(QMainWindow):
         'credits': 'QLabel {font-style:italic; font-size:10pt}',
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         # ###
         # ### Main Window setup
         # ###
@@ -128,7 +131,6 @@ class SCOUTS(QMainWindow):
         self.analysis_frame.setGeometry(self.margin['left'],
                                         self.widget_vposition(self.analysis_header) + 5, self.stretch(), 155)
         self.analysis_frame.setFrameShape(QFrame.StyledPanel)
-        QVBoxLayout()
         self.analysis_frame.setLayout(QVBoxLayout())
         # Cutoff text
         self.cutoff_text = QLabel(self.main_page)
@@ -475,27 +477,27 @@ class SCOUTS(QMainWindow):
     # ###
 
     @staticmethod
-    def widget_hposition(widget):
+    def widget_hposition(widget: QWidget) -> int:
         return widget.width() + widget.x()
 
     @staticmethod
-    def widget_vposition(widget):
+    def widget_vposition(widget: QWidget) -> int:
         return widget.height() + widget.y()
 
     @staticmethod
-    def set_icon(widget, icon):
+    def set_icon(widget: QWidget, icon: str) -> None:
         i = QIcon()
         i.addPixmap(QPixmap(os.path.join('icons', f'{icon}.svg')))
         widget.setIcon(i)
 
     @staticmethod
-    def get_help():
+    def get_help() -> None:
         webbrowser.open('https://scouts.readthedocs.io/en/master/')
 
-    def stretch(self):
+    def stretch(self) -> int:
         return self.size['width'] - (self.margin['left'] + self.margin['right'])
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QEvent) -> None:
         title = 'Quit Application'
         mes = "Are you sure you want to quit?"
         reply = QMessageBox.question(self, title, mes,
@@ -510,20 +512,20 @@ class SCOUTS(QMainWindow):
     # ### STACKED WIDGET PAGE SWITCHING
     # ###
 
-    def goto_main_page(self):
+    def goto_main_page(self) -> None:
         self.stacked_pages.setCurrentWidget(self.main_page)
 
-    def goto_samples_page(self):
+    def goto_samples_page(self) -> None:
         self.stacked_pages.setCurrentWidget(self.samples_page)
 
-    def goto_gates_page(self):
+    def goto_gates_page(self) -> None:
         self.stacked_pages.setCurrentWidget(self.gates_page)
 
     # ###
     # ### I/O PATH LOGIC
     # ###
 
-    def get_path(self):
+    def get_path(self) -> None:
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         name = self.sender().objectName()
@@ -542,7 +544,7 @@ class SCOUTS(QMainWindow):
     # ### SAMPLE NAME/SAMPLE TABLE GUI LOGIC
     # ###
 
-    def write_to_sample_table(self):
+    def write_to_sample_table(self) -> None:
         table = self.sample_table
         ref = 'No'
         sample = self.sample_name.text()
@@ -569,13 +571,13 @@ class SCOUTS(QMainWindow):
             self.is_reference.setChecked(False)
             self.sample_name.setText('')
 
-    def remove_from_sample_table(self):
+    def remove_from_sample_table(self) -> None:
         table = self.sample_table
         rows = set(index.row() for index in table.selectedIndexes())
         for index in sorted(rows, reverse=True):
             self.sample_table.removeRow(index)
 
-    def prompt_clear_data(self):
+    def prompt_clear_data(self) -> None:
         if self.confirm_clear_data():
             table = self.sample_table
             while table.rowCount():
@@ -585,7 +587,7 @@ class SCOUTS(QMainWindow):
     # ### GATING GUI LOGIC
     # ###
 
-    def activate_gate(self):
+    def activate_gate(self) -> None:
         if self.sender().objectName() == 'no':
             self.cytof_gates_value.setEnabled(False)
             self.rnaseq_gates_value.setEnabled(False)
@@ -600,17 +602,17 @@ class SCOUTS(QMainWindow):
     # ### CONNECT SCOUTS TO ANALYTICAL MODULES
     # ###
 
-    def analyse(self):
+    def analyse(self) -> None:
         try:
             input_dict = self.parse_input()
-            scouts_analysis.analyse(self, **input_dict)
+            analyse(self, **input_dict)
         except Exception as e:
-            if type(e) == GenericError:
-                raise GenericError(widget)
+            if type(e) not in CUSTOM_ERRORS:
+                raise GenericError(self)
         else:
             self.module_done()
 
-    def parse_input(self):
+    def parse_input(self) -> Dict:
         input_dict = {}
         # Input and output
         input_file = self.input_path.text()
@@ -662,10 +664,10 @@ class SCOUTS(QMainWindow):
             if self.rnaseq_gates.isChecked():
                 input_dict['gate_cutoff'] = self.rnaseq_gates_value.value()
         # Generate results for non-outliers
-        not_outliers = False
+        non_outliers = False
         if self.not_outliers.isChecked():
-            not_outliers = True
-        input_dict['not_outliers'] = not_outliers
+            non_outliers = True
+        input_dict['non_outliers'] = non_outliers
         # Generate results for bottom outliers
         bottom_outliers = False
         if self.bottom_outliers.isChecked():
@@ -674,7 +676,7 @@ class SCOUTS(QMainWindow):
         # return dictionary with all gathered inputs
         return input_dict
 
-    def yield_samples_from_table(self):
+    def yield_samples_from_table(self) -> Generator[Tuple[str, str], None, None]:
         table = self.sample_table
         for cell in range(table.rowCount()):
             sample_name = table.item(cell, 0).text()
@@ -685,31 +687,31 @@ class SCOUTS(QMainWindow):
     # ### MESSAGE BOXES
     # ###
 
-    def module_done(self):
+    def module_done(self) -> None:
         title = "Analysis finished!"
         mes = "Your analysis has finished. No errors were reported."
         QMessageBox.information(self, title, mes)
 
-    def memory_warning(self):
+    def memory_warning(self) -> None:
         if self.sender().isChecked():
             title = 'Warning!'
             mes = ("Depending on your dataset, this option can consume a LOT of memory. "
                    "Please make sure that your computer can handle it!")
             QMessageBox.critical(self, title, mes)
 
-    def same_sample(self):
+    def same_sample(self) -> None:
         title = 'Error: sample name already in table'
         mes = ("Sorry, you can't do this because this sample name is already in the table. "
                "Please select a different name.")
         QMessageBox.critical(self, title, mes)
 
-    def more_than_one_reference(self):
+    def more_than_one_reference(self) -> None:
         title = "Error: more than one reference selected"
         mes = ("Sorry, you can't do this because there is already a reference column in the table. "
                "Please remove it before adding a reference.")
         QMessageBox.critical(self, title, mes)
 
-    def confirm_clear_data(self):
+    def confirm_clear_data(self) -> bool:
         title = 'Confirm Action'
         mes = "Table will be cleared. Are you sure?"
         reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)

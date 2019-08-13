@@ -5,20 +5,21 @@ from PySide2.QtWidgets import QMessageBox
 
 class GenericError(Exception):
     def __init__(self, widget):
-        Exception.__init__(self)
         trace = traceback.format_exc()
         self.generic_error_message(widget, trace)
 
+    def __str__(self):
+        return super().__str__()
+
     def generic_error_message(self, widget, trace):
         title = 'An error occurred!'
-        mes = "Sorry, the analysis has been stopped due to the following error:"
-        fullmes = mes + '\n' + str(self) + '\n\nfull stack trace:\n\n' + str(trace)
-        QMessageBox.critical(widget, title, fullmes)
+        mes = ("Sorry, the analysis has been stopped due to the following error:"
+               f"\n{str(self)}\n\nfull stack trace:\n\n{str(trace)}")
+        QMessageBox.critical(widget, title, mes)
 
 
 class NoIOPathError(Exception):
     def __init__(self, widget):
-        Exception.__init__(self)
         self.no_file_folder_found(widget)
 
     @staticmethod
@@ -31,7 +32,6 @@ class NoIOPathError(Exception):
 
 class EmptySampleListError(Exception):
     def __init__(self, widget):
-        Exception.__init__(self)
         self.empty_sample_list(widget)
 
     @staticmethod
@@ -44,7 +44,6 @@ class EmptySampleListError(Exception):
 
 class PandasInputError(Exception):
     def __init__(self, widget):
-        Exception.__init__(self)
         self.pandas_input_error(widget)
 
     @staticmethod
@@ -58,7 +57,6 @@ class PandasInputError(Exception):
 
 class SampleNamingError(Exception):
     def __init__(self, widget):
-        Exception.__init__(self)
         self.sample_naming_error(widget)
 
     @staticmethod
@@ -66,12 +64,11 @@ class SampleNamingError(Exception):
         title = 'Error: sample names not in input file'
         mes = ("Sorry, your sample names were not found in the input file. Please "
                "make sure that the names were typed correctly (case-sensitive).")
-        QMessageBox.critical(widget, title, mes + mes2)
+        QMessageBox.critical(widget, title, mes)
 
 
 class NoSampleError(Exception):
     def __init__(self, widget):
-        Exception.__init__(self)
         self.no_samples(widget)
 
     @staticmethod
@@ -79,4 +76,4 @@ class NoSampleError(Exception):
         title = "Error: No samples selected"
         mes = ("Sorry, the analysis cannot be performed because no sample names were input."
                "Please add your sample names.")
-        QMessageBox.critical(widget, title, mes + mes2)
+        QMessageBox.critical(widget, title, mes)
