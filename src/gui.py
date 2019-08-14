@@ -241,14 +241,17 @@ class SCOUTS(QMainWindow):
         self.output_csv = QCheckBox(self.main_page)
         self.output_csv.setText('Export multiple text files (.csv)')
         self.output_csv.setStyleSheet(self.style['checkbox'])
+        self.output_csv.setChecked(True)
         # Generate XLSX checkbox
         self.output_excel = QCheckBox(self.main_page)
         self.output_excel.setText('Export multiple Excel spreadsheets (.xlsx)')
         self.output_excel.setStyleSheet(self.style['checkbox'])
+        self.output_excel.clicked.connect(self.enable_single_excel)
         # Generate single, large XLSX checkbox
         self.single_excel = QCheckBox(self.main_page)
-        self.single_excel.setText('Also save one Excel spreadsheet with each analysis in individual sheets')
+        self.single_excel.setText('Also save one Excel spreadsheet\nwith each analysis in individual sheets')
         self.single_excel.setStyleSheet(self.style['checkbox'])
+        self.single_excel.setEnabled(False)
         self.single_excel.clicked.connect(self.memory_warning)
         # Add widgets above to output frame layout
         self.output_frame.layout().addRow(self.output_button, self.output_path)
@@ -476,8 +479,11 @@ class SCOUTS(QMainWindow):
         self.save_gates.clicked.connect(self.goto_main_page)
 
     # ###
-    # ### STATIC METHODS
+    # ### WIDGET ADJUSTMENT METHODS
     # ###
+
+    def stretch(self) -> int:
+        return self.size['width'] - (self.margin['left'] + self.margin['right'])
 
     @staticmethod
     def widget_hposition(widget: QWidget) -> int:
@@ -493,12 +499,13 @@ class SCOUTS(QMainWindow):
         i.addPixmap(QPixmap(os.path.join('icons', f'{icon}.svg')))
         widget.setIcon(i)
 
+    # ###
+    # ### HELP & QUIT
+    # ###
+
     @staticmethod
     def get_help() -> None:
         webbrowser.open('https://scouts.readthedocs.io/en/master/')
-
-    def stretch(self) -> int:
-        return self.size['width'] - (self.margin['left'] + self.margin['right'])
 
     def closeEvent(self, event: QEvent) -> None:
         title = 'Quit Application'
@@ -525,7 +532,7 @@ class SCOUTS(QMainWindow):
         self.stacked_pages.setCurrentWidget(self.gates_page)
 
     # ###
-    # ### I/O PATH LOGIC
+    # ### MAIN PAGE GUI LOGIC
     # ###
 
     def get_path(self) -> None:
@@ -542,6 +549,13 @@ class SCOUTS(QMainWindow):
             return
         if query:
             echo.setText(query)
+
+    def enable_single_excel(self):
+        if self.output_excel.isChecked():
+            self.single_excel.setEnabled(True)
+        else:
+            self.single_excel.setEnabled(False)
+            self.single_excel.setChecked(False)
 
     # ###
     # ### SAMPLE NAME/SAMPLE TABLE GUI LOGIC

@@ -22,75 +22,75 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
             marker_rule: str, tukey_factor: float, export_csv: bool, export_excel: bool,
             single_excel: bool, sample_list: List[Tuple[str, str]], gate_cutoff: Optional[float],
             non_outliers: bool, bottom_outliers: bool):
+    # Loads df and checks for file extension
     df = load_dataframe(input_file=input_file)
     if df is None:
         raise PandasInputError(widget)
+    # Checks if all sample names are in at least one cell of the first column in the df
     all_sample_names_are_in_df = check_sample_names(sample_list=sample_list, df=df)
     if all_sample_names_are_in_df is False:
         raise SampleNamingError(widget)
+    # Apply gates to df, if any
     if gate_cutoff is not None:
         if widget.cytof_gates.isChecked():
             apply_cytof_gating(df=df, cutoff=gate_cutoff)
         elif widget.rnaseq_gates.isChecked():
             apply_rnaseq_gating(df=df, cutoff=gate_cutoff)
-    if cutoff_rule == 'reference':
-        ref = get_reference_sample(sample_list)
-        if ref is None:
-            raise NoReferenceError
-        cutoff_dict = get_cutoff_values(df, ref)
-    sample_dict, marker_dict = get_cutoff_valuess(df=df, samples=samples, gate_cutoff=gate_cutoff, tukey=tukey_factor)
+    # Gets cutoff dict -> { 'sample' : { 'marker' : (Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) } }
+    cutoff_dict = get_cutoff_values(df=df, sample_list=sample_list, cutoff_rule=cutoff_rule, tukey=tukey_factor)
+    pprint(cutoff_dict)
     # Change directory to output directory, open log file
-    os.chdir(output_folder)
-    if 'log' not in os.listdir(os.getcwd()):
-        os.mkdir('log')
-    f = open(os.path.join('log', 'outlier_analysis_log.txt'), 'w')
-    # Save all cutoff values as pretty-printed dictionary
-    f.write('CUTOFF VALUES AS A DICTIONARY:\n')
-    f.write('the data is ordered as:\n\n')
-    f.write("{ 'sample' : { 'marker' : (. . .) } }\n")
-    f.write("(. . .) represent this tuple: ")
-    f.write("(Q1, Q3, IQR, (upper cutoff, lower cutoff)\n\n")
-    pprint(sample_dict, stream=f, width=120)
-    f.write('\n\n')
-    # Iterate over yield_dataframes function, subsetting DataFrames and saving
-    # each DataFrame to a different file
-    df_list = []
-    for dataframe, *names in yield_dataframes(log=f, df=df, sample_dict=sample_dict, control=control,
-                                              outliers=cutoff_rule, by_marker=marker_rule,
-                                              bottom_outliers=bottom_outliers):
-        m, s, n, c = names
-        population_df = None
-        if non_outliers:
-            population_df = get_inverse_df(df, dataframe)
-        # Create subfolder in output directory for each sample
-        if s not in os.listdir(os.getcwd()):
-            os.mkdir(s)
-        main_name = f'{m}_{s}_{c}_cutoff_by_{n}'
-        # avoids error when marker name has / or \ in it
-        main_name = main_name.replace('\\', '_')
-        main_name = main_name.replace('/', '_')
-        output = os.path.join(s, f'{main_name}')
-        if export_csv:
-            dataframe.to_csv(f'{output}.csv', index=False)
-            if population_df is not None:
-                population_df.to_csv(f'{output}_pop.csv', index=False)
-        if export_excel:
-            dataframe.to_excel(f'{output}.xlsx', sheet_name=m, index=False)
-            if population_df is not None:
-                population_df.to_excel(f'{output}_pop.xlsx', sheet_name=m, index=False)
-            if single_excel:
-                df_list.append((dataframe, main_name))
-                if population_df is not None:
-                    df_list.append((population_df, main_name + '_pop'))
-
-    # Close log file
-    f.close()
-    # Save master excel file
-    if df_list:
-        writer = pd.ExcelWriter('master_output.xlsx')
-        for dataframe, name in df_list:
-            dataframe.to_excel(writer, name, index=False)
-        writer.save()
+    # os.chdir(output_folder)
+    # if 'log' not in os.listdir(os.getcwd()):
+    #     os.mkdir('log')
+    # f = open(os.path.join('log', 'outlier_analysis_log.txt'), 'w')
+    # # Save all cutoff values as pretty-printed dictionary
+    # f.write('CUTOFF VALUES AS A DICTIONARY:\n')
+    # f.write('the data is ordered as:\n\n')
+    # f.write("{ 'sample' : { 'marker' : (. . .) } }\n")
+    # f.write("(. . .) represent this tuple: ")
+    # f.write("(Q1, Q3, IQR, (upper cutoff, lower cutoff)\n\n")
+    # pprint(sample_dict, stream=f, width=120)
+    # f.write('\n\n')
+    # # Iterate over yield_dataframes function, subsetting DataFrames and saving
+    # # each DataFrame to a different file
+    # df_list = []
+    # for dataframe, *names in yield_dataframes(log=f, df=df, sample_dict=sample_dict, control=control,
+    #                                           outliers=cutoff_rule, by_marker=marker_rule,
+    #                                           bottom_outliers=bottom_outliers):
+    #     m, s, n, c = names
+    #     population_df = None
+    #     if non_outliers:
+    #         population_df = get_inverse_df(df, dataframe)
+    #     # Create subfolder in output directory for each sample
+    #     if s not in os.listdir(os.getcwd()):
+    #         os.mkdir(s)
+    #     main_name = f'{m}_{s}_{c}_cutoff_by_{n}'
+    #     # avoids error when marker name has / or \ in it
+    #     main_name = main_name.replace('\\', '_')
+    #     main_name = main_name.replace('/', '_')
+    #     output = os.path.join(s, f'{main_name}')
+    #     if export_csv:
+    #         dataframe.to_csv(f'{output}.csv', index=False)
+    #         if population_df is not None:
+    #             population_df.to_csv(f'{output}_pop.csv', index=False)
+    #     if export_excel:
+    #         dataframe.to_excel(f'{output}.xlsx', sheet_name=m, index=False)
+    #         if population_df is not None:
+    #             population_df.to_excel(f'{output}_pop.xlsx', sheet_name=m, index=False)
+    #         if single_excel:
+    #             df_list.append((dataframe, main_name))
+    #             if population_df is not None:
+    #                 df_list.append((population_df, main_name + '_pop'))
+    #
+    # # Close log file
+    # f.close()
+    # # Save master excel file
+    # if df_list:
+    #     writer = pd.ExcelWriter('master_output.xlsx')
+    #     for dataframe, name in df_list:
+    #         dataframe.to_excel(writer, name, index=False)
+    #     writer.save()
 
 
 def check_sample_names(sample_list: List[Tuple[str, str]], df: pd.DataFrame) -> Optional[int]:
@@ -103,9 +103,9 @@ def check_sample_names(sample_list: List[Tuple[str, str]], df: pd.DataFrame) -> 
 
 def load_dataframe(input_file: str) -> Optional[pd.DataFrame]:
     if input_file.endswith('.xlsx') or input_file.endswith('xls'):
-        return pd.read_excel(input_file, header=True)
+        return pd.read_excel(input_file, header=0)
     elif input_file.endswith('.csv'):
-        return pd.read_csv(input_file, header=True)
+        return pd.read_csv(input_file, header=0)
     return None
 
 
@@ -123,38 +123,52 @@ def apply_rnaseq_gating(df: pd.DataFrame, cutoff: float) -> None:
     df.mask(df <= cutoff, np.nan, inplace=True)
 
 
-def get_reference_sample(sample_list: List[Tuple[str, str]]) -> Optional[str]:
+def get_cutoff_values(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_rule: str, tukey: float) -> Dict:
+    if cutoff_rule == 'reference':
+        reference = get_reference_sample_name(sample_list)
+        if reference is None:
+            raise NoReferenceError  # If the user chose to analyse by reference but hadn't selected any reference
+        reference_dict = get_cutoff_values_for_single_sample(df=df, sample=reference, tukey=tukey)
+        return {reference: reference_dict}
+    elif cutoff_rule == 'sample':
+        samples = get_all_sample_names(sample_list)
+        return get_cutoff_values_for_all_samples(df=df, samples=samples, tukey=tukey)
+
+
+def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> Optional[str]:
     for sample, sample_type in sample_list:
         if sample_type == 'Yes':
             return sample
     return None
 
-def get_cutoff_values(df: pd.DataFrame, ref: str) -> Dict:
-    filtered_df = df[df[list(df)[0]].str.contains(sample)]
 
-def get_cutoff_valuess(df, samples, gate_cutoff, tukey):
-    # Build cutoff values
-    marker_dict = {}
-    sample_dict = {}  # Dict -> { 'sample' : { 'marker' : (. . .) } }
+def get_all_sample_names(sample_list: List[Tuple[str, str]]) -> List[str]:
+    return [tup[0] for tup in sample_list]
+
+
+def get_cutoff_values_for_single_sample(df: pd.DataFrame, sample: str, tukey: float):
+    reference_dict = {}
+    filtered_df = df[df.iloc[:, 0].str.contains(sample)]
+    quantile_df = filtered_df.quantile([0.25, 0.75])
+    for marker in quantile_df:
+        reference_dict[marker] = get_sample_statistics(tukey=tukey, marker_series=quantile_df[marker])
+    return reference_dict
+
+
+def get_cutoff_values_for_all_samples(df: pd.DataFrame, samples: List[str], tukey: float):
+    sample_dict = {}
     for sample in samples:
-        marker_dict = {}  # Dict -> { 'marker' : (Q1, Q3, IQR, cutoff value) }
-        # Select rows containing the string stored in "sample"
-        filtered_df = df[df[list(df)[0]].str.contains(sample)]  # don't ask!
-        # apply gate -> sc-RNAseq rule
-        rna_gated_df = apply_rnaseq_gate(filtered_df, gate_cutoff)
-        if rna_gated_df is not None:
-            filtered_df = rna_gated_df
-        quantile_df = filtered_df.quantile([0.25, 0.75])
-        for marker in quantile_df:
-            first_quartile, third_quartile = quantile_df[marker]
-            iqr = third_quartile - first_quartile
-            upper_cutoff = third_quartile + (iqr * tukey)
-            lower_cutoff = first_quartile - (iqr * tukey)
-            cutoff = (upper_cutoff, lower_cutoff)
-            marker_dict[marker] = (first_quartile, third_quartile, iqr, cutoff)
-        sample_dict[sample] = marker_dict
-    assert sample_dict, marker_dict
-    return sample_dict, marker_dict
+        markers_dict = get_cutoff_values_for_single_sample(df=df, sample=sample, tukey=tukey)
+        sample_dict[sample] = markers_dict
+    return sample_dict
+
+
+def get_sample_statistics(tukey, marker_series: pd.Series) -> Tuple[float, float, float, float, float]:
+    first_quartile, third_quartile = marker_series
+    iqr = third_quartile - first_quartile
+    upper_cutoff = third_quartile + (iqr * tukey)
+    lower_cutoff = first_quartile - (iqr * tukey)
+    return first_quartile, third_quartile, iqr, lower_cutoff, upper_cutoff
 
 
 def yield_dataframes(log, df, sample_dict, control, outliers, by_marker, bottom_outliers):
