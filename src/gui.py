@@ -14,13 +14,14 @@ from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpi
                                QTableWidgetItem, QVBoxLayout, QWidget)
 
 from src.analysis import analyse
-from src.custom_exceptions import (CustomException, NoSampleError)
+from src.custom_exceptions import CustomException, NoSampleError
 
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
 
 
 class SCOUTS(QMainWindow):
+    """Main Window Widget for SCOUTS."""
     margin = {
         'left': 10,
         'top': 5,
@@ -45,6 +46,8 @@ class SCOUTS(QMainWindow):
     }
 
     def __init__(self) -> None:
+        """SCOUTS Constructor. Defines all aspects of the GUI."""
+
         # ###
         # ### Main Window setup
         # ###
@@ -91,7 +94,7 @@ class SCOUTS(QMainWindow):
         # Input frame
         self.input_frame = QFrame(self.main_page)
         self.input_frame.setGeometry(self.margin['left'],
-                                     self.widget_vposition(self.input_header) + 5, self.stretch(), 105)
+                                     self.widget_vposition(self.input_header) + 5, self.rlimit(), 105)
         self.input_frame.setFrameShape(QFrame.StyledPanel)
         self.input_frame.setLayout(QFormLayout())
         # Input button
@@ -132,52 +135,60 @@ class SCOUTS(QMainWindow):
         # Analysis frame
         self.analysis_frame = QFrame(self.main_page)
         self.analysis_frame.setGeometry(self.margin['left'],
-                                        self.widget_vposition(self.analysis_header) + 5, self.stretch(), 155)
+                                        self.widget_vposition(self.analysis_header) + 5, self.rlimit(), 155)
         self.analysis_frame.setFrameShape(QFrame.StyledPanel)
         self.analysis_frame.setLayout(QVBoxLayout())
         # Cutoff text
         self.cutoff_text = QLabel(self.main_page)
-        self.cutoff_text.setText('Consider outliers using cutoff from:')
+        self.cutoff_text.setText('For each sample, consider outliers using cutoff value from:')
         self.cutoff_text.setStyleSheet(self.style['bold-label'])
         # Cutoff button group
         self.cutoff_group = QButtonGroup(self)
         # Cutoff by sample
         self.cutoff_sample = QRadioButton(self.main_page)
-        self.cutoff_sample.setText('sample')
+        self.cutoff_sample.setText('the sample itself')
+        self.cutoff_sample.setObjectName('sample')
         self.cutoff_sample.setStyleSheet(self.style['radio button'])
         self.cutoff_sample.setChecked(True)
         self.cutoff_group.addButton(self.cutoff_sample)
         # Cutoff by reference
         self.cutoff_reference = QRadioButton(self.main_page)
-        self.cutoff_reference.setText('reference')
+        self.cutoff_reference.setText('a reference sample')
+        self.cutoff_reference.setObjectName('ref')
         self.cutoff_reference.setStyleSheet(self.style['radio button'])
         self.cutoff_group.addButton(self.cutoff_reference)
         # Both cutoffs
         self.cutoff_both = QRadioButton(self.main_page)
         self.cutoff_both.setText('both')
+        self.cutoff_both.setObjectName('sample ref')
         self.cutoff_both.setStyleSheet(self.style['radio button'])
+        self.cutoff_both.pressed.connect(self.not_implemented_error_message)  # TODO
         self.cutoff_group.addButton(self.cutoff_both)
         # Markers text
         self.markers_text = QLabel(self.main_page)
         self.markers_text.setStyleSheet(self.style['bold-label'])
-        self.markers_text.setText('Consider outliers for:')
+        self.markers_text.setText('Calculate outliers for:')
         # Markers button group
         self.markers_group = QButtonGroup(self)
         # Single marker
         self.single_marker = QRadioButton(self.main_page)
-        self.single_marker.setText('single marker')
+        self.single_marker.setText('each individual marker')
+        self.single_marker.setObjectName('single')
         self.single_marker.setStyleSheet(self.style['radio button'])
         self.single_marker.setChecked(True)
         self.markers_group.addButton(self.single_marker)
         # Any marker
         self.any_marker = QRadioButton(self.main_page)
         self.any_marker.setText('any marker')
+        self.any_marker.setObjectName('any')
         self.any_marker.setStyleSheet(self.style['radio button'])
         self.markers_group.addButton(self.any_marker)
         # Both methods
         self.both_methods = QRadioButton(self.main_page)
         self.both_methods.setText('both methods')
+        self.both_methods.setObjectName('single any')
         self.both_methods.setStyleSheet(self.style['radio button'])
+        self.both_methods.pressed.connect(self.not_implemented_error_message)  # TODO
         self.markers_group.addButton(self.both_methods)
         # Tukey text
         self.tukey_text = QLabel(self.main_page)
@@ -224,7 +235,7 @@ class SCOUTS(QMainWindow):
         # Output frame
         self.output_frame = QFrame(self.main_page)
         self.output_frame.setGeometry(self.margin['left'],
-                                      self.widget_vposition(self.output_header) + 5, self.stretch(), 140)
+                                      self.widget_vposition(self.output_header) + 5, self.rlimit(), 140)
         self.output_frame.setFrameShape(QFrame.StyledPanel)
         self.output_frame.setLayout(QFormLayout())
         # Output button
@@ -263,7 +274,7 @@ class SCOUTS(QMainWindow):
         # Run button (stand-alone)
         self.run_button = QPushButton(self.main_page)
         self.run_button.setGeometry(self.margin['left'],
-                                    self.widget_vposition(self.output_frame) + 5, self.stretch(), 30)
+                                    self.widget_vposition(self.output_frame) + 5, self.rlimit(), 30)
         self.set_icon(self.run_button, 'pipe')
         self.run_button.setText(' Run!')
         self.run_button.setText(' Run!')
@@ -271,7 +282,7 @@ class SCOUTS(QMainWindow):
         # Help-quit frame (invisible)
         self.helpquit_frame = QFrame(self.main_page)
         self.helpquit_frame.setGeometry(self.margin['left'],
-                                        self.widget_vposition(self.run_button) + 5, self.stretch(), 30)
+                                        self.widget_vposition(self.run_button) + 5, self.rlimit(), 30)
         helpquit_layout = QHBoxLayout()
         helpquit_layout.setMargin(0)
         self.helpquit_frame.setLayout(helpquit_layout)
@@ -314,7 +325,7 @@ class SCOUTS(QMainWindow):
         # Sample addition frame
         self.samples_frame = QFrame(self.samples_page)
         self.samples_frame.setGeometry(self.margin['left'],
-                                       self.widget_vposition(self.samples_subtitle) + 5, self.stretch(), 80)
+                                       self.widget_vposition(self.samples_subtitle) + 5, self.rlimit(), 80)
         self.samples_frame.setFrameShape(QFrame.StyledPanel)
         self.samples_frame.setLayout(QFormLayout())
         # Sample name box
@@ -345,7 +356,7 @@ class SCOUTS(QMainWindow):
         # ## Sample table
         self.sample_table = QTableWidget(self.samples_page)
         self.sample_table.setGeometry(self.margin['left'],
-                                      self.widget_vposition(self.samples_frame) + 5, self.stretch(), 350)
+                                      self.widget_vposition(self.samples_frame) + 5, self.rlimit(), 350)
         self.sample_table.setColumnCount(2)
         self.sample_table.setHorizontalHeaderItem(0, QTableWidgetItem('Sample'))
         self.sample_table.setHorizontalHeaderItem(1, QTableWidgetItem('Reference?'))
@@ -357,7 +368,7 @@ class SCOUTS(QMainWindow):
         # Save & clear frame (invisible)
         self.saveclear_frame = QFrame(self.samples_page)
         self.saveclear_frame.setGeometry(self.margin['left'],
-                                         self.widget_vposition(self.sample_table) + 5, self.stretch(), 30)
+                                         self.widget_vposition(self.sample_table) + 5, self.rlimit(), 30)
         saveclear_layout = QHBoxLayout()
         saveclear_layout.setMargin(0)
         self.saveclear_frame.setLayout(saveclear_layout)
@@ -400,7 +411,7 @@ class SCOUTS(QMainWindow):
         # Gating frame
         self.gate_frame = QFrame(self.gates_page)
         self.gate_frame.setGeometry(self.margin['left'],
-                                    self.widget_vposition(self.gate_header) + 5, self.stretch(), 150)
+                                    self.widget_vposition(self.gate_header) + 5, self.rlimit(), 150)
         self.gate_frame.setFrameShape(QFrame.StyledPanel)
         self.gate_frame.setLayout(QFormLayout())
         # Gating button group
@@ -457,7 +468,7 @@ class SCOUTS(QMainWindow):
         # Outlier frame
         self.outlier_frame = QFrame(self.gates_page)
         self.outlier_frame.setGeometry(self.margin['left'],
-                                       self.widget_vposition(self.outlier_header) + 5, self.stretch(), 100)
+                                       self.widget_vposition(self.outlier_header) + 5, self.rlimit(), 100)
         self.outlier_frame.setFrameShape(QFrame.StyledPanel)
         self.outlier_frame.setLayout(QVBoxLayout())
         # Bottom outliers data
@@ -473,7 +484,7 @@ class SCOUTS(QMainWindow):
         # ## Save/back button
         self.save_gates = QPushButton(self.gates_page)
         self.save_gates.setGeometry(self.margin['left'],
-                                    self.widget_vposition(self.outlier_frame) + 25, self.stretch(), 40)
+                                    self.widget_vposition(self.outlier_frame) + 25, self.rlimit(), 40)
         self.set_icon(self.save_gates, 'ok')
         self.save_gates.setText(' Back to main page')
         self.save_gates.clicked.connect(self.goto_main_page)
@@ -482,19 +493,23 @@ class SCOUTS(QMainWindow):
     # ### WIDGET ADJUSTMENT METHODS
     # ###
 
-    def stretch(self) -> int:
+    def rlimit(self) -> int:
+        """Returns the X position of the start of the right margin. Used to stretch Widgets across the GUI."""
         return self.size['width'] - (self.margin['left'] + self.margin['right'])
 
     @staticmethod
     def widget_hposition(widget: QWidget) -> int:
+        """Returns the X position of the rightmost part of the widget."""
         return widget.width() + widget.x()
 
     @staticmethod
     def widget_vposition(widget: QWidget) -> int:
+        """Returns the Y position of the bottommost part of the widget."""
         return widget.height() + widget.y()
 
     @staticmethod
     def set_icon(widget: QWidget, icon: str) -> None:
+        """Associates an icon to a widget."""
         i = QIcon()
         i.addPixmap(QPixmap(os.path.join('icons', f'{icon}.svg')))
         widget.setIcon(i)
@@ -505,9 +520,11 @@ class SCOUTS(QMainWindow):
 
     @staticmethod
     def get_help() -> None:
+        """Opens SCOUTS documentation on the browser. Called when the user clicks the "help" button"""
         webbrowser.open('https://scouts.readthedocs.io/en/master/')
 
     def closeEvent(self, event: QEvent) -> None:
+        """Defines the message box for when the user wants to quit SCOUTS."""
         title = 'Quit Application'
         mes = "Are you sure you want to quit?"
         reply = QMessageBox.question(self, title, mes,
@@ -523,12 +540,15 @@ class SCOUTS(QMainWindow):
     # ###
 
     def goto_main_page(self) -> None:
+        """Switches stacked widget pages to the main page."""
         self.stacked_pages.setCurrentWidget(self.main_page)
 
     def goto_samples_page(self) -> None:
+        """Switches stacked widget pages to the samples table page."""
         self.stacked_pages.setCurrentWidget(self.samples_page)
 
     def goto_gates_page(self) -> None:
+        """Switches stacked widget pages to the gating & other options page."""
         self.stacked_pages.setCurrentWidget(self.gates_page)
 
     # ###
@@ -536,6 +556,7 @@ class SCOUTS(QMainWindow):
     # ###
 
     def get_path(self) -> None:
+        """Opens a dialog box and sets the chosen file/folder path, depending on the caller widget."""
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         name = self.sender().objectName()
@@ -551,6 +572,7 @@ class SCOUTS(QMainWindow):
             echo.setText(query)
 
     def enable_single_excel(self):
+        """Enables checkbox for generating a single Excel output."""
         if self.output_excel.isChecked():
             self.single_excel.setEnabled(True)
         else:
@@ -562,6 +584,7 @@ class SCOUTS(QMainWindow):
     # ###
 
     def write_to_sample_table(self) -> None:
+        """Writes data to sample table."""
         table = self.sample_table
         ref = 'No'
         sample = self.sample_name.text()
@@ -589,12 +612,14 @@ class SCOUTS(QMainWindow):
             self.sample_name.setText('')
 
     def remove_from_sample_table(self) -> None:
+        """Removes data from sample table."""
         table = self.sample_table
         rows = set(index.row() for index in table.selectedIndexes())
         for index in sorted(rows, reverse=True):
             self.sample_table.removeRow(index)
 
     def prompt_clear_data(self) -> None:
+        """Prompts option to clear all data in the sample table."""
         if self.confirm_clear_data():
             table = self.sample_table
             while table.rowCount():
@@ -605,6 +630,7 @@ class SCOUTS(QMainWindow):
     # ###
 
     def activate_gate(self) -> None:
+        """Activates/deactivates buttons related to gating."""
         if self.sender().objectName() == 'no':
             self.cytof_gates_value.setEnabled(False)
             self.rnaseq_gates_value.setEnabled(False)
@@ -620,6 +646,7 @@ class SCOUTS(QMainWindow):
     # ###
 
     def analyse(self) -> None:
+        """Runs SCOUTS based on user input in the GUI."""
         try:
             input_dict = self.parse_input()
             analyse(self, **input_dict)
@@ -630,6 +657,7 @@ class SCOUTS(QMainWindow):
             self.module_done()
 
     def parse_input(self) -> Dict:
+        """Returns user input on the GUI as a dictionary."""
         input_dict = {}
         # Input and output
         input_file = self.input_path.text()
@@ -639,13 +667,9 @@ class SCOUTS(QMainWindow):
         input_dict['input_file'] = input_file
         input_dict['output_folder'] = output_folder
         # Set cutoff by reference or by sample rule
-        cutoff_id = self.cutoff_group.checkedId()
-        cutoff_rule = self.cutoff_group.button(cutoff_id)
-        input_dict['cutoff_rule'] = cutoff_rule.text()  # 'sample', 'reference', 'both'
+        input_dict['cutoff_rule'] = self.cutoff_group.checkedButton().text()  # 'sample', 'ref', 'sample ref'
         # Outliers for each individual marker or any marker in row
-        markers_id = self.markers_group.checkedId()
-        markers_rule = self.markers_group.button(markers_id)
-        input_dict['marker_rule'] = markers_rule.text()  # 'single marker', 'any marker', 'both methods'
+        input_dict['marker_rule'] = self.markers_group.checkedButton().text()  # 'single', 'any', 'single any'
         # Tukey factor used for calculating cutoff
         tukey_id = self.tukey_group.checkedId()
         tukey = self.tukey_group.button(tukey_id)
@@ -694,6 +718,7 @@ class SCOUTS(QMainWindow):
         return input_dict
 
     def yield_samples_from_table(self) -> Generator[Tuple[str, str], None, None]:
+        """Yields sample names from the sample table."""
         table = self.sample_table
         for cell in range(table.rowCount()):
             sample_name = table.item(cell, 0).text()
@@ -705,11 +730,13 @@ class SCOUTS(QMainWindow):
     # ###
 
     def module_done(self) -> None:
+        """Info message box used when SCOUTS finished without errors."""
         title = "Analysis finished!"
         mes = "Your analysis has finished. No errors were reported."
         QMessageBox.information(self, title, mes)
 
     def memory_warning(self) -> None:
+        """Warning message box used when user wants to generate a single excel file."""
         if self.sender().isChecked():
             title = 'Warning!'
             mes = ("Depending on your dataset, this option can consume a LOT of memory. "
@@ -717,18 +744,21 @@ class SCOUTS(QMainWindow):
             QMessageBox.critical(self, title, mes)
 
     def same_sample(self) -> None:
+        """Error message box used when the user tries to input the same sample twice in the sample table."""
         title = 'Error: sample name already in table'
         mes = ("Sorry, you can't do this because this sample name is already in the table. "
                "Please select a different name.")
         QMessageBox.critical(self, title, mes)
 
     def more_than_one_reference(self) -> None:
+        """Error message box used when the user tries to input two reference samples in the sample table."""
         title = "Error: more than one reference selected"
         mes = ("Sorry, you can't do this because there is already a reference column in the table. "
                "Please remove it before adding a reference.")
         QMessageBox.critical(self, title, mes)
 
     def confirm_clear_data(self) -> bool:
+        """Question message box used to confirm user action of clearing sample table."""
         title = 'Confirm Action'
         mes = "Table will be cleared. Are you sure?"
         reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -737,9 +767,16 @@ class SCOUTS(QMainWindow):
         return False
 
     def generic_error_message(self, error) -> None:
+        """Error message box used to display any error message (including traceback) for any uncaught errors."""
         trace = traceback.format_exc()
         title = 'An error occurred!'
         QMessageBox.critical(self, title, f"\n{str(error)}\n\nfull stack trace:\n\n{str(trace)}")
+
+    def not_implemented_error_message(self) -> None:
+        """Error message box used when the user accesses a functionality that hasn't been implemented yet."""
+        title = "Not yet implemented"
+        mes = "Sorry, this functionality has not been implemented yet."
+        QMessageBox.critical(self, title, mes)
 
 
 if __name__ == '__main__':

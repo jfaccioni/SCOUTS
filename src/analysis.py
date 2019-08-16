@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import os
 from pprint import pprint
-from typing import List, Tuple, TYPE_CHECKING, Optional, Dict
+from typing import Dict, Generator, List, Optional, TYPE_CHECKING, Tuple
 
 import numpy as np
 import pandas as pd
 
-from src.custom_exceptions import PandasInputError, SampleNamingError, NoReferenceError
+from src.custom_exceptions import NoReferenceError, PandasInputError, SampleNamingError
 
 # Pandas DataFrame options (this goes to logfile)
 pd.set_option('display.max_rows', 50)
@@ -22,23 +21,25 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
             marker_rule: str, tukey_factor: float, export_csv: bool, export_excel: bool,
             single_excel: bool, sample_list: List[Tuple[str, str]], gate_cutoff: Optional[float],
             non_outliers: bool, bottom_outliers: bool):
+    """Main SCOUTS function that organizes user input and calls related functions accordingly."""
     # Loads df and checks for file extension
-    df = load_dataframe(input_file=input_file)
-    if df is None:
-        raise PandasInputError(widget)
+    input_df = load_dataframe(widget=widget, input_file=input_file)
     # Checks if all sample names are in at least one cell of the first column in the df
-    all_sample_names_are_in_df = check_sample_names(sample_list=sample_list, df=df)
-    if all_sample_names_are_in_df is False:
-        raise SampleNamingError(widget)
+    validate_sample_names(widget=widget, sample_list=sample_list, df=input_df)
     # Apply gates to df, if any
     if gate_cutoff is not None:
         if widget.cytof_gates.isChecked():
-            apply_cytof_gating(df=df, cutoff=gate_cutoff)
+            apply_cytof_gating(df=input_df, cutoff=gate_cutoff)
         elif widget.rnaseq_gates.isChecked():
-            apply_rnaseq_gating(df=df, cutoff=gate_cutoff)
+            apply_rnaseq_gating(df=input_df, cutoff=gate_cutoff)
     # Gets cutoff dict -> { 'sample' : { 'marker' : (Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) } }
-    cutoff_dict = get_cutoff_values(df=df, sample_list=sample_list, cutoff_rule=cutoff_rule, tukey=tukey_factor)
-    pprint(cutoff_dict)
+    cutoff_df = get_cutoff_dataframe(df=input_df, sample_list=sample_list, cutoff_rule=cutoff_rule, tukey=tukey_factor)
+    pprint(cutoff_df)
+    # generate outlier tables (SCOUTS)
+    run_scouts(input_df=input_df, cutoff_df=cutoff_df, sample_list=sample_list, cutoff_rule=cutoff_rule,
+               marker_rule=marker_rule, export_csv=export_csv, export_excel=export_excel, single_excel=single_excel,
+               non_outliers=non_outliers, bottom_outliers=bottom_outliers, output_folder=output_folder)
+
     # Change directory to output directory, open log file
     # os.chdir(output_folder)
     # if 'log' not in os.listdir(os.getcwd()):
@@ -93,23 +94,28 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
     #     writer.save()
 
 
-def check_sample_names(sample_list: List[Tuple[str, str]], df: pd.DataFrame) -> Optional[int]:
+def validate_sample_names(widget: QMainWindow, sample_list: List[Tuple[str, str]], df: pd.DataFrame) -> None:
+    """Checks whether any sample name from the sample table isn't present on the input dataframe.
+    Raises an exception if this happens."""
     sample_names = list(df.iloc[:, 0])  # Assumes first column = sample names (as per documentation)
     for sample,  _ in sample_list:
         if not any(sample in name for name in sample_names):
-            return False
-    return True
+            raise SampleNamingError(widget)
 
 
-def load_dataframe(input_file: str) -> Optional[pd.DataFrame]:
+def load_dataframe(widget: QMainWindow, input_file: str) -> pd.DataFrame:
+    """Loads input dataframe into memory. Raises an exception if the filename doesn't end with
+    .xlsx or .csv (supported formats)."""
     if input_file.endswith('.xlsx') or input_file.endswith('xls'):
         return pd.read_excel(input_file, header=0)
     elif input_file.endswith('.csv'):
         return pd.read_csv(input_file, header=0)
-    return None
+    else:
+        raise PandasInputError(widget)
 
 
 def apply_cytof_gating(df: pd.DataFrame, cutoff: float) -> None:
+    """Applies gating for Mass Cytometry onto input dataframe, excluding rows with low average expression."""
     indices_to_drop = []
     for index, row in df.iterrows():
         mean_row_value = np.mean(row[1:])  # first row contains sample names
@@ -120,50 +126,58 @@ def apply_cytof_gating(df: pd.DataFrame, cutoff: float) -> None:
 
 
 def apply_rnaseq_gating(df: pd.DataFrame, cutoff: float) -> None:
+    """Applies gating for Single-Cell RNASeq onto input dataframe, excluding values below threshold from
+    calculations of outlier values."""
     df.mask(df <= cutoff, np.nan, inplace=True)
 
 
-def get_cutoff_values(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_rule: str, tukey: float) -> Dict:
-    if cutoff_rule == 'reference':
-        reference = get_reference_sample_name(sample_list)
-        if reference is None:
-            raise NoReferenceError  # If the user chose to analyse by reference but hadn't selected any reference
-        reference_dict = get_cutoff_values_for_single_sample(df=df, sample=reference, tukey=tukey)
-        return {reference: reference_dict}
-    elif cutoff_rule == 'sample':
-        samples = get_all_sample_names(sample_list)
-        return get_cutoff_values_for_all_samples(df=df, samples=samples, tukey=tukey)
+def get_cutoff_dataframe(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_rule: str,
+                         tukey: float) -> pd.DataFrame:
+    """Gets a dataframe with cutoff values(Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) in which columns correspond
+    to markers and rows (index) correspond to samples."""
+    if cutoff_rule == 'ref':
+        reference = get_reference_sample_name(sample_list=sample_list)
+        return get_cutoff(df=df, samples=[reference], tukey=tukey)
+    else:
+        samples = get_all_sample_names(sample_list=sample_list)
+        return get_cutoff(df=df, samples=samples, tukey=tukey)
 
 
-def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> Optional[str]:
+def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> str:
+    """Gets the name from the reference sample, raising an exception if it does not exist in the sample table."""
     for sample, sample_type in sample_list:
         if sample_type == 'Yes':
             return sample
-    return None
+    else:
+        raise NoReferenceError  # If the user chose to analyse by reference but did not select any reference
 
 
 def get_all_sample_names(sample_list: List[Tuple[str, str]]) -> List[str]:
+    """Gets the name of all samples from the sample table."""
     return [tup[0] for tup in sample_list]
 
 
-def get_cutoff_values_for_single_sample(df: pd.DataFrame, sample: str, tukey: float):
-    reference_dict = {}
+def get_cutoff(df: pd.DataFrame, samples: List[str], tukey: float) -> pd.DataFrame:
+    """Gets cutoff values"""  # TODO
+    result_df = pd.DataFrame(columns=df.columns, index=samples)
+    for sample in samples:
+        cutoff_values = get_sample_cutoff(df=df, sample=sample, tukey=tukey)
+        result_df.loc[sample] = cutoff_values
+    return result_df
+
+
+def get_sample_cutoff(df: pd.DataFrame, sample: str, tukey: float) -> List[Tuple[float, float, float, float, float]]:
+    """Gets sample cutoff"""  # TODO
+    values = []
     filtered_df = df[df.iloc[:, 0].str.contains(sample)]
     quantile_df = filtered_df.quantile([0.25, 0.75])
     for marker in quantile_df:
-        reference_dict[marker] = get_sample_statistics(tukey=tukey, marker_series=quantile_df[marker])
-    return reference_dict
+        values.append(get_sample_statistics(tukey=tukey, marker_series=quantile_df[marker]))
+    return values
 
 
-def get_cutoff_values_for_all_samples(df: pd.DataFrame, samples: List[str], tukey: float):
-    sample_dict = {}
-    for sample in samples:
-        markers_dict = get_cutoff_values_for_single_sample(df=df, sample=sample, tukey=tukey)
-        sample_dict[sample] = markers_dict
-    return sample_dict
-
-
-def get_sample_statistics(tukey, marker_series: pd.Series) -> Tuple[float, float, float, float, float]:
+def get_sample_statistics(tukey: float, marker_series: pd.Series) -> Tuple[float, float, float, float, float]:
+    """Gets sample statistics"""  # TODO
     first_quartile, third_quartile = marker_series
     iqr = third_quartile - first_quartile
     upper_cutoff = third_quartile + (iqr * tukey)
@@ -171,7 +185,35 @@ def get_sample_statistics(tukey, marker_series: pd.Series) -> Tuple[float, float
     return first_quartile, third_quartile, iqr, lower_cutoff, upper_cutoff
 
 
-def yield_dataframes(log, df, sample_dict, control, outliers, by_marker, bottom_outliers):
+def run_scouts(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame, cutoff_rule: str,
+               marker_rule: str, export_csv: bool, export_excel: bool, single_excel: bool, non_outliers: bool,
+               bottom_outliers: bool, output_folder: str) -> None:
+    """Runs SCOUTS"""  # TODO
+    for data in yield_dataframes(df=input_df, sample_list=sample_list, cutoff_df=cutoff_df, cutoff_rule=cutoff_rule,
+                                 marker_rule=marker_rule, non_outliers=non_outliers, bottom_outliers=bottom_outliers):
+        print(data)
+
+
+def yield_dataframes(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame, cutoff_rule: str,
+                     marker_rule: str, non_outliers: bool,
+                     bottom_outliers: bool) -> Generator[Tuple[pd.DataFrame, Dict]]:
+    """ Yields dataframes"""  # TODO
+    if 'ref' in cutoff_rule:
+        reference = get_reference_sample_name(sample_list)
+        if 'any' in marker_rule:
+            pass
+        if 'single' in marker_rule:
+            pass
+    if 'sample' in cutoff_rule:
+        if 'any' in marker_rule:
+            pass
+        if 'single' in marker_rule:
+            pass
+    yield {'None': 'None'}
+
+
+def old_yield_dataframes(log, df, sample_dict, control, outliers, by_marker, bottom_outliers):
+    """Deprecated"""
     # ###
     # ### RULE: outliers by control cutoff, outliers for a single marker
     # ###
@@ -305,7 +347,8 @@ def yield_dataframes(log, df, sample_dict, control, outliers, by_marker, bottom_
                 yield output_df, 'all_markers', sample, 'sample', cut_text
 
 
-def get_inverse_df(full_df, partial_df):
+def old_get_inverse_df(full_df, partial_df):
+    """Deprecated"""
     df_merge = full_df.merge(partial_df.drop_duplicates(), on=list(full_df), how='left', indicator=True)
     inverse_df = full_df[df_merge['_merge'] == 'left_only']
     return inverse_df
