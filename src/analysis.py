@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pprint import pprint
-from typing import Dict, Generator, List, Optional, TYPE_CHECKING, Tuple
+from collections import namedtuple
+from typing import Generator, List, Optional, TYPE_CHECKING, Tuple
 
 import numpy as np
 import pandas as pd
@@ -15,6 +15,12 @@ pd.set_option('expand_frame_repr', False)
 
 if TYPE_CHECKING:
     from PySide2.QtWidgets import QMainWindow
+
+Stats = namedtuple("Stats", ['first_quartile', 'third_quartile', 'iqr', 'lower_cutoff', 'upper_cutoff'])
+
+
+# TODO: ### URGENT! Comparisons for any marker don't include the sample name (first row of input dataframe),
+#  which causes the comparison to mismatch in size.
 
 
 def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rule: str,
@@ -34,7 +40,6 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
             apply_rnaseq_gating(df=input_df, cutoff=gate_cutoff)
     # Gets cutoff dict -> { 'sample' : { 'marker' : (Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) } }
     cutoff_df = get_cutoff_dataframe(df=input_df, sample_list=sample_list, cutoff_rule=cutoff_rule, tukey=tukey_factor)
-    pprint(cutoff_df)
     # generate outlier tables (SCOUTS)
     run_scouts(input_df=input_df, cutoff_df=cutoff_df, sample_list=sample_list, cutoff_rule=cutoff_rule,
                marker_rule=marker_rule, export_csv=export_csv, export_excel=export_excel, single_excel=single_excel,
@@ -157,9 +162,13 @@ def get_all_sample_names(sample_list: List[Tuple[str, str]]) -> List[str]:
     return [tup[0] for tup in sample_list]
 
 
+def get_marker_names_from_df(df: pd.DataFrame) -> List[str]:
+    return list(df.columns[1:])
+
+
 def get_cutoff(df: pd.DataFrame, samples: List[str], tukey: float) -> pd.DataFrame:
     """Gets cutoff values"""  # TODO
-    result_df = pd.DataFrame(columns=df.columns, index=samples)
+    result_df = pd.DataFrame(columns=get_marker_names_from_df(df=df), index=samples)
     for sample in samples:
         cutoff_values = get_sample_cutoff(df=df, sample=sample, tukey=tukey)
         result_df.loc[sample] = cutoff_values
@@ -169,11 +178,15 @@ def get_cutoff(df: pd.DataFrame, samples: List[str], tukey: float) -> pd.DataFra
 def get_sample_cutoff(df: pd.DataFrame, sample: str, tukey: float) -> List[Tuple[float, float, float, float, float]]:
     """Gets sample cutoff"""  # TODO
     values = []
-    filtered_df = df[df.iloc[:, 0].str.contains(sample)]
+    filtered_df = filter_df_by_sample_name(df=df, sample=sample)
     quantile_df = filtered_df.quantile([0.25, 0.75])
     for marker in quantile_df:
         values.append(get_sample_statistics(tukey=tukey, marker_series=quantile_df[marker]))
     return values
+
+
+def filter_df_by_sample_name(df: pd.DataFrame, sample: str) -> pd.DataFrame:
+    return df[df.iloc[:, 0].str.contains(sample)]
 
 
 def get_sample_statistics(tukey: float, marker_series: pd.Series) -> Tuple[float, float, float, float, float]:
@@ -182,34 +195,123 @@ def get_sample_statistics(tukey: float, marker_series: pd.Series) -> Tuple[float
     iqr = third_quartile - first_quartile
     upper_cutoff = third_quartile + (iqr * tukey)
     lower_cutoff = first_quartile - (iqr * tukey)
-    return first_quartile, third_quartile, iqr, lower_cutoff, upper_cutoff
+    return Stats(first_quartile, third_quartile, iqr, lower_cutoff, upper_cutoff)
 
 
 def run_scouts(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame, cutoff_rule: str,
                marker_rule: str, export_csv: bool, export_excel: bool, single_excel: bool, non_outliers: bool,
                bottom_outliers: bool, output_folder: str) -> None:
     """Runs SCOUTS"""  # TODO
-    for data in yield_dataframes(df=input_df, sample_list=sample_list, cutoff_df=cutoff_df, cutoff_rule=cutoff_rule,
-                                 marker_rule=marker_rule, non_outliers=non_outliers, bottom_outliers=bottom_outliers):
+    import time
+    for data in yield_dataframes(input_df=input_df, sample_list=sample_list, cutoff_df=cutoff_df,
+                                 cutoff_rule=cutoff_rule, marker_rule=marker_rule, non_outliers=non_outliers,
+                                 bottom_outliers=bottom_outliers):
         print(data)
+        print('next df ...')
+        time.sleep(1)
+    if export_csv:
+        print('export_csv')
+    if export_excel:
+        print('export_excel')
+    if single_excel:
+        print('single_excel')
 
 
-def yield_dataframes(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame, cutoff_rule: str,
-                     marker_rule: str, non_outliers: bool,
-                     bottom_outliers: bool) -> Generator[Tuple[pd.DataFrame, Dict]]:
+def yield_dataframes(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame,
+                     cutoff_rule: str, marker_rule: str, non_outliers: bool,
+                     bottom_outliers: bool) -> Generator[pd.DataFrame, None, None]:
     """ Yields dataframes"""  # TODO
     if 'ref' in cutoff_rule:
         reference = get_reference_sample_name(sample_list)
         if 'any' in marker_rule:
-            pass
+            yield from scouts_by_reference_any_marker(input_df=input_df, cutoff_df=cutoff_df, reference=reference,
+                                                      bottom_outliers=bottom_outliers, non_outliers=non_outliers)
         if 'single' in marker_rule:
-            pass
+            yield from scouts_by_reference_single_marker(input_df=input_df, cutoff_df=cutoff_df, reference=reference,
+                                                         bottom_outliers=bottom_outliers, non_outliers=non_outliers)
     if 'sample' in cutoff_rule:
+        samples = get_all_sample_names(sample_list)
         if 'any' in marker_rule:
-            pass
+            yield from scouts_by_sample_any_marker(input_df=input_df, cutoff_df=cutoff_df, samples=samples,
+                                                   bottom_outliers=bottom_outliers, non_outliers=non_outliers)
         if 'single' in marker_rule:
-            pass
-    yield {'None': 'None'}
+            yield from scouts_by_sample_single_marker(input_df=input_df, cutoff_df=cutoff_df, samples=samples,
+                                                      bottom_outliers=bottom_outliers, non_outliers=non_outliers)
+
+
+def scouts_by_reference_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, reference: str,
+                                   bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
+    """scouts_by_reference_any_marker"""  # TODO
+    upper_cutoffs = ['z'] + [stat.upper_cutoff for stat in cutoff_df.loc[reference]]
+    lower_cutoffs = [''] + [stat.lower_cutoff for stat in cutoff_df.loc[reference]]
+    yield input_df.loc[(input_df > upper_cutoffs).all(axis=1)]
+    if bottom_outliers is True:
+        yield input_df.loc[(input_df < lower_cutoffs).all(axis=1)]
+    if non_outliers is True:
+        yield input_df.loc[(input_df < upper_cutoffs).all(axis=1) & (input_df < lower_cutoffs).all(axis=1)]
+
+
+def scouts_by_reference_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, reference: str,
+                                      bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
+    """scouts_by_reference_single_marker"""  # TODO
+    markers = get_marker_names_from_df(df=input_df)
+    for marker in markers:
+        upper_cutoff = cutoff_df.loc[reference, marker].upper_cutoff
+        lower_cutoff = cutoff_df.loc[reference, marker].lower_cutoff
+        yield input_df.loc[input_df[marker] > upper_cutoff]
+        if bottom_outliers is True:
+            yield input_df.loc[input_df[marker] < lower_cutoff]
+        if non_outliers is True:
+            yield input_df.loc[(input_df[marker] < upper_cutoff) &
+                               (input_df[marker] > lower_cutoff)]
+
+
+def scouts_by_sample_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, samples: List[str],
+                                bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
+    """scouts_by_sample_any_marker"""  # TODO
+    upper_dfs = []
+    lower_dfs = []
+    non_dfs = []
+    for sample in samples:
+        upper_cutoffs = ['z'] + [stat.upper_cutoff for stat in cutoff_df.loc[sample]]
+        lower_cutoffs = [''] + [stat.lower_cutoff for stat in cutoff_df.loc[sample]]
+        filtered_df = filter_df_by_sample_name(df=input_df, sample=sample)
+        upper_dfs.append(filtered_df.loc[(filtered_df > upper_cutoffs).all(axis=1)])
+        if bottom_outliers is True:
+            lower_dfs.append(filtered_df.loc[(filtered_df < lower_cutoffs).all(axis=1)])
+        if non_outliers is True:
+            non_dfs.append(filtered_df.loc[(filtered_df < upper_cutoffs).all(axis=1) &
+                                           (filtered_df < lower_cutoffs).all(axis=1)])
+    yield pd.concat(upper_dfs)
+    if bottom_outliers is True:
+        yield pd.concat(lower_dfs)
+    if non_outliers is True:
+        yield pd.concat(non_dfs)
+
+
+def scouts_by_sample_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, samples: List[str],
+                                   bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
+    """scouts_by_sample_single_marker"""  # TODO
+    markers = get_marker_names_from_df(df=input_df)
+    for marker in markers:
+        upper_dfs = []
+        lower_dfs = []
+        non_dfs = []
+        for sample in samples:
+            upper_cutoff = cutoff_df.loc[sample, marker].upper_cutoff
+            lower_cutoff = cutoff_df.loc[sample, marker].lower_cutoff
+            filtered_df = filter_df_by_sample_name(df=input_df, sample=sample)
+            upper_dfs.append(filtered_df.loc[filtered_df[marker] > upper_cutoff])
+            if bottom_outliers is True:
+                lower_dfs.append(filtered_df.loc[filtered_df[marker] < lower_cutoff])
+            if non_outliers is True:
+                non_dfs.append(filtered_df.loc[(filtered_df[marker] < upper_cutoff) &
+                                               (filtered_df[marker] > lower_cutoff)])
+        yield pd.concat(upper_dfs)
+        if bottom_outliers is True:
+            yield pd.concat(lower_dfs)
+        if non_outliers is True:
+            yield pd.concat(non_dfs)
 
 
 def old_yield_dataframes(log, df, sample_dict, control, outliers, by_marker, bottom_outliers):

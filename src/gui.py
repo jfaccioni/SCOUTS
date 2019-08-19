@@ -19,6 +19,8 @@ from src.custom_exceptions import CustomException, NoSampleError
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
 
+DEBUG = True
+
 
 class SCOUTS(QMainWindow):
     """Main Window Widget for SCOUTS."""
@@ -162,7 +164,6 @@ class SCOUTS(QMainWindow):
         self.cutoff_both.setText('both')
         self.cutoff_both.setObjectName('sample ref')
         self.cutoff_both.setStyleSheet(self.style['radio button'])
-        self.cutoff_both.pressed.connect(self.not_implemented_error_message)  # TODO
         self.cutoff_group.addButton(self.cutoff_both)
         # Markers text
         self.markers_text = QLabel(self.main_page)
@@ -188,7 +189,6 @@ class SCOUTS(QMainWindow):
         self.both_methods.setText('both methods')
         self.both_methods.setObjectName('single any')
         self.both_methods.setStyleSheet(self.style['radio button'])
-        self.both_methods.pressed.connect(self.not_implemented_error_message)  # TODO
         self.markers_group.addButton(self.both_methods)
         # Tukey text
         self.tukey_text = QLabel(self.main_page)
@@ -667,9 +667,9 @@ class SCOUTS(QMainWindow):
         input_dict['input_file'] = input_file
         input_dict['output_folder'] = output_folder
         # Set cutoff by reference or by sample rule
-        input_dict['cutoff_rule'] = self.cutoff_group.checkedButton().text()  # 'sample', 'ref', 'sample ref'
+        input_dict['cutoff_rule'] = self.cutoff_group.checkedButton().objectName()  # 'sample', 'ref', 'sample ref'
         # Outliers for each individual marker or any marker in row
-        input_dict['marker_rule'] = self.markers_group.checkedButton().text()  # 'single', 'any', 'single any'
+        input_dict['marker_rule'] = self.markers_group.checkedButton().objectName()  # 'single', 'any', 'single any'
         # Tukey factor used for calculating cutoff
         tukey_id = self.tukey_group.checkedId()
         tukey = self.tukey_group.button(tukey_id)
@@ -778,10 +778,27 @@ class SCOUTS(QMainWindow):
         mes = "Sorry, this functionality has not been implemented yet."
         QMessageBox.critical(self, title, mes)
 
+    def debug(self):
+        inp = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/mass-cytometry template.xlsx'
+        self.input_path.setText(inp)
+        out = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/output'
+        self.output_path.setText(out)
+        self.sample_table.insertRow(0)
+        self.sample_table.setItem(0, 0, QTableWidgetItem('Ct'))
+        self.sample_table.setItem(0, 1, QTableWidgetItem('Yes'))
+        self.sample_table.insertRow(1)
+        self.sample_table.setItem(1, 0, QTableWidgetItem('RT'))
+        self.sample_table.setItem(1, 1, QTableWidgetItem('No'))
+        self.sample_table.insertRow(2)
+        self.sample_table.setItem(2, 0, QTableWidgetItem('Torin'))
+        self.sample_table.setItem(2, 1, QTableWidgetItem('No'))
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     scouts = SCOUTS()
+    if DEBUG:
+        scouts.debug()
     scouts.show()
 
     sys.exit(app.exec_())
