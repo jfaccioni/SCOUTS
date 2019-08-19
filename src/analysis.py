@@ -8,19 +8,13 @@ import pandas as pd
 
 from src.custom_exceptions import NoReferenceError, PandasInputError, SampleNamingError
 
-# Pandas DataFrame options (this goes to logfile)
-pd.set_option('display.max_rows', 50)
-pd.set_option('display.max_columns', 50)
-pd.set_option('expand_frame_repr', False)
-
 if TYPE_CHECKING:
     from PySide2.QtWidgets import QMainWindow
 
-Stats = namedtuple("Stats", ['first_quartile', 'third_quartile', 'iqr', 'lower_cutoff', 'upper_cutoff'])
-
-
 # TODO: ### URGENT! Comparisons for any marker don't include the sample name (first row of input dataframe),
 #  which causes the comparison to mismatch in size.
+
+Stats = namedtuple("Stats", ['first_quartile', 'third_quartile', 'iqr', 'lower_cutoff', 'upper_cutoff'])
 
 
 def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rule: str,
@@ -44,59 +38,6 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
     run_scouts(input_df=input_df, cutoff_df=cutoff_df, sample_list=sample_list, cutoff_rule=cutoff_rule,
                marker_rule=marker_rule, export_csv=export_csv, export_excel=export_excel, single_excel=single_excel,
                non_outliers=non_outliers, bottom_outliers=bottom_outliers, output_folder=output_folder)
-
-    # Change directory to output directory, open log file
-    # os.chdir(output_folder)
-    # if 'log' not in os.listdir(os.getcwd()):
-    #     os.mkdir('log')
-    # f = open(os.path.join('log', 'outlier_analysis_log.txt'), 'w')
-    # # Save all cutoff values as pretty-printed dictionary
-    # f.write('CUTOFF VALUES AS A DICTIONARY:\n')
-    # f.write('the data is ordered as:\n\n')
-    # f.write("{ 'sample' : { 'marker' : (. . .) } }\n")
-    # f.write("(. . .) represent this tuple: ")
-    # f.write("(Q1, Q3, IQR, (upper cutoff, lower cutoff)\n\n")
-    # pprint(sample_dict, stream=f, width=120)
-    # f.write('\n\n')
-    # # Iterate over yield_dataframes function, subsetting DataFrames and saving
-    # # each DataFrame to a different file
-    # df_list = []
-    # for dataframe, *names in yield_dataframes(log=f, df=df, sample_dict=sample_dict, control=control,
-    #                                           outliers=cutoff_rule, by_marker=marker_rule,
-    #                                           bottom_outliers=bottom_outliers):
-    #     m, s, n, c = names
-    #     population_df = None
-    #     if non_outliers:
-    #         population_df = get_inverse_df(df, dataframe)
-    #     # Create subfolder in output directory for each sample
-    #     if s not in os.listdir(os.getcwd()):
-    #         os.mkdir(s)
-    #     main_name = f'{m}_{s}_{c}_cutoff_by_{n}'
-    #     # avoids error when marker name has / or \ in it
-    #     main_name = main_name.replace('\\', '_')
-    #     main_name = main_name.replace('/', '_')
-    #     output = os.path.join(s, f'{main_name}')
-    #     if export_csv:
-    #         dataframe.to_csv(f'{output}.csv', index=False)
-    #         if population_df is not None:
-    #             population_df.to_csv(f'{output}_pop.csv', index=False)
-    #     if export_excel:
-    #         dataframe.to_excel(f'{output}.xlsx', sheet_name=m, index=False)
-    #         if population_df is not None:
-    #             population_df.to_excel(f'{output}_pop.xlsx', sheet_name=m, index=False)
-    #         if single_excel:
-    #             df_list.append((dataframe, main_name))
-    #             if population_df is not None:
-    #                 df_list.append((population_df, main_name + '_pop'))
-    #
-    # # Close log file
-    # f.close()
-    # # Save master excel file
-    # if df_list:
-    #     writer = pd.ExcelWriter('master_output.xlsx')
-    #     for dataframe, name in df_list:
-    #         dataframe.to_excel(writer, name, index=False)
-    #     writer.save()
 
 
 def validate_sample_names(widget: QMainWindow, sample_list: List[Tuple[str, str]], df: pd.DataFrame) -> None:
@@ -167,7 +108,7 @@ def get_marker_names_from_df(df: pd.DataFrame) -> List[str]:
 
 
 def get_cutoff(df: pd.DataFrame, samples: List[str], tukey: float) -> pd.DataFrame:
-    """Gets cutoff values"""  # TODO
+    """Gets cutoff values"""  # TODO: add docstring
     result_df = pd.DataFrame(columns=get_marker_names_from_df(df=df), index=samples)
     for sample in samples:
         cutoff_values = get_sample_cutoff(df=df, sample=sample, tukey=tukey)
@@ -176,7 +117,7 @@ def get_cutoff(df: pd.DataFrame, samples: List[str], tukey: float) -> pd.DataFra
 
 
 def get_sample_cutoff(df: pd.DataFrame, sample: str, tukey: float) -> List[Tuple[float, float, float, float, float]]:
-    """Gets sample cutoff"""  # TODO
+    """Gets sample cutoff"""  # TODO: add docstring
     values = []
     filtered_df = filter_df_by_sample_name(df=df, sample=sample)
     quantile_df = filtered_df.quantile([0.25, 0.75])
@@ -186,11 +127,13 @@ def get_sample_cutoff(df: pd.DataFrame, sample: str, tukey: float) -> List[Tuple
 
 
 def filter_df_by_sample_name(df: pd.DataFrame, sample: str) -> pd.DataFrame:
+    """Filters dataframes row according to name passed as argument. Rows from the first column that contains
+    the sample string are selected."""
     return df[df.iloc[:, 0].str.contains(sample)]
 
 
 def get_sample_statistics(tukey: float, marker_series: pd.Series) -> Tuple[float, float, float, float, float]:
-    """Gets sample statistics"""  # TODO
+    """Gets sample statistics"""  # TODO: add docstring
     first_quartile, third_quartile = marker_series
     iqr = third_quartile - first_quartile
     upper_cutoff = third_quartile + (iqr * tukey)
@@ -201,7 +144,7 @@ def get_sample_statistics(tukey: float, marker_series: pd.Series) -> Tuple[float
 def run_scouts(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame, cutoff_rule: str,
                marker_rule: str, export_csv: bool, export_excel: bool, single_excel: bool, non_outliers: bool,
                bottom_outliers: bool, output_folder: str) -> None:
-    """Runs SCOUTS"""  # TODO
+    """Runs SCOUTS"""  # TODO: add docstring
     import time
     for data in yield_dataframes(input_df=input_df, sample_list=sample_list, cutoff_df=cutoff_df,
                                  cutoff_rule=cutoff_rule, marker_rule=marker_rule, non_outliers=non_outliers,
@@ -220,7 +163,7 @@ def run_scouts(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutof
 def yield_dataframes(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame,
                      cutoff_rule: str, marker_rule: str, non_outliers: bool,
                      bottom_outliers: bool) -> Generator[pd.DataFrame, None, None]:
-    """ Yields dataframes"""  # TODO
+    """ Yields dataframes"""  # TODO: add docstring
     if 'ref' in cutoff_rule:
         reference = get_reference_sample_name(sample_list)
         if 'any' in marker_rule:
@@ -241,7 +184,7 @@ def yield_dataframes(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]],
 
 def scouts_by_reference_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, reference: str,
                                    bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
-    """scouts_by_reference_any_marker"""  # TODO
+    """scouts_by_reference_any_marker"""  # TODO: add docstring
     upper_cutoffs = ['z'] + [stat.upper_cutoff for stat in cutoff_df.loc[reference]]
     lower_cutoffs = [''] + [stat.lower_cutoff for stat in cutoff_df.loc[reference]]
     yield input_df.loc[(input_df > upper_cutoffs).all(axis=1)]
@@ -253,7 +196,7 @@ def scouts_by_reference_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFra
 
 def scouts_by_reference_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, reference: str,
                                       bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
-    """scouts_by_reference_single_marker"""  # TODO
+    """scouts_by_reference_single_marker"""  # TODO: add docstring
     markers = get_marker_names_from_df(df=input_df)
     for marker in markers:
         upper_cutoff = cutoff_df.loc[reference, marker].upper_cutoff
@@ -268,7 +211,7 @@ def scouts_by_reference_single_marker(input_df: pd.DataFrame, cutoff_df: pd.Data
 
 def scouts_by_sample_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, samples: List[str],
                                 bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
-    """scouts_by_sample_any_marker"""  # TODO
+    """scouts_by_sample_any_marker"""  # TODO: add docstring
     upper_dfs = []
     lower_dfs = []
     non_dfs = []
@@ -291,7 +234,7 @@ def scouts_by_sample_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame,
 
 def scouts_by_sample_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, samples: List[str],
                                    bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
-    """scouts_by_sample_single_marker"""  # TODO
+    """scouts_by_sample_single_marker"""  # TODO: add docstring
     markers = get_marker_names_from_df(df=input_df)
     for marker in markers:
         upper_dfs = []
@@ -312,145 +255,3 @@ def scouts_by_sample_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFra
             yield pd.concat(lower_dfs)
         if non_outliers is True:
             yield pd.concat(non_dfs)
-
-
-def old_yield_dataframes(log, df, sample_dict, control, outliers, by_marker, bottom_outliers):
-    """Deprecated"""
-    # ###
-    # ### RULE: outliers by control cutoff, outliers for a single marker
-    # ###
-    if outliers in ('control', 'both') and by_marker in ('marker', 'both'):
-        log.write('------- CUTOFF BY CONTROL, OUTLIERS BY MARKER -------\n\n\n')
-        for sample, _ in sample_dict.items():
-            filtered_df = df[df[list(df)[0]].str.contains(sample)]
-            for marker, (*_, (cutoff)) in sample_dict[control].items():
-                cut = cutoff[0]
-                cut_text = 'top'
-                output_df = filtered_df.loc[filtered_df[marker] > cut]
-                log.write(f'MARKER: {marker}\nSAMPLE: {sample}\n')
-                log.write('METHOD: use control cutoff, ')
-                log.write('check outliers for current marker only\n')
-                log.write(f'CUTOFF: {cutoff}\n')
-                log.write(f'OUTLIERS: from {cut_text}')
-                log.write('\n\n')
-                log.write(str(output_df))
-                log.write('\n\n\n\n')
-                yield output_df, marker, sample, 'control', cut_text
-                if bottom_outliers:
-                    cut = cutoff[1]
-                    cut_text = 'bottom'
-                    output_df = filtered_df.loc[filtered_df[marker] < cut]
-                    log.write(f'MARKER: {marker}\nSAMPLE: {sample}\n')
-                    log.write('METHOD: use control cutoff, ')
-                    log.write('check outliers for current marker only\n')
-                    log.write(f'CUTOFF: {cutoff}\n')
-                    log.write(f'OUTLIERS: from {cut_text}')
-                    log.write('\n\n')
-                    log.write(str(output_df))
-                    log.write('\n\n\n\n')
-                    yield output_df, marker, sample, 'control', cut_text
-    # ###
-    # ### RULE: outliers by control cutoff, outliers for any marker in row
-    # ###
-    if outliers in ('control', 'both') and by_marker in ('row', 'both'):
-        log.write('------- CUTOFF BY CONTROL, OUTLIERS BY ROW -------\n\n\n')
-        for sample, _ in sample_dict.items():
-            log.write(f'SAMPLE: {sample}\n')
-            log.write('METHOD: use control cutoff, ')
-            log.write('check outliers for any markers in whole row\n')
-            filtered_df = df[df[list(df)[0]].str.contains(sample)]
-            output_df = pd.DataFrame(columns=list(df))
-            cut_text = 'top'
-            for marker, (*_, (cutoff)) in sample_dict[control].items():
-                cut = cutoff[0]
-                log.write(f'OUTLIERS: from {cut_text}')
-                log.write('\n\n')
-                cutoff_rows = filtered_df.loc[filtered_df[marker] > cut]
-                output_df = output_df.append(cutoff_rows, sort=False)
-            output_df.drop_duplicates(inplace=True)
-            log.write(str(output_df))
-            log.write('\n\n\n\n')
-            yield output_df, 'all_markers', sample, 'control', cut_text
-            if bottom_outliers:
-                cut_text = 'bottom'
-                for marker, (*_, (cutoff)) in sample_dict[control].items():
-                    cut = cutoff[1]
-                    log.write(f'OUTLIERS: from {cut_text}')
-                    log.write('\n\n')
-                    cutoff_rows = filtered_df.loc[filtered_df[marker] < cut]
-                    output_df = output_df.append(cutoff_rows, sort=False)
-                output_df.drop_duplicates(inplace=True)
-                log.write(str(output_df))
-                log.write('\n\n\n\n')
-                yield output_df, 'all_markers', sample, 'control', cut_text
-    # ###
-    # ### RULE: outliers by sample cutoff, outliers for a single marker
-    # ###
-    if outliers in ('sample', 'both') and by_marker in ('marker', 'both'):
-        log.write('------- CUTOFF BY SAMPLE, OUTLIERS BY MARKER -------\n\n\n')
-        for sample, mkdict in sample_dict.items():
-            filtered_df = df[df[list(df)[0]].str.contains(sample)]
-            for marker, (*_, (cutoff)) in mkdict.items():
-                cut = cutoff[0]
-                cut_text = 'top'
-                output_df = filtered_df.loc[filtered_df[marker] > cut]
-                log.write(f'MARKER: {marker}\nSAMPLE: {sample}\n')
-                log.write('METHOD: use sample cutoff, ')
-                log.write('check outliers for current marker only\n')
-                log.write(f'CUTOFF: {cutoff}\n')
-                log.write(f'OUTLIERS: from {cut_text}')
-                log.write('\n\n')
-                log.write(str(output_df))
-                log.write('\n\n\n\n')
-                yield output_df, marker, sample, 'sample', cut_text
-                if bottom_outliers:
-                    cut = cutoff[1]
-                    cut_text = 'bottom'
-                    output_df = filtered_df.loc[filtered_df[marker] < cut]
-                    log.write(f'MARKER: {marker}\nSAMPLE: {sample}\n')
-                    log.write('METHOD: use sample cutoff, ')
-                    log.write('check outliers for current marker only\n')
-                    log.write(f'CUTOFF: {cutoff}\n')
-                    log.write(f'OUTLIERS: from {cut_text}')
-                    log.write('\n\n')
-                    log.write(str(output_df))
-                    log.write('\n\n\n\n')
-                    yield output_df, marker, sample, 'sample', cut_text
-    # ###
-    # ### RULE: outliers by sample cutoff, outliers for any marker in row
-    # ###
-    if outliers in ('sample', 'both') and by_marker in ('row', 'both'):
-        log.write('------- CUTOFF BY SAMPLE, OUTLIERS BY ROW -------\n\n\n')
-        for sample, mkdict in sample_dict.items():
-            log.write(f'SAMPLE: {sample}')
-            log.write('METHOD: use sample cutoff, ')
-            log.write('check outliers for any markers in whole row')
-            log.write('\n\n')
-            filtered_df = df[df[list(df)[0]].str.contains(sample)]
-            output_df = pd.DataFrame(columns=list(df))
-            cut_text = 'top'
-            for marker, (*_, (cutoff)) in mkdict.items():
-                cut = cutoff[0]
-                cutoff_rows = filtered_df.loc[filtered_df[marker] > cut]
-                output_df = output_df.append(cutoff_rows, sort=False)
-            output_df.drop_duplicates(inplace=True)
-            log.write(str(output_df))
-            log.write('\n\n\n\n')
-            yield output_df, 'all_markers', sample, 'sample', cut_text
-            if bottom_outliers:
-                cut_text = 'bottom'
-                for marker, (*_, (cutoff)) in mkdict.items():
-                    cut = cutoff[1]
-                    cutoff_rows = filtered_df.loc[filtered_df[marker] < cut]
-                    output_df = output_df.append(cutoff_rows, sort=False)
-                output_df.drop_duplicates(inplace=True)
-                log.write(str(output_df))
-                log.write('\n\n\n\n')
-                yield output_df, 'all_markers', sample, 'sample', cut_text
-
-
-def old_get_inverse_df(full_df, partial_df):
-    """Deprecated"""
-    df_merge = full_df.merge(partial_df.drop_duplicates(), on=list(full_df), how='left', indicator=True)
-    inverse_df = full_df[df_merge['_merge'] == 'left_only']
-    return inverse_df

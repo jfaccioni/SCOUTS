@@ -19,8 +19,6 @@ from src.custom_exceptions import CustomException, NoSampleError
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
 
-DEBUG = True
-
 
 class SCOUTS(QMainWindow):
     """Main Window Widget for SCOUTS."""
@@ -779,6 +777,7 @@ class SCOUTS(QMainWindow):
         QMessageBox.critical(self, title, mes)
 
     def debug(self):
+        """Pre-loads GUI elements if debug flag is set."""
         inp = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/mass-cytometry template.xlsx'
         self.input_path.setText(inp)
         out = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/output'
@@ -792,6 +791,9 @@ class SCOUTS(QMainWindow):
         self.sample_table.insertRow(2)
         self.sample_table.setItem(2, 0, QTableWidgetItem('Torin'))
         self.sample_table.setItem(2, 1, QTableWidgetItem('No'))
+
+
+DEBUG = True
 
 
 if __name__ == '__main__':
