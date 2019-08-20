@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class SCOUTS(QMainWindow):
     """Main Window Widget for SCOUTS."""
     margin = {
-        'left': 10,
+        'left': 15,
         'top': 5,
         'right': 10,
         'bottom': 10
@@ -509,7 +509,7 @@ class SCOUTS(QMainWindow):
     def set_icon(widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(os.path.join('icons', f'{icon}.svg')))
+        i.addPixmap(QPixmap(os.path.abspath(os.path.join('icons', f'{icon}.svg'))))
         widget.setIcon(i)
 
     # ###
@@ -736,10 +736,10 @@ class SCOUTS(QMainWindow):
     def memory_warning(self) -> None:
         """Warning message box used when user wants to generate a single excel file."""
         if self.sender().isChecked():
-            title = 'Warning!'
-            mes = ("Depending on your dataset, this option can consume a LOT of memory. "
-                   "Please make sure that your computer can handle it!")
-            QMessageBox.critical(self, title, mes)
+            title = 'Memory warning!'
+            mes = ("Depending on your dataset, this option can consume a LOT of memory and take"
+                   " a long time to process. Please make sure that your computer can handle it!")
+            QMessageBox.information(self, title, mes)
 
     def same_sample(self) -> None:
         """Error message box used when the user tries to input the same sample twice in the sample table."""
