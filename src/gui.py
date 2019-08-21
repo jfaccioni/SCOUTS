@@ -513,27 +513,6 @@ class SCOUTS(QMainWindow):
         widget.setIcon(i)
 
     # ###
-    # ### HELP & QUIT
-    # ###
-
-    @staticmethod
-    def get_help() -> None:
-        """Opens SCOUTS documentation on the browser. Called when the user clicks the "help" button"""
-        webbrowser.open('https://scouts.readthedocs.io/en/master/')
-
-    def closeEvent(self, event: QEvent) -> None:
-        """Defines the message box for when the user wants to quit SCOUTS."""
-        title = 'Quit Application'
-        mes = "Are you sure you want to quit?"
-        reply = QMessageBox.question(self, title, mes,
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
-
-    # ###
     # ### STACKED WIDGET PAGE SWITCHING
     # ###
 
@@ -776,6 +755,31 @@ class SCOUTS(QMainWindow):
         mes = "Sorry, this functionality has not been implemented yet."
         QMessageBox.critical(self, title, mes)
 
+    # ###
+    # ### HELP & QUIT
+    # ###
+
+    @staticmethod
+    def get_help() -> None:
+        """Opens SCOUTS documentation on the browser. Called when the user clicks the "help" button"""
+        webbrowser.open('https://scouts.readthedocs.io/en/master/')
+
+    def closeEvent(self, event: QEvent) -> None:
+        """Defines the message box for when the user wants to quit SCOUTS."""
+        title = 'Quit SCOUTS'
+        mes = "Are you sure you want to quit?"
+        reply = QMessageBox.question(self, title, mes,
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+
+    # ###
+    # ### DEBUG MODE
+    # ###
+
     def debug(self):
         """Pre-loads GUI elements if debug flag is set."""
         inp = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/mass-cytometry template.xlsx'
@@ -793,7 +797,7 @@ class SCOUTS(QMainWindow):
         self.sample_table.setItem(2, 1, QTableWidgetItem('No'))
 
 
-DEBUG = True
+DEBUG = True  # Automatically fills fields for quick testing
 
 
 if __name__ == '__main__':
@@ -802,5 +806,4 @@ if __name__ == '__main__':
     if DEBUG:
         scouts.debug()
     scouts.show()
-
     sys.exit(app.exec_())
