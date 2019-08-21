@@ -14,6 +14,7 @@ from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpi
                                QTableWidgetItem, QVBoxLayout, QWidget)
 
 from src.analysis import analyse
+from src.utils import get_project_root
 from src.custom_exceptions import CustomException, NoSampleError
 
 if TYPE_CHECKING:
@@ -54,9 +55,10 @@ class SCOUTS(QMainWindow):
 
         # Inherits from QMainWindow
         super().__init__()
+        self.root = get_project_root()
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
-        self.setWindowIcon(QIcon(os.path.join('icons', 'scouts.ico')))
+        self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.root, 'src', 'icons', f'scouts.ico'))))
         self.resize(*self.size.values())
         # Creates StackedWidget as QMainWindow's central widget
         self.stacked_pages = QStackedWidget(self)
@@ -112,7 +114,7 @@ class SCOUTS(QMainWindow):
         self.samples_button = QPushButton(self.main_page)
         self.samples_button.setStyleSheet(self.style['button'])
         self.set_icon(self.samples_button, 'settings')
-        self.samples_button.setText(' Select sample names...')
+        self.samples_button.setText(' Name samples...')
         self.samples_button.clicked.connect(self.goto_samples_page)
         # Go to gating page
         self.gates_button = QPushButton(self.main_page)
@@ -166,7 +168,7 @@ class SCOUTS(QMainWindow):
         # Markers text
         self.markers_text = QLabel(self.main_page)
         self.markers_text.setStyleSheet(self.style['bold-label'])
-        self.markers_text.setText('Calculate outliers for:')
+        self.markers_text.setText('Select outliers for:')
         # Markers button group
         self.markers_group = QButtonGroup(self)
         # Single marker
@@ -184,7 +186,7 @@ class SCOUTS(QMainWindow):
         self.markers_group.addButton(self.any_marker)
         # Both methods
         self.both_methods = QRadioButton(self.main_page)
-        self.both_methods.setText('both methods')
+        self.both_methods.setText('both')
         self.both_methods.setObjectName('single any')
         self.both_methods.setStyleSheet(self.style['radio button'])
         self.markers_group.addButton(self.both_methods)
@@ -484,7 +486,7 @@ class SCOUTS(QMainWindow):
         self.save_gates.setGeometry(self.margin['left'],
                                     self.widget_vposition(self.outlier_frame) + 25, self.rlimit(), 40)
         self.set_icon(self.save_gates, 'ok')
-        self.save_gates.setText(' Back to main page')
+        self.save_gates.setText(' Back to menu')
         self.save_gates.clicked.connect(self.goto_main_page)
 
     # ###
@@ -505,33 +507,11 @@ class SCOUTS(QMainWindow):
         """Returns the Y position of the bottommost part of the widget."""
         return widget.height() + widget.y()
 
-    @staticmethod
-    def set_icon(widget: QWidget, icon: str) -> None:
+    def set_icon(self, widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(os.path.abspath(os.path.join('icons', f'{icon}.svg'))))
+        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.root, 'src', 'icons', f'{icon}.svg'))))
         widget.setIcon(i)
-
-    # ###
-    # ### HELP & QUIT
-    # ###
-
-    @staticmethod
-    def get_help() -> None:
-        """Opens SCOUTS documentation on the browser. Called when the user clicks the "help" button"""
-        webbrowser.open('https://scouts.readthedocs.io/en/master/')
-
-    def closeEvent(self, event: QEvent) -> None:
-        """Defines the message box for when the user wants to quit SCOUTS."""
-        title = 'Quit Application'
-        mes = "Are you sure you want to quit?"
-        reply = QMessageBox.question(self, title, mes,
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
 
     # ###
     # ### STACKED WIDGET PAGE SWITCHING
@@ -776,11 +756,36 @@ class SCOUTS(QMainWindow):
         mes = "Sorry, this functionality has not been implemented yet."
         QMessageBox.critical(self, title, mes)
 
+    # ###
+    # ### HELP & QUIT
+    # ###
+
+    @staticmethod
+    def get_help() -> None:
+        """Opens SCOUTS documentation on the browser. Called when the user clicks the "help" button"""
+        webbrowser.open('https://scouts.readthedocs.io/en/master/')
+
+    def closeEvent(self, event: QEvent) -> None:
+        """Defines the message box for when the user wants to quit SCOUTS."""
+        title = 'Quit SCOUTS'
+        mes = "Are you sure you want to quit?"
+        reply = QMessageBox.question(self, title, mes,
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+
+    # ###
+    # ### DEBUG MODE
+    # ###
+
     def debug(self):
         """Pre-loads GUI elements if debug flag is set."""
         inp = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/mass-cytometry template.xlsx'
         self.input_path.setText(inp)
-        out = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/output'
+        out = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/output'
         self.output_path.setText(out)
         self.sample_table.insertRow(0)
         self.sample_table.setItem(0, 0, QTableWidgetItem('Ct'))
@@ -793,7 +798,7 @@ class SCOUTS(QMainWindow):
         self.sample_table.setItem(2, 1, QTableWidgetItem('No'))
 
 
-DEBUG = True
+DEBUG = True  # Automatically fills fields for quick testing
 
 
 if __name__ == '__main__':
@@ -802,5 +807,4 @@ if __name__ == '__main__':
     if DEBUG:
         scouts.debug()
     scouts.show()
-
     sys.exit(app.exec_())
