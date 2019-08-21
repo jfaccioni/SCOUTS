@@ -11,6 +11,8 @@ numpy = "*"
 matplotlib = "*"
 scouts = {editable = true,path = "."}
 pyside2 = "*"
+openpyxl = "*"
+xlrd = "*"
 
 [requires]
 python_version = "3.7"

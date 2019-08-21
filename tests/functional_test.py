@@ -18,14 +18,14 @@ out_path = '/home/juliano/PycharmProjects/SCOUTS/SCOUTS/test-case/results'
 test_dict = {'input_file': in_path,
              'output_folder': out_path,
              'cutoff_rule': 'sample',
-             'by_marker': 'marker',
-             'tukey': 1.5,
+             'marker_rule': 'marker',
+             'tukey_factor': 1.5,
              'export_csv': False,
              'export_excel': True,
-             'group_excel': False,
+             'single_excel': False,
              'sample_list': [('Yes', 'ct'), ('No', 'treat'), ('No', 'patient')],
              'gate_cutoff': 0.1,
-             'not_outliers': True,
+             'non_outliers': True,
              'bottom_outliers': True}
 
 app = QApplication(sys.argv)
