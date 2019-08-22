@@ -20,13 +20,13 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'SCOUTS'
-copyright = '2018, Juliano Faccioni'
-author = 'Juliano Faccioni'
+copyright = '2019, Juliano Luiz Faccioni'
+author = 'Juliano Luiz Faccioni'
 
 # The short X.Y version
 version = '1.0'
 # The full version, including alpha/beta/rc tags
-release = '2018'
+release = '2019'
 
 
 # -- General configuration ---------------------------------------------------
