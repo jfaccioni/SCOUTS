@@ -804,7 +804,7 @@ class SCOUTS(QMainWindow):
 
 
 # Automatically fills fields for quick testing
-DEBUG = False
+DEBUG = True
 
 
 if __name__ == '__main__':
