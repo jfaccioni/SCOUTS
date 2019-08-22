@@ -471,6 +471,10 @@ class SCOUTS(QMainWindow):
                                        self.widget_vposition(self.outlier_header) + 5, self.rlimit(), 100)
         self.outlier_frame.setFrameShape(QFrame.StyledPanel)
         self.outlier_frame.setLayout(QVBoxLayout())
+        # Top outliers information
+        self.top_outliers = QLabel(self.gating_page)
+        self.top_outliers.setStyleSheet(self.style['label'])
+        self.top_outliers.setText('By default, SCOUTS selects the top outliers from the population')
         # Bottom outliers data
         self.bottom_outliers = QCheckBox(self.gating_page)
         self.bottom_outliers.setText('Also generate results for low outliers')
@@ -478,6 +482,7 @@ class SCOUTS(QMainWindow):
         self.not_outliers = QCheckBox(self.gating_page)
         self.not_outliers.setText('Also generate results for non-outliers')
         # Add widgets above to Gate frame layout
+        self.outlier_frame.layout().addWidget(self.top_outliers)
         self.outlier_frame.layout().addWidget(self.bottom_outliers)
         self.outlier_frame.layout().addWidget(self.not_outliers)
 
