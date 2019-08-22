@@ -31,7 +31,8 @@ SCOUTS is written in Python 3.6. If your system does not have Python 3.6 or high
 Third-party modules used by SCOUTS:
 * [Numpy](http://www.numpy.org/)
 * [Pandas](https://pandas.pydata.org/)
-* [Pyqt5](https://pypi.org/project/PyQt5/)
+* [PySide2](https://pypi.org/project/PySide2/)
+* [Openpyxl](https://openpyxl.readthedocs.io/en/stable/)
 
 
 A full list of the third-party packages in a known working environment are listed in the [environment.yml](environment.yml) file (tested in Ubuntu 18.04).

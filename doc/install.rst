@@ -25,7 +25,9 @@ Third-party modules used by SCOUTS:
 
 - `Pandas <https://pandas.pydata.org/>`_
 
-- `Pyqt5 <https://pypi.org/project/PyQt5/>`_
+- `PySide2 <https://pypi.org/project/PySide2/>`_
+
+- `Openpyxl <https://openpyxl.readthedocs.io/en/stable/>`_
 
 
 A full list of the third-party packages (and their dependencies) in a known working environment are listed in the `environment.yml <https://github.com/jfaccioni/scouts/environment.yml>`_ file (tested in Ubuntu 18.04).
