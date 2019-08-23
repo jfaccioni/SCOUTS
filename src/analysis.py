@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from collections import namedtuple
-from typing import Generator, List, Optional, TYPE_CHECKING, Tuple
+from typing import Generator, List, Dict, Optional, TYPE_CHECKING, Tuple
 
 import numpy as np
 import pandas as pd
@@ -161,14 +161,15 @@ def run_scouts(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: 
     if not os.path.exists(output_path):
         os.mkdir(output_path)
     summary_df = pd.DataFrame(columns=['file number'] + list(Info._fields))
-    stats_df_list = create_stats_dfs(markers=list(input_df), cutoff_rule=cutoff_rule, marker_rule=marker_rule,
+    markers = list(input_df)[1:]  # exclude index from this list (only column names
+    stats_df_dict = create_stats_dfs(markers=markers, cutoff_rule=cutoff_rule, marker_rule=marker_rule,
                                      sample_list=sample_list, bottom=bottom_outliers, non=non_outliers)
     excel_file_list = []
     for i, (data, info) in enumerate(yield_dataframes(input_df=input_df, sample_list=sample_list, cutoff_df=cutoff_df,
                                                       cutoff_rule=cutoff_rule, marker_rule=marker_rule,
                                                       non_outliers=non_outliers, bottom_outliers=bottom_outliers), 1):
         summary_df = add_info_to_summary(summary_df, i, info)
-        add_info_to_stats(data, sample_list, stats_df_list, info)
+        add_info_to_stats(data, sample_list, stats_df_dict, info)
         if export_csv:
             csv_path = os.path.join(output_path, '%04d.csv' % i)
             data.to_csv(csv_path)
@@ -179,7 +180,7 @@ def run_scouts(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: 
     summary_path = os.path.join(output_folder, 'summary.xlsx')
     generate_summary_table(summary_df, summary_path)
     stats_path = os.path.join(output_folder, 'stats.xlsx')
-    generate_stats_table(stats_df_list, stats_path)
+    generate_stats_table(stats_df_dict, stats_path)
     cutoff_path = os.path.join(output_folder, 'cutoff_values.xlsx')
     generate_cutoff_table(cutoff_df, cutoff_path)
     if single_excel:
@@ -189,13 +190,9 @@ def run_scouts(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: 
 
 
 def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, sample_list: List[Tuple[str, str]],
-                     bottom: bool, non: bool) -> List[Optional[pd.DataFrame]]:
+                     bottom: bool, non: bool) -> Dict[str, pd.DataFrame]:
     """str"""  # TODO
-    columns = ['sample', 'category', 'measurement']
-    if 'any' in marker_rule:
-        columns += ['any marker']
-    if 'single' in marker_rule:
-        columns += markers
+    columns = markers
     samples = get_all_sample_names(sample_list)
     outliers = ['top outliers']
     if bottom is True:
@@ -204,12 +201,16 @@ def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, sam
         outliers += ['non-outliers']
     stats = ['#', 'mean', 'median', 'sd']
     index = pd.MultiIndex.from_product([samples, outliers, stats])
-    dfs = [None, None]
-    if 'sample' in cutoff_rule:
-        dfs[0] = pd.DataFrame(columns=columns, index=index)
-    if 'ref' in cutoff_rule:
-        dfs[1] = pd.DataFrame(columns=columns, index=index)
-    return dfs
+    df_dict = {}
+    if 'sample' in cutoff_rule and 'any' in marker_rule:
+        df_dict['OutS any marker'] = pd.DataFrame(columns=columns, index=index)
+    if 'sample' in cutoff_rule and 'single' in marker_rule:
+        df_dict['OutS single marker'] = pd.DataFrame(columns=columns, index=index)
+    if 'ref' in cutoff_rule and 'any' in marker_rule:
+        df_dict['OutR any marker'] = pd.DataFrame(columns=columns, index=index)
+    if 'ref' in cutoff_rule and 'single' in marker_rule:
+        df_dict['OutR single marker'] = pd.DataFrame(columns=columns, index=index)
+    return df_dict
 
 
 def yield_dataframes(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame,
@@ -334,17 +335,43 @@ def add_info_to_summary(df: pd.DataFrame, i: int, info: Info) -> pd.DataFrame:
 
 
 def add_info_to_stats(data: pd.DataFrame, sample_list: List[Tuple[str, str]],
-                      stats_df_list: List[Optional[pd.DataFrame]], info: Info) -> None:
+                      stats_df_dict: Dict[str, pd.DataFrame], info: Info) -> None:
     """str"""  # TODO
     samples = get_all_sample_names(sample_list)
     for sample in samples:
-        filtered_df = filter_df_by_sample_index(df=data, sample=sample)
+        values_df = get_values_df(data, sample, info)
+        key = get_key_from_info(info)
+        df = stats_df_dict[key]
+        if 'any' in info.outliers_for:
+            df.loc[sample].loc[info.category] = values_df.values
+        else:
+            df.loc[sample].loc[info.category, info.outliers_for] = values_df.values
+
+
+def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> pd.DataFrame:
+    """str"""  # TODO
+    filtered_df = filter_df_by_sample_index(df=data, sample=sample)
+    filtered_df.set_index(filtered_df.columns[0], inplace=True)
+    if 'any' in info.outliers_for:
         values_df = filtered_df.describe().loc[['count', 'mean', '50%', 'std']]
-        values_df.index = ['#', 'mean', 'median', 'sd']
-        if info.cutoff_from == 'sample':  # first df
-            stats_df_list[0].loc[sample].loc[info.category] = values_df.values   # TODO: Error! Shapes are wrong!
-        if info.cutoff_from == 'reference':  # second df
-            stats_df_list[1].loc[sample].loc[info.category] = values_df.values
+    else:
+        values_df = filtered_df.describe().loc[['count', 'mean', '50%', 'std'], info.outliers_for]
+    values_df.index = ['#', 'mean', 'median', 'sd']
+    return values_df
+
+
+def get_key_from_info(info: Info) -> str:
+    """str"""  # TODO
+    if info.cutoff_from == 'sample':
+        if 'any marker' == info.outliers_for:
+            return 'OutS any marker'
+        else:
+            return 'OutS single marker'
+    else:
+        if 'any marker' == info.outliers_for:
+            return 'OutR any marker'
+        else:
+            return 'OutR single marker'
 
 
 def generate_summary_table(summary_df: pd.DataFrame, summary_path: str) -> None:
@@ -353,12 +380,12 @@ def generate_summary_table(summary_df: pd.DataFrame, summary_path: str) -> None:
     summary_df.to_excel(summary_path, sheet_name='Summary', index=False)
 
 
-def generate_stats_table(stats_df_list: List[Optional[pd.DataFrame]], stats_path: str) -> None:
+def generate_stats_table(stats_df_dict: Dict[str, pd.DataFrame], stats_path: str) -> None:
     """str"""  # TODO
     writer = pd.ExcelWriter(stats_path)
-    for df, name in zip(stats_df_list, ('OutS', 'OutR')):
-        if df is not None:
-            df.to_excel(writer, sheet_name=name)
+    for name, df in stats_df_dict.items():
+        df.to_excel(writer, sheet_name=name)
+    writer.save()
 
 
 def generate_cutoff_table(cutoff_df: pd.DataFrame, summary_path: str) -> None:
