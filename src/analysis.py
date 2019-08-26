@@ -74,7 +74,7 @@ def get_all_sample_names(sample_list: List[Tuple[str, str]]) -> List[str]:
     return [tup[0] for tup in sample_list]
 
 
-def validate_sample_names(samples: List[str, str], df: pd.DataFrame) -> None:
+def validate_sample_names(samples: List[str], df: pd.DataFrame) -> None:
     """Checks whether any sample name from the sample table isn't present on the input dataframe.
     Raises an exception if this happens."""
     sample_names = df.index  # Assumes index = sample names (as per documentation)
@@ -100,7 +100,6 @@ def apply_cytof_gating(df: pd.DataFrame, cutoff: float) -> None:
         if mean_row_value <= cutoff:
             indices_to_drop.append(index)
     df.drop(indices_to_drop, axis=0, inplace=True)
-    df.reset_index(drop=True, inplace=True)
 
 
 # noinspection PyTypeChecker
@@ -110,8 +109,8 @@ def apply_rnaseq_gating(df: pd.DataFrame, cutoff: float) -> None:
     df.mask(df <= cutoff, np.nan, inplace=True)
 
 
-def get_cutoff_dataframe(df: pd.DataFrame, samples: List[str], markers: List[str], reference: str, cutoff_rule: str,
-                         tukey: float) -> pd.DataFrame:
+def get_cutoff_dataframe(df: pd.DataFrame, samples: List[str], markers: List[str], reference: Optional[str],
+                         cutoff_rule: str, tukey: float) -> pd.DataFrame:
     """Gets a dataframe with cutoff values(Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) in which columns correspond
     to markers and rows (index) correspond to samples."""
     if cutoff_rule == 'ref':

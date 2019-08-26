@@ -1,7 +1,5 @@
 import unittest
 
-from PySide2.QtWidgets import QApplication
-
 from src.analysis import *
 from src.gui import *
 from src.utils import *
@@ -104,17 +102,34 @@ class TestSCOUTSAnalysis(unittest.TestCase):
     """Tests all functions (and other elements) from src.analysis module."""
     @classmethod
     def setUpClass(cls) -> None:
-        cls.backup_df = pd.read_excel('test-case.xlsx')
+        cls.samples = ['ct', 'treat', 'patient']
+        cls.markers = ['Marker01', 'Marker02', 'Marker03', 'Marker04', 'Marker05']
+        cls.backup_df = pd.read_excel('test-case.xlsx', sheet_name='raw data')
+        cls.cytof_df = pd.read_excel('test-case.xlsx', sheet_name='cytof gate 1.5').set_index('Sample')
+        cls.rnaseq_df = pd.read_excel('test-case.xlsx', sheet_name='rnaseq gate 2.0').set_index('Sample')
+        cls.description_df = pd.read_excel('test-case.xlsx', sheet_name='raw data description', index_col=[0, 1])
+        cls.cutoff_table_df = pd.read_excel('test-case.xlsx', sheet_name='cutoff table results').set_index('Sample')
+        cls.cutoff_df = pd.DataFrame(columns=cls.markers, index=cls.samples)
+        for row in cls.samples:
+            for col in cls.markers:
+                cls.cutoff_df.loc[row, col] = Stats(cls.description_df.loc[row].loc['Q1'][col],
+                                                    cls.description_df.loc[row].loc['Q3'][col],
+                                                    cls.description_df.loc[row].loc['IQR'][col],
+                                                    cls.description_df.loc[row].loc['Lower Tukey fence'][col],
+                                                    cls.description_df.loc[row].loc['Upper Tukey fence'][col])
+
 
     @classmethod
     def tearDownClass(cls) -> None:
         pass
 
     def setUp(self) -> None:
-        self.df = self.backup_df.copy()
+        self.raw_df = self.backup_df.copy()
+        self.indexed_df = self.backup_df.copy().set_index('Sample')
 
     def tearDown(self) -> None:
-        del self.df
+        del self.raw_df
+        del self.indexed_df
 
     def test_namedtuple_stats(self) -> None:
         pass
@@ -126,21 +141,34 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         pass
 
     def test_function_load_dataframe(self) -> None:
-        self.assertTrue(self.df.equals(load_dataframe('test-case.xlsx')))
+        self.assertTrue(self.raw_df.equals(load_dataframe('test-case.xlsx')))
+        self.assertTrue(self.raw_df.equals(load_dataframe('test-case.csv')))
+        with self.assertRaises(FileNotFoundError):
+            load_dataframe('this-file-does-not-exist.xlsx')
         with self.assertRaises(PandasInputError):
-            load_dataframe('wrong-input-file.extension')
+            load_dataframe('test-case.wrong_extension')
 
     def test_function_validate_sample_names(self) -> None:
-        pass
+        validate_sample_names(samples=self.samples, df=self.indexed_df)
+        invalid_samples = ['what', 'are', 'these?']
+        with self.assertRaises(SampleNamingError):
+            validate_sample_names(samples=invalid_samples, df=self.indexed_df)
+        for bad_sample in invalid_samples:
+            with self.assertRaises(SampleNamingError):
+                validate_sample_names(samples=[bad_sample], df=self.indexed_df)
 
     def test_function_apply_cytof_gating(self) -> None:
-        pass
+        apply_cytof_gating(df=self.indexed_df, cutoff=1.5)
+        self.assertTrue(self.indexed_df.equals(self.cytof_df))
 
     def test_function_apply_rnaseq_gating(self) -> None:
-        pass
+        apply_rnaseq_gating(df=self.indexed_df, cutoff=2.0)
+        self.assertTrue(self.indexed_df.equals(self.rnaseq_df))
 
     def test_function_get_cutoff_dataframe(self) -> None:
-        pass
+        cutoff = get_cutoff_dataframe(df=self.indexed_df, samples=self.samples, markers=self.markers, reference=None,
+                                      cutoff_rule='sample', tukey=1.5)
+        self.assertTrue(cutoff.equals(self.cutoff_df))
 
     def test_function_get_reference_sample_name(self) -> None:
         pass
