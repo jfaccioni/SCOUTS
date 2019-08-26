@@ -14,8 +14,8 @@ from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpi
                                QTableWidgetItem, QVBoxLayout, QWidget)
 
 from src.analysis import analyse
-from src.utils import get_project_root
-from src.custom_exceptions import CustomException, NoSampleError
+from src.utils import (EmptySampleListError, NoIOPathError, NoReferenceError, NoSampleError, PandasInputError,
+                       SampleNamingError, get_project_root)
 
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
@@ -426,8 +426,7 @@ class SCOUTS(QMainWindow):
         # CyToF gating
         self.cytof_gates = QRadioButton(self.gating_page)
         self.cytof_gates.setObjectName('cytof')
-        cytof_info = ('Mass Cytometry gating - exclude samples with\n'
-                      'average expression for all markers below:')
+        cytof_info = 'Mass Cytometry gating - exclude samples with\naverage expression for all markers below:'
         self.cytof_gates.setText(cytof_info)
         self.gating_group.addButton(self.cytof_gates)
         self.cytof_gates.clicked.connect(self.activate_gate)
@@ -440,8 +439,7 @@ class SCOUTS(QMainWindow):
         self.cytof_gates_value.setEnabled(False)
         # scRNA-Seq gating
         self.rnaseq_gates = QRadioButton(self.gating_page)
-        rnaseq_info = ('scRNA-Seq gating - when calculating cutoff,'
-                       '\nexclude number of reads below:')
+        rnaseq_info = 'scRNA-Seq gating - when calculating cutoff,\nexclude number of reads below:'
         self.rnaseq_gates.setText(rnaseq_info)
         self.rnaseq_gates.setObjectName('rnaseq')
         self.gating_group.addButton(self.rnaseq_gates)
@@ -634,69 +632,51 @@ class SCOUTS(QMainWindow):
             input_dict = self.parse_input()
             analyse(self, **input_dict)
         except Exception as error:
-            if not isinstance(error, CustomException):
-                self.generic_error_message(error)
+            self.propagate_error(error)
         else:
             self.module_done()
 
     def parse_input(self) -> Dict:
         """Returns user input on the GUI as a dictionary."""
-        input_dict = {}
         # Input and output
-        input_file = self.input_path.text()
-        output_folder = self.output_path.text()
-        if not (input_file or output_folder):
-            raise self.no_io_path_error()
-        input_dict['input_file'] = input_file
-        input_dict['output_folder'] = output_folder
+        input_dict = {'input_file': self.input_path.text(), 'output_folder': self.output_path.text()}
+        if not input_dict['input_file'] or not input_dict['output_folder']:
+            raise NoIOPathError
         # Set cutoff by reference or by sample rule
         input_dict['cutoff_rule'] = self.cutoff_group.checkedButton().objectName()  # 'sample', 'ref', 'sample ref'
         # Outliers for each individual marker or any marker in row
         input_dict['marker_rule'] = self.markers_group.checkedButton().objectName()  # 'single', 'any', 'single any'
         # Tukey factor used for calculating cutoff
-        tukey_id = self.tukey_group.checkedId()
-        tukey = self.tukey_group.button(tukey_id)
-        input_dict['tukey_factor'] = float(tukey.text())  # '1.5', '3.0'
+        input_dict['tukey_factor'] = float(self.tukey_group.checkedButton().text())  # '1.5', '3.0'
         # Output settings
+        input_dict['export_csv'] = False
         if self.output_csv.isChecked():
-            export_csv = True
-        else:
-            export_csv = False
-        input_dict['export_csv'] = export_csv
+            input_dict['export_csv'] = True
+        input_dict['export_excel'] = False
         if self.output_excel.isChecked():
-            export_excel = True
-        else:
-            export_excel = False
-        input_dict['export_excel'] = export_excel
+            input_dict['export_excel'] = True
+        input_dict['single_excel'] = False
         if self.single_excel.isChecked():
-            single_excel = True
-        else:
-            single_excel = False
-        input_dict['single_excel'] = single_excel
+            input_dict['single_excel'] = True
         # Retrieve samples from sample table
-        sample_list = []
+        input_dict['sample_list'] = []
         for tuples in self.yield_samples_from_table():
-            sample_list.append(tuples)
-        if not sample_list:
-            raise NoSampleError(self)
-        input_dict['sample_list'] = sample_list
+            input_dict['sample_list'].append(tuples)
+        if not input_dict['sample_list']:
+            raise NoSampleError
         # Set gate cutoff (if any)
-        input_dict['gate_cutoff'] = None
+        input_dict['gate_cutoff_value'] = None
+        input_dict['gating'] = self.gating_group.checkedButton().objectName()  # 'no', 'cytof', 'rnaseq'
         if not self.no_gates.isChecked():
-            if self.cytof_gates.isChecked():
-                input_dict['gate_cutoff'] = self.gates_cytof_value.value()
-            elif self.rnaseq_gates.isChecked():
-                input_dict['gate_cutoff'] = self.rnaseq_gates_value.value()
+            input_dict['gating_value'] = getattr(self, f'{input_dict["gating"]}_gates_value').value()
         # Generate results for non-outliers
-        non_outliers = False
+        input_dict['non_outliers'] = False
         if self.not_outliers.isChecked():
-            non_outliers = True
-        input_dict['non_outliers'] = non_outliers
+            input_dict['non_outliers'] = True
         # Generate results for bottom outliers
-        bottom_outliers = False
+        input_dict['bottom_outliers'] = False
         if self.bottom_outliers.isChecked():
-            bottom_outliers = True
-        input_dict['bottom_outliers'] = bottom_outliers
+            input_dict['bottom_outliers'] = True
         # return dictionary with all gathered inputs
         return input_dict
 
@@ -749,6 +729,63 @@ class SCOUTS(QMainWindow):
             return True
         return False
 
+    # ###
+    # ### EXCEPTIONS & ERRORS
+    # ###
+
+    def propagate_error(self, error):
+        if isinstance(error, EmptySampleListError):
+            self.empty_sample_list_error_message()
+        if isinstance(error, NoIOPathError):
+            self.no_io_path_error_message()
+        elif isinstance(error, NoReferenceError):
+            self.no_reference_error_message()
+        elif isinstance(error, NoSampleError):
+            self.no_sample_error_message()
+        elif isinstance(error, PandasInputError):
+            self.pandas_input_error_message()
+        elif isinstance(error, SampleNamingError):
+            self.sample_naming_error_message()
+        else:
+            self.generic_error_message(error)
+
+    def empty_sample_list_error_message(self) -> None:
+        title = 'Error: No control sample'
+        message = ("Sorry, your samples do not include a control. Please make sure to "
+                   "tag one of the samples as a control.")
+        QMessageBox.critical(self, title, message)
+
+    def no_io_path_error_message(self) -> None:
+        title = 'Error: no file/folder'
+        message = ("Sorry, no input file and/or output folder was provided. "
+                   "Please add the path to the necessary file/folder.")
+        QMessageBox.critical(self, title, message)
+
+    def no_reference_error_message(self) -> None:
+        title = "Error: No reference selected"
+        message = ("Sorry, no reference sample was found on the sample list, but analysis was set to "
+                   "reference. Please add a reference sample, or change the rule for cutoff calculation.")
+        QMessageBox.critical(self, title, message)
+
+    def no_sample_error_message(self) -> None:
+        title = "Error: No samples selected"
+        message = ("Sorry, the analysis cannot be performed because no sample names were input. "
+                   "Please add your sample names.")
+        QMessageBox.critical(self, title, message)
+
+    def pandas_input_error_message(self) -> None:
+        title = 'Error: unexpected input file'
+        message = ("Sorry, the input file could not be read. Please make sure that "
+                   "the data is save in a valid format (supported formats are: "
+                   ".csv, .xlsx).")
+        QMessageBox.critical(self, title, message)
+
+    def sample_naming_error_message(self) -> None:
+        title = 'Error: sample names not in input file'
+        message = ("Sorry, your sample names were not found in the input file. Please "
+                   "make sure that the names were typed correctly (case-sensitive).")
+        QMessageBox.critical(self, title, message)
+
     def generic_error_message(self, error) -> None:
         """Error message box used to display any error message (including traceback) for any uncaught errors."""
         trace = traceback.format_exc()
@@ -783,7 +820,7 @@ class SCOUTS(QMainWindow):
             event.ignore()
 
     # ###
-    # ### DEBUG MODE
+    # ### DEBUG OPTIONS
     # ###
 
     def debug(self):

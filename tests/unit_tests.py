@@ -1,7 +1,10 @@
 import unittest
+
+from PySide2.QtWidgets import QApplication
+
 from src.analysis import *
 from src.gui import *
-from PySide2.QtWidgets import QApplication
+from src.utils import *
 
 
 class TestSCOUTSGui(unittest.TestCase):
@@ -101,18 +104,17 @@ class TestSCOUTSAnalysis(unittest.TestCase):
     """Tests all functions (and other elements) from src.analysis module."""
     @classmethod
     def setUpClass(cls) -> None:
-        cls.stats = Stats(*Stats._fields)
-        cls.info = Info(*Info._fields)
+        cls.backup_df = pd.read_excel('test-case.xlsx')
 
     @classmethod
     def tearDownClass(cls) -> None:
         pass
 
     def setUp(self) -> None:
-        pass
+        self.df = self.backup_df.copy()
 
     def tearDown(self) -> None:
-        pass
+        del self.df
 
     def test_namedtuple_stats(self) -> None:
         pass
@@ -123,10 +125,12 @@ class TestSCOUTSAnalysis(unittest.TestCase):
     def test_function_analyse(self) -> None:
         pass
 
-    def test_function_validate_sample_names(self) -> None:
-        pass
-
     def test_function_load_dataframe(self) -> None:
+        self.assertTrue(self.df.equals(load_dataframe('test-case.xlsx')))
+        with self.assertRaises(PandasInputError):
+            load_dataframe('wrong-input-file.extension')
+
+    def test_function_validate_sample_names(self) -> None:
         pass
 
     def test_function_apply_cytof_gating(self) -> None:

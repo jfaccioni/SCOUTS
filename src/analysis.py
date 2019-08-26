@@ -2,28 +2,24 @@ from __future__ import annotations
 
 import os
 from collections import namedtuple
-from typing import Generator, List, Dict, Optional, TYPE_CHECKING, Tuple
+from typing import Dict, Generator, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from openpyxl import Workbook, load_workbook
 
-from src.custom_exceptions import NoReferenceError, PandasInputError, SampleNamingError
-
-if TYPE_CHECKING:
-    from PySide2.QtWidgets import QMainWindow
+from src.utils import NoReferenceError, PandasInputError, SampleNamingError
 
 Stats = namedtuple("Stats", ['first_quartile', 'third_quartile', 'iqr', 'lower_cutoff', 'upper_cutoff'])
 Info = namedtuple("Info", ['cutoff_from', 'reference', 'outliers_for', 'category'])
 
 
-def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rule: str,
-            marker_rule: str, tukey_factor: float, export_csv: bool, export_excel: bool,
-            single_excel: bool, sample_list: List[Tuple[str, str]], gate_cutoff: Optional[float],
-            non_outliers: bool, bottom_outliers: bool):
+def analyse(input_file: str, output_folder: str, cutoff_rule: str, marker_rule: str, tukey_factor: float,
+            export_csv: bool, export_excel: bool, single_excel: bool, sample_list: List[Tuple[str, str]],
+            gating: str, gate_cutoff_value: Optional[float], non_outliers: bool, bottom_outliers: bool):
     """Main SCOUTS function that organizes user input and calls related functions accordingly."""
     # Loads df and checks for file extension
-    df = load_dataframe(widget=widget, input_file=input_file)
+    df = load_dataframe(input_file=input_file)
 
     # Sets first column (sample names) as the index
     df.set_index(df.columns[0], inplace=True)
@@ -33,7 +29,7 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
 
     # Checks if all sample names are in at least one cell of the first column in the df
     samples = get_all_sample_names(sample_list=sample_list)
-    validate_sample_names(widget=widget, samples=samples, df=df)
+    validate_sample_names(samples=samples, df=df)
 
     # Retrieves information on reference, if necessary:
     reference = None
@@ -41,11 +37,10 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
         reference = get_reference_sample_name(sample_list=sample_list)
 
     # Apply gates to df, if any
-    if gate_cutoff is not None:
-        if widget.cytof_gates.isChecked():
-            apply_cytof_gating(df=df, cutoff=gate_cutoff)
-        elif widget.rnaseq_gates.isChecked():
-            apply_rnaseq_gating(df=df, cutoff=gate_cutoff)
+    if gating == 'cytof':
+        apply_cytof_gating(df=df, cutoff=gate_cutoff_value)
+    elif gating == 'rnaseq':
+        apply_rnaseq_gating(df=df, cutoff=gate_cutoff_value)
 
     # Gets cutoff dict -> { 'sample' : { 'marker' : (Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) } }
     cutoff_df = get_cutoff_dataframe(df=df, samples=samples, markers=markers, reference=reference,
@@ -58,7 +53,7 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
                output_folder=output_folder)
 
 
-def load_dataframe(widget: QMainWindow, input_file: str) -> pd.DataFrame:
+def load_dataframe(input_file: str) -> pd.DataFrame:
     """Loads input dataframe into memory. Raises an exception if the filename doesn't end with
     .xlsx or .csv (supported formats)."""
     if input_file.endswith('.xlsx') or input_file.endswith('.xls'):
@@ -66,7 +61,7 @@ def load_dataframe(widget: QMainWindow, input_file: str) -> pd.DataFrame:
     elif input_file.endswith('.csv'):
         return pd.read_csv(input_file, header=0)
     else:
-        raise PandasInputError(widget)
+        raise PandasInputError
 
 
 def get_marker_names(df: pd.DataFrame) -> List[str]:
@@ -79,13 +74,13 @@ def get_all_sample_names(sample_list: List[Tuple[str, str]]) -> List[str]:
     return [tup[0] for tup in sample_list]
 
 
-def validate_sample_names(widget: QMainWindow, samples: List[str, str], df: pd.DataFrame) -> None:
+def validate_sample_names(samples: List[str, str], df: pd.DataFrame) -> None:
     """Checks whether any sample name from the sample table isn't present on the input dataframe.
     Raises an exception if this happens."""
     sample_names = df.index  # Assumes index = sample names (as per documentation)
     for sample in samples:
         if not any(sample in name for name in sample_names):
-            raise SampleNamingError(widget)
+            raise SampleNamingError
 
 
 def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> str:
