@@ -1,112 +1,83 @@
 from __future__ import annotations
 
-from typing import Dict, List, TYPE_CHECKING, Tuple
 import os
+
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 
+# Main arguments
 CONTROL = 'Ct'
 TREATMENT = 'RT'
 SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'data')
+
+# Colormap values
 CMAP_STR = 'RdBu_r'
 CMAP = getattr(matplotlib.cm, CMAP_STR)
 CMAP.set_bad('gray')
 
-SHEET = 'OutS single marker'
+# Output values
 LOG_TRANSFORM = True
-TRUE = True
+SAVE_HEATMAPS = True
+PLOT_HEATMAPS = True
 
 
-class DataFrameDict(dict):
-    def __init__(self, df, ct, treat) -> None:
-        super().__init__()
-        self.df = df
-        self['markers'] = list(df.columns)
-        self[ct] = self.get_samples(ct)
-        self[ct]['population'] = self.get_population_data(ct)
-        self[treat] = self.get_samples(treat)
-        self[treat]['population'] = self.get_population_data(treat)
-
-    def get_samples(self, cond) -> Dict[str, pd.DataFrame]:
-        d = {}
-        for pos in ('top outliers', 'bottom outliers', 'non-outliers'):
-            d[pos] = self.df.loc[cond].loc[pos]
-        return d
-
-    def get_population_data(self, cond) -> pd.DataFrame:
-        df = pd.DataFrame(0.0, index=['#', 'mean', 'median', 'sd'], columns=self['markers'])
-        for marker in self['markers']:
-            n = []
-            for name, cond_df in self[cond].items():
-                num = cond_df[marker].loc['#']
-                df[marker].loc['#'] += num
-                df[marker].loc[['mean', 'median', 'sd']] += cond_df[marker].loc['mean', 'median', 'sd'] * num
-                n.append(num)
-            df[marker].loc[['mean', 'median', 'sd']] = df[marker].loc[['mean', 'median', 'sd']] / sum(n)
-        return df
-
-
-def main(path: str, ct: str, treat: str, sheet_name: str) -> None:
+def main(path: str, ct: str, treat: str) -> None:
     """Main function for this script."""
-    df = pd.read_excel(path, index_col=[0, 1, 2], sheet_name=sheet_name)
-    print(df)
-    df_dict = DataFrameDict(df, ct, treat)
-    print(df_dict['markers'])
-    print(df_dict['control'])
-    print(df_dict['treatment'])
-    if TRUE:
-        return
-
+    # load dataframe
+    filename = 'gio-mass-cytometry-stats.xlsx'
+    df = pd.read_excel(os.path.join(path, filename), index_col=[0, 1, 2])
+    control = df.loc[ct]
+    treatment = df.loc[treat]
     fig, axes = plt.subplots(3, 1, squeeze=True)
 
     # first image
     samples = ['Ct', 'RT']
     populations = ['Whole population', 'Outliers', 'Non-outliers']
     index = pd.MultiIndex.from_product([samples, populations])
-    first_heatmap = pd.DataFrame([pd.Series(controls['pop'].loc['mean']),
-                                  pd.Series(controls['top'].loc['mean']),
-                                  pd.Series(controls['non'].loc['mean']),
-                                  pd.Series(treatments['pop'].loc['mean']),
-                                  pd.Series(treatments['top'].loc['mean']),
-                                  pd.Series(treatments['non'].loc['mean'])],
+    first_heatmap = pd.DataFrame([pd.Series(control.loc['whole population'].loc['mean']),
+                                  pd.Series(control.loc['top outliers'].loc['mean']),
+                                  pd.Series(control.loc['non-outliers'].loc['mean']),
+                                  pd.Series(treatment.loc['whole population'].loc['mean']),
+                                  pd.Series(treatment.loc['top outliers'].loc['mean']),
+                                  pd.Series(treatment.loc['non-outliers'].loc['mean'])],
                                  index=index)
-    plot_heatmap(first_heatmap, axes[0])
-
     # second image
-    out_non_out_ct = controls['top'].loc['mean'] / controls['non'].loc['mean']
-    out_non_out_rt = treatments['top'].loc['mean'] / treatments['non'].loc['mean']
+    out_non_out_ct = control.loc['top outliers'].loc['mean'] / control.loc['non-outliers'].loc['mean']
+    out_non_out_rt = treatment.loc['top outliers'].loc['mean'] / treatment.loc['non-outliers'].loc['mean']
     index = ['Ct Out/Non-Out', 'RT Out/Non-Out']
     second_heatmap = pd.DataFrame([pd.Series(out_non_out_ct), pd.Series(out_non_out_rt)], index=index)
-    plot_heatmap(second_heatmap, axes[1])
+    if LOG_TRANSFORM:
+        second_heatmap = np.log(second_heatmap)
 
     # third image
     ruouta = out_non_out_rt / out_non_out_ct
-    mean_rt_ct = treatments['pop'].loc['mean'] / controls['pop'].loc['mean']
+    mean_rt_ct = treatment.loc['whole population'].loc['mean'] / control.loc['whole population'].loc['mean']
     index = ['RUOutA', 'Mean RT/Mean Ct']
-    second_heatmap = pd.DataFrame([pd.Series(ruouta), pd.Series(mean_rt_ct)], index=index)
-    plot_heatmap(second_heatmap, axes[2])
-    plt.show()
+    third_heatmap = pd.DataFrame([pd.Series(ruouta), pd.Series(mean_rt_ct)], index=index)
+    if LOG_TRANSFORM:
+        third_heatmap = np.log(third_heatmap)
 
+    # all heatmaps
+    heatmaps = [first_heatmap, second_heatmap, third_heatmap]
 
-def plot_heatmap(arr: np.array, ax: plt.Axes):
-    img = sns.heatmap(data=arr, ax=ax, cmap=CMAP, square=True)
-    return img
+    # export heatmaps
+    if SAVE_HEATMAPS:
+        output_filename = 'heatmaps.xlsx'
+        writer = pd.ExcelWriter(os.path.join(path, output_filename))
+        for index, heatmap in enumerate(heatmaps, 1):
+            heatmap.to_excel(writer, sheet_name=f'heatmap_0{index}')
+        writer.save()
+
+    # plot heatmaps
+    if PLOT_HEATMAPS:
+        for index, heatmap in enumerate(heatmaps):
+            sns.heatmap(data=heatmap, ax=axes[index], cmap=CMAP, square=True)
+        plt.show()
 
 
 if __name__ == '__main__':
-    # args = get_args()
-    main(path=os.path.join(SCRIPT_DIR, '..', 'local', 'output', 'stats.xlsx'), ct=CONTROL, treat=TREATMENT,
-         sheet_name=SHEET)
-
-
-
-
-
-
-
-
-
-
+    main(path=PATH, ct=CONTROL, treat=TREATMENT)
