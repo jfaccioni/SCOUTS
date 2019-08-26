@@ -24,29 +24,38 @@ def analyse(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rul
     """Main SCOUTS function that organizes user input and calls related functions accordingly."""
     # Loads df and checks for file extension
     df = load_dataframe(widget=widget, input_file=input_file)
+
+    # Sets first column (sample names) as the index
+    df.set_index(df.columns[0], inplace=True)
+
+    # Gets markers from dataframe
+    markers = get_marker_names(df)
+
     # Checks if all sample names are in at least one cell of the first column in the df
-    validate_sample_names(widget=widget, sample_list=sample_list, df=df)
+    samples = get_all_sample_names(sample_list=sample_list)
+    validate_sample_names(widget=widget, samples=samples, df=df)
+
+    # Retrieves information on reference, if necessary:
+    reference = None
+    if 'ref' in cutoff_rule:
+        reference = get_reference_sample_name(sample_list=sample_list)
+
     # Apply gates to df, if any
     if gate_cutoff is not None:
         if widget.cytof_gates.isChecked():
             apply_cytof_gating(df=df, cutoff=gate_cutoff)
         elif widget.rnaseq_gates.isChecked():
             apply_rnaseq_gating(df=df, cutoff=gate_cutoff)
+
     # Gets cutoff dict -> { 'sample' : { 'marker' : (Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) } }
-    cutoff_df = get_cutoff_dataframe(df=df, sample_list=sample_list, cutoff_rule=cutoff_rule, tukey=tukey_factor)
+    cutoff_df = get_cutoff_dataframe(df=df, samples=samples, markers=markers, reference=reference,
+                                     cutoff_rule=cutoff_rule, tukey=tukey_factor)
+
     # generate outlier tables (SCOUTS)
-    run_scouts(df=df, cutoff_df=cutoff_df, sample_list=sample_list, cutoff_rule=cutoff_rule,
-               marker_rule=marker_rule, export_csv=export_csv, export_excel=export_excel, single_excel=single_excel,
-               non_outliers=non_outliers, bottom_outliers=bottom_outliers, output_folder=output_folder)
-
-
-def validate_sample_names(widget: QMainWindow, sample_list: List[Tuple[str, str]], df: pd.DataFrame) -> None:
-    """Checks whether any sample name from the sample table isn't present on the input dataframe.
-    Raises an exception if this happens."""
-    sample_names = list(df.iloc[:, 0])  # Assumes first column = sample names (as per documentation)
-    for sample,  _ in sample_list:
-        if not any(sample in name for name in sample_names):
-            raise SampleNamingError(widget)
+    run_scouts(df=df, cutoff_df=cutoff_df, samples=samples, markers=markers, reference=reference,
+               cutoff_rule=cutoff_rule, marker_rule=marker_rule, export_csv=export_csv, export_excel=export_excel,
+               single_excel=single_excel, non_outliers=non_outliers, bottom_outliers=bottom_outliers,
+               output_folder=output_folder)
 
 
 def load_dataframe(widget: QMainWindow, input_file: str) -> pd.DataFrame:
@@ -60,11 +69,39 @@ def load_dataframe(widget: QMainWindow, input_file: str) -> pd.DataFrame:
         raise PandasInputError(widget)
 
 
+def get_marker_names(df: pd.DataFrame) -> List[str]:
+    """Gets the name of all markers from the input DataFrame."""
+    return list(df)
+
+
+def get_all_sample_names(sample_list: List[Tuple[str, str]]) -> List[str]:
+    """Gets the name of all samples from the sample table."""
+    return [tup[0] for tup in sample_list]
+
+
+def validate_sample_names(widget: QMainWindow, samples: List[str, str], df: pd.DataFrame) -> None:
+    """Checks whether any sample name from the sample table isn't present on the input dataframe.
+    Raises an exception if this happens."""
+    sample_names = df.index  # Assumes index = sample names (as per documentation)
+    for sample in samples:
+        if not any(sample in name for name in sample_names):
+            raise SampleNamingError(widget)
+
+
+def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> str:
+    """Gets the name from the reference sample, raising an exception if it does not exist in the sample table."""
+    for sample, sample_type in sample_list:
+        if sample_type == 'Yes':
+            return sample
+    else:
+        raise NoReferenceError  # If the user chose to analyse by reference but did not select any reference
+
+
 def apply_cytof_gating(df: pd.DataFrame, cutoff: float) -> None:
     """Applies gating for Mass Cytometry onto input dataframe, excluding rows with low average expression."""
     indices_to_drop = []
     for index, row in df.iterrows():
-        mean_row_value = np.mean(row[1:])  # first row contains sample names
+        mean_row_value = np.mean(row)
         if mean_row_value <= cutoff:
             indices_to_drop.append(index)
     df.drop(indices_to_drop, axis=0, inplace=True)
@@ -78,41 +115,20 @@ def apply_rnaseq_gating(df: pd.DataFrame, cutoff: float) -> None:
     df.mask(df <= cutoff, np.nan, inplace=True)
 
 
-def get_cutoff_dataframe(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_rule: str,
+def get_cutoff_dataframe(df: pd.DataFrame, samples: List[str], markers: List[str], reference: str, cutoff_rule: str,
                          tukey: float) -> pd.DataFrame:
     """Gets a dataframe with cutoff values(Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) in which columns correspond
     to markers and rows (index) correspond to samples."""
     if cutoff_rule == 'ref':
-        reference = get_reference_sample_name(sample_list=sample_list)
-        return get_cutoff(df=df, samples=[reference], tukey=tukey)
+        return get_cutoff(df=df, samples=[reference], markers=markers, tukey=tukey)
     else:
-        samples = get_all_sample_names(sample_list=sample_list)
-        return get_cutoff(df=df, samples=samples, tukey=tukey)
+        return get_cutoff(df=df, samples=samples, markers=markers, tukey=tukey)
 
 
-def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> str:
-    """Gets the name from the reference sample, raising an exception if it does not exist in the sample table."""
-    for sample, sample_type in sample_list:
-        if sample_type == 'Yes':
-            return sample
-    else:
-        raise NoReferenceError  # If the user chose to analyse by reference but did not select any reference
-
-
-def get_all_sample_names(sample_list: List[Tuple[str, str]]) -> List[str]:
-    """Gets the name of all samples from the sample table."""
-    return [tup[0] for tup in sample_list]
-
-
-def get_marker_names_from_df(df: pd.DataFrame) -> List[str]:
-    """Gets the name of all markers from the input DataFrame."""
-    return list(df.columns[1:])
-
-
-def get_cutoff(df: pd.DataFrame, samples: List[str], tukey: float) -> pd.DataFrame:
+def get_cutoff(df: pd.DataFrame, samples: List[str], markers: List[str], tukey: float) -> pd.DataFrame:
     """Gets cutoff values for each sample in the list "samples". Returns these values organized as a DataFrame
     where rows represent samples and columns represent markers."""
-    result_df = pd.DataFrame(columns=get_marker_names_from_df(df=df), index=samples)
+    result_df = pd.DataFrame(index=samples, columns=markers)
     for sample in samples:
         cutoff_values = get_sample_cutoff(df=df, sample=sample, tukey=tukey)
         result_df.loc[sample] = cutoff_values
@@ -122,20 +138,14 @@ def get_cutoff(df: pd.DataFrame, samples: List[str], tukey: float) -> pd.DataFra
 def get_sample_cutoff(df: pd.DataFrame, sample: str, tukey: float) -> List[Stats]:
     """Calculates and returns the cutoff statistics for all markers of a given sample."""
     values = []
-    filtered_df = filter_df_by_sample_column(df=df, sample=sample)
+    filtered_df = filter_df_by_sample_in_index(df=df, sample=sample)
     quantile_df = filtered_df.quantile([0.25, 0.75])
     for marker in quantile_df:
         values.append(get_marker_statistics(tukey=tukey, marker_series=quantile_df[marker]))
     return values
 
 
-def filter_df_by_sample_column(df: pd.DataFrame, sample: str) -> pd.DataFrame:
-    """Filters dataframes row according to name passed as argument. Rows from the first column that contains
-    the sample string are selected."""
-    return df[df.iloc[:, 0].str.contains(sample)]
-
-
-def filter_df_by_sample_index(df: pd.DataFrame, sample: str) -> pd.DataFrame:
+def filter_df_by_sample_in_index(df: pd.DataFrame, sample: str) -> pd.DataFrame:
     """Filters dataframes row according to name passed as argument. Rows whose index contains the sample
     string are selected."""
     return df.loc[df.index.str.contains(sample)]
@@ -151,25 +161,26 @@ def get_marker_statistics(tukey: float, marker_series: pd.Series) -> Stats:
     return Stats(first_quartile, third_quartile, iqr, lower_cutoff, upper_cutoff)
 
 
-def run_scouts(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame, cutoff_rule: str,
-               marker_rule: str, export_csv: bool, export_excel: bool, single_excel: bool, non_outliers: bool,
-               bottom_outliers: bool, output_folder: str) -> None:
+def run_scouts(df: pd.DataFrame, samples: List[str], markers: List[str], reference: Optional[str],
+               cutoff_df: pd.DataFrame, cutoff_rule: str, marker_rule: str, export_csv: bool, export_excel: bool,
+               single_excel: bool, non_outliers: bool, bottom_outliers: bool, output_folder: str) -> None:
     """Function responsible for calling SCOUTS subsetting routines, yielding DataFrames, saving them in
     the appropriate format/directory and recording information about each saved result."""
-    input_df = df.set_index(df.columns[0])
+    summary_df = pd.DataFrame(columns=['file number'] + list(Info._fields))
+    stats_df_dict = create_stats_dfs(markers=markers, cutoff_rule=cutoff_rule, marker_rule=marker_rule,
+                                     samples=samples, bottom=bottom_outliers, non=non_outliers)
+
     output_path = os.path.join(output_folder, 'data')
     if not os.path.exists(output_path):
         os.mkdir(output_path)
-    summary_df = pd.DataFrame(columns=['file number'] + list(Info._fields))
-    markers = list(input_df)[1:]  # exclude index from this list (only column names
-    stats_df_dict = create_stats_dfs(markers=markers, cutoff_rule=cutoff_rule, marker_rule=marker_rule,
-                                     sample_list=sample_list, bottom=bottom_outliers, non=non_outliers)
+
     excel_file_list = []
-    for i, (data, info) in enumerate(yield_dataframes(input_df=input_df, sample_list=sample_list, cutoff_df=cutoff_df,
-                                                      cutoff_rule=cutoff_rule, marker_rule=marker_rule,
-                                                      non_outliers=non_outliers, bottom_outliers=bottom_outliers), 1):
+    for i, (data, info) in enumerate(yield_dataframes(input_df=df, samples=samples, markers=markers,
+                                                      reference=reference, cutoff_df=cutoff_df, cutoff_rule=cutoff_rule,
+                                                      marker_rule=marker_rule, non_outliers=non_outliers,
+                                                      bottom_outliers=bottom_outliers), 1):
         summary_df = add_info_to_summary(summary_df, i, info)
-        add_info_to_stats(data, sample_list, stats_df_dict, info)
+        add_info_to_stats(data, samples, stats_df_dict, info)
         if export_csv:
             csv_path = os.path.join(output_path, '%04d.csv' % i)
             data.to_csv(csv_path)
@@ -177,6 +188,7 @@ def run_scouts(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: 
             excel_path = os.path.join(output_path, '%04d.xlsx' % i)
             data.to_excel(excel_path)
             excel_file_list.append(excel_path)
+
     summary_path = os.path.join(output_folder, 'summary.xlsx')
     generate_summary_table(summary_df, summary_path)
     stats_path = os.path.join(output_folder, 'stats.xlsx')
@@ -189,50 +201,48 @@ def run_scouts(df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: 
         merged_excel.save(merged_path)
 
 
-def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, sample_list: List[Tuple[str, str]],
+def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, samples: List[str],
                      bottom: bool, non: bool) -> Dict[str, pd.DataFrame]:
     """str"""  # TODO
-    columns = markers
-    samples = get_all_sample_names(sample_list)
     outliers = ['top outliers']
-    if bottom is True:
-        outliers += ['bottom outliers']
     if non is True:
         outliers += ['non-outliers']
+    if bottom is True:
+        outliers += ['bottom outliers']
     stats = ['#', 'mean', 'median', 'sd']
     index = pd.MultiIndex.from_product([samples, outliers, stats])
     df_dict = {}
     if 'sample' in cutoff_rule and 'any' in marker_rule:
-        df_dict['OutS any marker'] = pd.DataFrame(columns=columns, index=index)
+        df_dict['OutS any marker'] = pd.DataFrame(columns=markers, index=index)
     if 'sample' in cutoff_rule and 'single' in marker_rule:
-        df_dict['OutS single marker'] = pd.DataFrame(columns=columns, index=index)
+        df_dict['OutS single marker'] = pd.DataFrame(columns=markers, index=index)
     if 'ref' in cutoff_rule and 'any' in marker_rule:
-        df_dict['OutR any marker'] = pd.DataFrame(columns=columns, index=index)
+        df_dict['OutR any marker'] = pd.DataFrame(columns=markers, index=index)
     if 'ref' in cutoff_rule and 'single' in marker_rule:
-        df_dict['OutR single marker'] = pd.DataFrame(columns=columns, index=index)
+        df_dict['OutR single marker'] = pd.DataFrame(columns=markers, index=index)
     return df_dict
 
 
-def yield_dataframes(input_df: pd.DataFrame, sample_list: List[Tuple[str, str]], cutoff_df: pd.DataFrame,
-                     cutoff_rule: str, marker_rule: str, non_outliers: bool,
+def yield_dataframes(input_df: pd.DataFrame, samples: List[str], markers: List[str], reference: Optional[str],
+                     cutoff_df: pd.DataFrame, cutoff_rule: str, marker_rule: str, non_outliers: bool,
                      bottom_outliers: bool) -> Generator[pd.DataFrame, None, None]:
     """ Yields dataframes, subsetting input dataframe according to user preferences in the SCOUTS interface."""
     if 'ref' in cutoff_rule:
-        reference = get_reference_sample_name(sample_list)
         if 'any' in marker_rule:
             yield from scouts_by_reference_any_marker(input_df=input_df, cutoff_df=cutoff_df, reference=reference,
                                                       bottom_outliers=bottom_outliers, non_outliers=non_outliers)
         if 'single' in marker_rule:
-            yield from scouts_by_reference_single_marker(input_df=input_df, cutoff_df=cutoff_df, reference=reference,
-                                                         bottom_outliers=bottom_outliers, non_outliers=non_outliers)
+            yield from scouts_by_reference_single_marker(input_df=input_df, cutoff_df=cutoff_df, markers=markers,
+                                                         reference=reference, bottom_outliers=bottom_outliers,
+                                                         non_outliers=non_outliers)
     if 'sample' in cutoff_rule:
-        samples = get_all_sample_names(sample_list)
         if 'any' in marker_rule:
             yield from scouts_by_sample_any_marker(input_df=input_df, cutoff_df=cutoff_df, samples=samples,
                                                    bottom_outliers=bottom_outliers, non_outliers=non_outliers)
         if 'single' in marker_rule:
             yield from scouts_by_sample_single_marker(input_df=input_df, cutoff_df=cutoff_df, samples=samples,
-                                                      bottom_outliers=bottom_outliers, non_outliers=non_outliers)
+                                                      markers=markers, bottom_outliers=bottom_outliers,
+                                                      non_outliers=non_outliers)
 
 
 # noinspection PyTypeChecker,PyUnresolvedReferences
@@ -249,14 +259,15 @@ def scouts_by_reference_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFra
         yield input_df.loc[(input_df < lower_cutoffs).any(axis=1)], info_lower
     if non_outliers is True:
         info_non = Info('reference', reference, 'any marker', 'non-outliers')
-        yield input_df.loc[(input_df < upper_cutoffs).any(axis=1) & (input_df < lower_cutoffs).any(axis=1)], info_non
+        yield input_df.loc[(input_df < upper_cutoffs).any(axis=1) &
+                           (input_df > lower_cutoffs).any(axis=1)], info_non
 
 
-def scouts_by_reference_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, reference: str,
-                                      bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
+def scouts_by_reference_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, markers: List[str],
+                                      reference: str, bottom_outliers: bool,
+                                      non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
     """Subsets DataFrame by reference cutoff, selecting samples that are outliers for each marker (yields each
     dataframe separately)."""
-    markers = get_marker_names_from_df(df=input_df)
     for marker in markers:
         upper_cutoff = cutoff_df.loc[reference, marker].upper_cutoff
         lower_cutoff = cutoff_df.loc[reference, marker].lower_cutoff
@@ -277,55 +288,56 @@ def scouts_by_sample_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame,
     """Subsets DataFrame by sample cutoff, selecting samples that have at least 1 marker above
     outlier cutoff value."""
     upper_dfs = []
-    lower_dfs = []
     non_dfs = []
+    lower_dfs = []
     for sample in samples:
         upper_cutoffs = [stat.upper_cutoff for stat in cutoff_df.loc[sample]]
         lower_cutoffs = [stat.lower_cutoff for stat in cutoff_df.loc[sample]]
-        filtered_df = filter_df_by_sample_index(df=input_df, sample=sample)
+        filtered_df = filter_df_by_sample_in_index(df=input_df, sample=sample)
         upper_dfs.append(filtered_df.loc[(filtered_df > upper_cutoffs).any(axis=1)])
-        if bottom_outliers is True:
-            lower_dfs.append(filtered_df.loc[(filtered_df < lower_cutoffs).any(axis=1)])
         if non_outliers is True:
             non_dfs.append(filtered_df.loc[(filtered_df < upper_cutoffs).any(axis=1) &
-                                           (filtered_df < lower_cutoffs).any(axis=1)])
+                                           (filtered_df > lower_cutoffs).any(axis=1)])
+        if bottom_outliers is True:
+            lower_dfs.append(filtered_df.loc[(filtered_df < lower_cutoffs).any(axis=1)])
     info_upper = Info('sample', 'n/a', 'any marker', 'top outliers')
     yield pd.concat(upper_dfs), info_upper
-    if bottom_outliers is True:
-        info_lower = Info('sample', 'n/a', 'any marker', 'bottom outliers')
-        yield pd.concat(lower_dfs), info_lower
     if non_outliers is True:
         info_non = Info('sample', 'n/a', 'any marker', 'non-outliers')
         yield pd.concat(non_dfs), info_non
+    if bottom_outliers is True:
+        info_lower = Info('sample', 'n/a', 'any marker', 'bottom outliers')
+        yield pd.concat(lower_dfs), info_lower
 
 
 def scouts_by_sample_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, samples: List[str],
-                                   bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
+                                   markers: List[str], bottom_outliers: bool,
+                                   non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
     """Subsets DataFrame by sample cutoff, selecting samples that are outliers for each marker (yields each
     dataframe separately)."""
-    markers = get_marker_names_from_df(df=input_df)
     for marker in markers:
         upper_dfs = []
-        lower_dfs = []
         non_dfs = []
+        lower_dfs = []
         for sample in samples:
             upper_cutoff = cutoff_df.loc[sample, marker].upper_cutoff
             lower_cutoff = cutoff_df.loc[sample, marker].lower_cutoff
-            filtered_df = filter_df_by_sample_index(df=input_df, sample=sample)
+            filtered_df = filter_df_by_sample_in_index(df=input_df, sample=sample)
             upper_dfs.append(filtered_df.loc[filtered_df[marker] > upper_cutoff])
-            if bottom_outliers is True:
-                lower_dfs.append(filtered_df.loc[filtered_df[marker] < lower_cutoff])
             if non_outliers is True:
                 non_dfs.append(filtered_df.loc[(filtered_df[marker] < upper_cutoff) &
                                                (filtered_df[marker] > lower_cutoff)])
+            if bottom_outliers is True:
+                lower_dfs.append(filtered_df.loc[filtered_df[marker] < lower_cutoff])
+
         info_upper = Info('sample', 'n/a', marker, 'top outliers')
         yield pd.concat(upper_dfs), info_upper
-        if bottom_outliers is True:
-            info_lower = Info('sample', 'n/a', marker, 'bottom outliers')
-            yield pd.concat(lower_dfs), info_lower
         if non_outliers is True:
             info_non = Info('sample', 'n/a', marker, 'non-outliers')
             yield pd.concat(non_dfs), info_non
+        if bottom_outliers is True:
+            info_lower = Info('sample', 'n/a', marker, 'bottom outliers')
+            yield pd.concat(lower_dfs), info_lower
 
 
 def add_info_to_summary(df: pd.DataFrame, i: int, info: Info) -> pd.DataFrame:
@@ -334,10 +346,9 @@ def add_info_to_summary(df: pd.DataFrame, i: int, info: Info) -> pd.DataFrame:
     return df.append(series)
 
 
-def add_info_to_stats(data: pd.DataFrame, sample_list: List[Tuple[str, str]],
-                      stats_df_dict: Dict[str, pd.DataFrame], info: Info) -> None:
+def add_info_to_stats(data: pd.DataFrame, samples: List[str], stats_df_dict: Dict[str, pd.DataFrame],
+                      info: Info) -> None:
     """str"""  # TODO
-    samples = get_all_sample_names(sample_list)
     for sample in samples:
         values_df = get_values_df(data, sample, info)
         key = get_key_from_info(info)
@@ -350,8 +361,7 @@ def add_info_to_stats(data: pd.DataFrame, sample_list: List[Tuple[str, str]],
 
 def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> pd.DataFrame:
     """str"""  # TODO
-    filtered_df = filter_df_by_sample_index(df=data, sample=sample)
-    filtered_df.set_index(filtered_df.columns[0], inplace=True)
+    filtered_df = filter_df_by_sample_in_index(df=data, sample=sample)
     if 'any' in info.outliers_for:
         values_df = filtered_df.describe().loc[['count', 'mean', '50%', 'std']]
     else:
