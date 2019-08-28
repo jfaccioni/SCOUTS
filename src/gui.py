@@ -418,7 +418,7 @@ class SCOUTS(QMainWindow):
         self.gating_group = QButtonGroup(self)
         # Do not gate samples
         self.no_gates = QRadioButton(self.gating_page)
-        self.no_gates.setObjectName('no')
+        self.no_gates.setObjectName('no_gate')
         self.no_gates.setText("Don't gate samples")
         self.no_gates.setChecked(True)
         self.gating_group.addButton(self.no_gates)
@@ -567,7 +567,7 @@ class SCOUTS(QMainWindow):
     def write_to_sample_table(self) -> None:
         """Writes data to sample table."""
         table = self.sample_table
-        ref = 'No'
+        ref = 'no'
         sample = self.sample_name.text()
         if sample:
             for cell in range(table.rowCount()):
@@ -578,10 +578,10 @@ class SCOUTS(QMainWindow):
             if self.is_reference.isChecked():
                 for cell in range(table.rowCount()):
                     item = table.item(cell, 1)
-                    if item.text() == 'Yes':
+                    if item.text() == 'yes':
                         self.more_than_one_reference()
                         return
-                ref = 'Yes'
+                ref = 'yes'
             sample = QTableWidgetItem(sample)
             is_reference = QTableWidgetItem(ref)
             is_reference.setFlags(Qt.ItemIsEnabled)
@@ -612,7 +612,7 @@ class SCOUTS(QMainWindow):
 
     def activate_gate(self) -> None:
         """Activates/deactivates buttons related to gating."""
-        if self.sender().objectName() == 'no':
+        if self.sender().objectName() == 'no_gate':
             self.cytof_gates_value.setEnabled(False)
             self.rnaseq_gates_value.setEnabled(False)
         elif self.sender().objectName() == 'cytof':
@@ -666,7 +666,7 @@ class SCOUTS(QMainWindow):
             raise NoSampleError
         # Set gate cutoff (if any)
         input_dict['gate_cutoff_value'] = None
-        input_dict['gating'] = self.gating_group.checkedButton().objectName()  # 'no', 'cytof', 'rnaseq'
+        input_dict['gating'] = self.gating_group.checkedButton().objectName()  # 'no_gate', 'cytof', 'rnaseq'
         if not self.no_gates.isChecked():
             input_dict['gating_value'] = getattr(self, f'{input_dict["gating"]}_gates_value').value()
         # Generate results for non-outliers
@@ -831,13 +831,13 @@ class SCOUTS(QMainWindow):
         self.output_path.setText(out)
         self.sample_table.insertRow(0)
         self.sample_table.setItem(0, 0, QTableWidgetItem('Ct'))
-        self.sample_table.setItem(0, 1, QTableWidgetItem('Yes'))
+        self.sample_table.setItem(0, 1, QTableWidgetItem('yes'))
         self.sample_table.insertRow(1)
         self.sample_table.setItem(1, 0, QTableWidgetItem('RT'))
-        self.sample_table.setItem(1, 1, QTableWidgetItem('No'))
+        self.sample_table.setItem(1, 1, QTableWidgetItem('no'))
         self.sample_table.insertRow(2)
         self.sample_table.setItem(2, 0, QTableWidgetItem('Torin'))
-        self.sample_table.setItem(2, 1, QTableWidgetItem('No'))
+        self.sample_table.setItem(2, 1, QTableWidgetItem('no'))
 
 
 # Automatically fills fields for quick testing

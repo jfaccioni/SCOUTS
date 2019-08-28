@@ -86,7 +86,7 @@ def validate_sample_names(samples: List[str], df: pd.DataFrame) -> None:
 def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> str:
     """Gets the name from the reference sample, raising an exception if it does not exist in the sample table."""
     for sample, sample_type in sample_list:
-        if sample_type == 'Yes':
+        if sample_type == 'yes':
             return sample
     else:
         raise NoReferenceError  # If the user chose to analyse by reference but did not select any reference
