@@ -1,32 +1,37 @@
-from __future__ import annotations
-
 import os
 
+# noinspection PyUnresolvedReferences
 import matplotlib.cm
+# noinspection PyUnresolvedReferences
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+# noinspection PyUnresolvedReferences, PyPackageRequirements
 import seaborn as sns
 
 # Main arguments
 CONTROL = 'Ct'
 TREATMENT = 'RT'
 SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'data')
+PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'giovana files')
 
-# Colormap values
+# Colormap options
 CMAP_STR = 'RdBu_r'
+# noinspection PyUnresolvedReferences
 CMAP = getattr(matplotlib.cm, CMAP_STR)
 CMAP.set_bad('gray')
 
-# Output values
+# Analysis options
 LOG_TRANSFORM = True
+
+# Output options
 SAVE_HEATMAPS = True
 PLOT_HEATMAPS = True
 
 
 def main(path: str, ct: str, treat: str) -> None:
     """Main function for this script."""
+
     # load dataframe
     filename = 'gio-mass-cytometry-stats.xlsx'
     df = pd.read_excel(os.path.join(path, filename), index_col=[0, 1, 2])
@@ -45,6 +50,7 @@ def main(path: str, ct: str, treat: str) -> None:
                                   pd.Series(treatment.loc['top outliers'].loc['mean']),
                                   pd.Series(treatment.loc['non-outliers'].loc['mean'])],
                                  index=index)
+
     # second image
     out_non_out_ct = control.loc['top outliers'].loc['mean'] / control.loc['non-outliers'].loc['mean']
     out_non_out_rt = treatment.loc['top outliers'].loc['mean'] / treatment.loc['non-outliers'].loc['mean']

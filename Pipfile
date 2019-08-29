@@ -8,7 +8,6 @@ verify_ssl = true
 [packages]
 pandas = "*"
 numpy = "*"
-matplotlib = "*"
 scouts = {editable = true,path = "."}
 pyside2 = "*"
 openpyxl = "*"

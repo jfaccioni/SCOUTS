@@ -1,0 +1,16 @@
+Sample,Marker01,Marker02,Marker03,Marker04,Marker05
+ct_1,2,2,1,2,2
+ct_2,3,7,2,4,9
+ct_3,4,5,1,2,8
+ct_4,1,4,1,1,7
+ct_5,2,4,1,2,3
+treat_1,3,3,2,2,4
+treat_2,4,6,1,3,7
+treat_3,2,7,1,4,6
+treat_4,1,2,1,2,1
+treat_5,1,6,3,3,2
+patient_1,2,7,2,3,3
+patient_2,2,5,2,2,3
+patient_3,3,5,1,6,3
+patient_4,4,5,1,7,9
+patient_5,1,4,2,8,8
