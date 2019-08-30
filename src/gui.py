@@ -630,16 +630,19 @@ class SCOUTS(QMainWindow):
         """Runs SCOUTS based on user input in the GUI."""
         try:
             input_dict = self.parse_input()
-            analyse(self, **input_dict)
+            self.run_button.setEnabled(False)
+            analyse(**input_dict)
         except Exception as error:
             self.propagate_error(error)
         else:
             self.module_done()
+        finally:
+            self.run_button.setEnabled(True)
 
     def parse_input(self) -> Dict:
         """Returns user input on the GUI as a dictionary."""
         # Input and output
-        input_dict = {'input_file': self.input_path.text(), 'output_folder': self.output_path.text()}
+        input_dict = {'input_file': str(self.input_path.text()), 'output_folder': str(self.output_path.text())}
         if not input_dict['input_file'] or not input_dict['output_folder']:
             raise NoIOPathError
         # Set cutoff by reference or by sample rule
@@ -825,19 +828,34 @@ class SCOUTS(QMainWindow):
 
     def debug(self):
         """Pre-loads GUI elements if debug flag is set."""
-        inp = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/mass-cytometry template.xlsx'
-        self.input_path.setText(inp)
-        out = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/output'
-        self.output_path.setText(out)
-        self.sample_table.insertRow(0)
-        self.sample_table.setItem(0, 0, QTableWidgetItem('Ct'))
-        self.sample_table.setItem(0, 1, QTableWidgetItem('yes'))
-        self.sample_table.insertRow(1)
-        self.sample_table.setItem(1, 0, QTableWidgetItem('RT'))
-        self.sample_table.setItem(1, 1, QTableWidgetItem('no'))
-        self.sample_table.insertRow(2)
-        self.sample_table.setItem(2, 0, QTableWidgetItem('Torin'))
-        self.sample_table.setItem(2, 1, QTableWidgetItem('no'))
+        gio_data = True
+        if gio_data:
+            inp = ('/home/juliano/Repositories/my-github-repositories/SCOUTS/local/'
+                   'giovana files/other sample/raw_data.xlsx')
+            self.input_path.setText(inp)
+            out = ('/home/juliano/Repositories/my-github-repositories/SCOUTS/local/'
+                   'giovana files/other sample/scouts output')
+            self.output_path.setText(out)
+            self.sample_table.insertRow(0)
+            self.sample_table.setItem(0, 0, QTableWidgetItem('Pre-Tx'))
+            self.sample_table.setItem(0, 1, QTableWidgetItem('yes'))
+            self.sample_table.insertRow(1)
+            self.sample_table.setItem(1, 0, QTableWidgetItem('Week4'))
+            self.sample_table.setItem(1, 1, QTableWidgetItem('no'))
+        else:
+            inp = '/home/juliano/Repositories/my-github-repositories/SCOUTS/examples/mass-cytometry template.xlsx'
+            self.input_path.setText(inp)
+            out = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/output'
+            self.output_path.setText(out)
+            self.sample_table.insertRow(0)
+            self.sample_table.setItem(0, 0, QTableWidgetItem('Ct'))
+            self.sample_table.setItem(0, 1, QTableWidgetItem('yes'))
+            self.sample_table.insertRow(1)
+            self.sample_table.setItem(1, 0, QTableWidgetItem('RT'))
+            self.sample_table.setItem(1, 1, QTableWidgetItem('no'))
+            self.sample_table.insertRow(2)
+            self.sample_table.setItem(2, 0, QTableWidgetItem('Torin'))
+            self.sample_table.setItem(2, 1, QTableWidgetItem('no'))
 
 
 # Automatically fills fields for quick testing

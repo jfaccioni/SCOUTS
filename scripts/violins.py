@@ -28,11 +28,11 @@ SCOUTS_SUMMARY_FILENAME = os.path.join(SCOUTS_OUTPUT_FOLDER, SUMMARY_FILE)
 
 # Comparison options
 POPULATION_TO_COMPARE = 'top outliers'
-SAMPLES_TO_COMPARE = ['Ct', 'RT']
-MARKERS_TO_COMPARE = ['HER2']  # TODO: plots are buggy when 2+ markers are plotted at once. Avoid generating 2 plots
-                               #  at once for now (run the script twice changing the markers parameter instead).
+SAMPLES_TO_COMPARE = ['Ct', 'RT', 'Torin']
+MARKERS_TO_COMPARE = ['CD44']  # TODO: plots are buggy when 2+ markers are plotted at once. Avoid generating 2 plots
+                                #  at once for now (run the script twice changing the markers parameter instead).
 CONSIDER_WHOLE_POPULATION = False
-CUTOFF_FROM_REFERENCE = True
+CUTOFF_FROM_REFERENCE = False
 
 
 def main(population_path: str, summary_path: str, output_folder: str, population: str, samples: List[str],
@@ -73,10 +73,18 @@ def main(population_path: str, summary_path: str, output_folder: str, population
 
     # Plot violins
     for marker in markers:
-        data = violin_df[violin_df.marker == marker]
         fig = plt.figure()
-        sns.violinplot(data=data, x='sample', y='expression', hue='population', palette='Set2', split=True)
         fig.suptitle(f'{marker} expression')
+        populations = violin_df.population.unique()
+        subset_by_marker = violin_df[violin_df['marker'] == marker]
+        for pop in populations:
+            subset_by_pop = subset_by_marker.loc[subset_by_marker['population'] == pop]
+            color = [0.4, 0.76078431, 0.64705882] if pop != population else [0.98823529, 0.55294118, 0.38431373]
+            for sample in samples:
+                subset_by_sample = subset_by_pop.loc[subset_by_pop['sample'] == sample]
+                sat = 1.0 - samples.index(sample)/(len(samples)+1)
+                sns.violinplot(data=subset_by_sample, x='sample', y='expression',
+                               color=color, saturation=sat, order=samples)
     plt.show()
 
 

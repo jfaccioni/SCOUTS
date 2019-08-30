@@ -350,7 +350,7 @@ def add_info_to_stats(data: pd.DataFrame, samples: List[str], stats_df_dict: Dic
         if 'any' in info.outliers_for:
             df.loc[sample].loc[info.category] = values_df.values
         else:
-            df.loc[sample].loc[info.category, info.outliers_for] = values_df.values
+            df.loc[sample].at[info.category, info.outliers_for] = values_df.values
 
 
 def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> pd.DataFrame:
