@@ -37,4 +37,4 @@ except Exception as e:
         trace = traceback.format_exc()
         messages.generic_error_message(ss, trace, e)
 else:
-    messages.module_done(ss)
+    messages.success_message(ss)

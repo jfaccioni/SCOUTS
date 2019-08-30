@@ -9,7 +9,7 @@ SCOUTS does, however, include a simple module for gating mass cytometry and scRN
 
 **My data is stored in multiple files. How do I use SCOUTS with it?**
 
-Ideally, you can merge your files into a single input file and use that to work with SCOUTS. When this is not possible, you can still use SCOUTS to analyse individual samples by passing one file at a time. This will not affect the output, *as long as all the cells from one sample are together in one file*. One side-effect of this method is that, in order to use the "*control*" option in the "*Consider outliers using cutoff from*" field, you need to make sure that the cells from the control sample are present in every file.
+Ideally, you can merge your files into a single input file and use that to work with SCOUTS. When this is not possible, you can still use SCOUTS to run individual samples by passing one file at a time. This will not affect the output, *as long as all the cells from one sample are together in one file*. One side-effect of this method is that, in order to use the "*control*" option in the "*Consider outliers using cutoff from*" field, you need to make sure that the cells from the control sample are present in every file.
 
 **I do not have a control sample. Can I run SCOUTS without explicitly informing a control sample?**
 

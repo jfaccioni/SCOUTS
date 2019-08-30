@@ -89,7 +89,7 @@ def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> str:
         if sample_type == 'yes':
             return sample
     else:
-        raise NoReferenceError  # If the user chose to analyse by reference but did not select any reference
+        raise NoReferenceError  # If the user chose to run by reference but did not select any reference
 
 
 def apply_cytof_gating(df: pd.DataFrame, cutoff: float) -> None:

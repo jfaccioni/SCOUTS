@@ -6,7 +6,8 @@ import traceback
 import webbrowser
 from typing import Dict, Generator, TYPE_CHECKING, Tuple
 
-from PySide2.QtCore import Qt
+# noinspection PyUnresolvedReferences
+from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog,
                                QFormLayout, QFrame, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow,
@@ -56,6 +57,8 @@ class SCOUTS(QMainWindow):
         # Inherits from QMainWindow
         super().__init__()
         self.root = get_project_root()
+
+        self.threadpool = QThreadPool()
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
         self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.root, 'src', 'icons', f'scouts.ico'))))
@@ -278,7 +281,7 @@ class SCOUTS(QMainWindow):
         self.set_icon(self.run_button, 'pipe')
         self.run_button.setText(' Run!')
         self.run_button.setText(' Run!')
-        self.run_button.clicked.connect(self.analyse)
+        self.run_button.clicked.connect(self.run)
         # Help-quit frame (invisible)
         self.helpquit_frame = QFrame(self.main_page)
         self.helpquit_frame.setGeometry(self.margin['left'],
@@ -626,18 +629,19 @@ class SCOUTS(QMainWindow):
     # ### CONNECT SCOUTS TO ANALYTICAL MODULES
     # ###
 
-    def analyse(self) -> None:
+    def run(self) -> None:
         """Runs SCOUTS based on user input in the GUI."""
         try:
-            input_dict = self.parse_input()
-            self.run_button.setEnabled(False)
-            analyse(**input_dict)
+            data = self.parse_input()
         except Exception as error:
             self.propagate_error(error)
         else:
-            self.module_done()
-        finally:
-            self.run_button.setEnabled(True)
+            worker = Worker(data=data)
+            worker.signals.started.connect(self.analysis_has_started)
+            worker.signals.finished.connect(self.analysis_has_finished)
+            worker.signals.success.connect(self.success_message)
+            worker.signals.error.connect(self.propagate_error)
+            self.threadpool.start(worker)
 
     def parse_input(self) -> Dict:
         """Returns user input on the GUI as a dictionary."""
@@ -695,7 +699,13 @@ class SCOUTS(QMainWindow):
     # ### MESSAGE BOXES
     # ###
 
-    def module_done(self) -> None:
+    def analysis_has_started(self):
+        self.run_button.setEnabled(False)
+
+    def analysis_has_finished(self):
+        self.run_button.setEnabled(True)
+
+    def success_message(self) -> None:
         """Info message box used when SCOUTS finished without errors."""
         title = "Analysis finished!"
         mes = "Your analysis has finished. No errors were reported."
@@ -750,7 +760,8 @@ class SCOUTS(QMainWindow):
         elif isinstance(error, SampleNamingError):
             self.sample_naming_error_message()
         else:
-            self.generic_error_message(error)
+            trace = traceback.format_exc()
+            self.generic_error_message(error, trace)
 
     def empty_sample_list_error_message(self) -> None:
         title = 'Error: No control sample'
@@ -789,11 +800,10 @@ class SCOUTS(QMainWindow):
                    "make sure that the names were typed correctly (case-sensitive).")
         QMessageBox.critical(self, title, message)
 
-    def generic_error_message(self, error) -> None:
+    def generic_error_message(self, error, trace) -> None:
         """Error message box used to display any error message (including traceback) for any uncaught errors."""
-        trace = traceback.format_exc()
         title = 'An error occurred!'
-        QMessageBox.critical(self, title, f"\n{str(error)}\n\nfull stack trace:\n\n{str(trace)}")
+        QMessageBox.critical(self, title, f"{str(error)}\n\nfull traceback:\n{str(trace)}")
 
     def not_implemented_error_message(self) -> None:
         """Error message box used when the user accesses a functionality that hasn't been implemented yet."""
@@ -818,9 +828,13 @@ class SCOUTS(QMainWindow):
                                      QMessageBox.Yes | QMessageBox.No,
                                      QMessageBox.No)
         if reply == QMessageBox.Yes:
+            self.stop_threads()
             event.accept()
         else:
             event.ignore()
+
+    def stop_threads(self):
+        pass
 
     # ###
     # ### DEBUG OPTIONS
@@ -856,6 +870,38 @@ class SCOUTS(QMainWindow):
             self.sample_table.insertRow(2)
             self.sample_table.setItem(2, 0, QTableWidgetItem('Torin'))
             self.sample_table.setItem(2, 1, QTableWidgetItem('no'))
+
+
+class Worker(QRunnable):
+    """Worker thread for SCOUTS analysis."""
+    def __init__(self, data: Dict) -> None:
+        super().__init__()
+        self.data = data
+        self.signals = WorkerSignals()
+
+    @Slot()
+    def run(self) -> None:
+        self.signals.started.emit()
+        try:
+            analyse(**self.data)
+        except Exception as error:
+            self.signals.error.emit(error)
+        else:
+            self.signals.success.emit()
+        finally:
+            self.signals.finished.emit()
+
+
+class WorkerSignals(QObject):
+    """Defines the signals available from a running worker thread. Supported signals are:
+         Started: Worker has begun working. Nothing is emitted.
+         Finished: Worker has done executing (either naturally or by an Exception). Nothing is emitted.
+         Success: Worker has finished executing without errors. Nothing is emitted.
+         Error: an Exception was raised. Emits a Exception object."""
+    started = Signal()
+    finished = Signal()
+    success = Signal()
+    error = Signal(Exception)
 
 
 # Automatically fills fields for quick testing
