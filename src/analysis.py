@@ -2,21 +2,27 @@ from __future__ import annotations
 
 import os
 from collections import namedtuple
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
+# noinspection PyUnresolvedReferences
+from PySide2.QtCore import Slot, Signal, QObject
 from openpyxl import Workbook, load_workbook
 
 from src.utils import NoReferenceError, PandasInputError, SampleNamingError
+
+if TYPE_CHECKING:
+    from PySide2.QtWidgets import QMainWindow
 
 Stats = namedtuple("Stats", ['first_quartile', 'third_quartile', 'iqr', 'lower_cutoff', 'upper_cutoff'])
 Info = namedtuple("Info", ['cutoff_from', 'reference', 'outliers_for', 'category'])
 
 
-def analyse(input_file: str, output_folder: str, cutoff_rule: str, marker_rule: str, tukey_factor: float,
-            export_csv: bool, export_excel: bool, single_excel: bool, sample_list: List[Tuple[str, str]],
-            gating: str, gate_cutoff_value: Optional[float], non_outliers: bool, bottom_outliers: bool):
+def start_scouts(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rule: str, marker_rule: str,
+                 tukey_factor: float, export_csv: bool, export_excel: bool, single_excel: bool,
+                 sample_list: List[Tuple[str, str]], gating: str, gate_cutoff_value: Optional[float],
+                 non_outliers: bool, bottom_outliers: bool) -> None:
     """Main SCOUTS function that organizes user input and calls related functions accordingly."""
     # Loads df and checks for file extension
     df = load_dataframe(input_file=input_file)
@@ -47,7 +53,7 @@ def analyse(input_file: str, output_folder: str, cutoff_rule: str, marker_rule: 
                                      cutoff_rule=cutoff_rule, tukey=tukey_factor)
 
     # generate outlier tables (SCOUTS)
-    run_scouts(df=df, cutoff_df=cutoff_df, samples=samples, markers=markers, reference=reference,
+    run_scouts(widget=widget, df=df, cutoff_df=cutoff_df, samples=samples, markers=markers, reference=reference,
                cutoff_rule=cutoff_rule, marker_rule=marker_rule, export_csv=export_csv, export_excel=export_excel,
                single_excel=single_excel, non_outliers=non_outliers, bottom_outliers=bottom_outliers,
                output_folder=output_folder)
@@ -155,9 +161,10 @@ def get_marker_statistics(tukey: float, marker_series: pd.Series) -> Stats:
     return Stats(first_quartile, third_quartile, iqr, lower_cutoff, upper_cutoff)
 
 
-def run_scouts(df: pd.DataFrame, samples: List[str], markers: List[str], reference: Optional[str],
-               cutoff_df: pd.DataFrame, cutoff_rule: str, marker_rule: str, export_csv: bool, export_excel: bool,
-               single_excel: bool, non_outliers: bool, bottom_outliers: bool, output_folder: str) -> None:
+def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], markers: List[str],
+               reference: Optional[str], cutoff_df: pd.DataFrame, cutoff_rule: str, marker_rule: str,
+               export_csv: bool, export_excel: bool, single_excel: bool, non_outliers: bool,
+               bottom_outliers: bool, output_folder: str) -> None:
     """Function responsible for calling SCOUTS subsetting routines, yielding DataFrames, saving them in
     the appropriate format/directory and recording information about each saved result."""
     summary_df = pd.DataFrame(columns=['file number'] + list(Info._fields))
@@ -175,6 +182,8 @@ def run_scouts(df: pd.DataFrame, samples: List[str], markers: List[str], referen
                                                       bottom_outliers=bottom_outliers), 1):
         summary_df = add_info_to_summary(summary_df, i, info)
         add_info_to_stats(data, samples, stats_df_dict, info)
+        if not widget.isEnabled():  # user has exited the GUI
+            return
         if export_csv:
             csv_path = os.path.join(output_path, '%04d.csv' % i)
             data.to_csv(csv_path)

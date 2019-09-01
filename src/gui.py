@@ -14,7 +14,8 @@ from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpi
                                QMessageBox, QPushButton, QRadioButton, QStackedWidget, QTableWidget,
                                QTableWidgetItem, QVBoxLayout, QWidget)
 
-from src.analysis import analyse
+from src.analysis import start_scouts
+from src.interface import Worker
 from src.utils import (EmptySampleListError, NoIOPathError, NoReferenceError, NoSampleError, PandasInputError,
                        SampleNamingError, get_project_root)
 
@@ -543,17 +544,14 @@ class SCOUTS(QMainWindow):
         """Opens a dialog box and sets the chosen file/folder path, depending on the caller widget."""
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        name = self.sender().objectName()
-        if name == 'input':
-            echo = self.input_path
+        if self.sender().objectName() == 'input':
             query, _ = QFileDialog.getOpenFileName(self, "Select file", "", "All Files (*)", options=options)
-        elif name == 'output':
-            echo = self.output_path
+        elif self.sender().objectName() == 'output':
             query = QFileDialog.getExistingDirectory(self, "Select Directory", options=options)
         else:
             return
         if query:
-            echo.setText(query)
+            self.sender().setText(query)
 
     def enable_single_excel(self):
         """Enables checkbox for generating a single Excel output."""
@@ -636,7 +634,7 @@ class SCOUTS(QMainWindow):
         except Exception as error:
             self.propagate_error(error)
         else:
-            worker = Worker(data=data)
+            worker = Worker(func=start_scouts, widget=self, **data)
             worker.signals.started.connect(self.analysis_has_started)
             worker.signals.finished.connect(self.analysis_has_finished)
             worker.signals.success.connect(self.success_message)
@@ -709,7 +707,8 @@ class SCOUTS(QMainWindow):
         """Info message box used when SCOUTS finished without errors."""
         title = "Analysis finished!"
         mes = "Your analysis has finished. No errors were reported."
-        QMessageBox.information(self, title, mes)
+        if self.isEnabled() is True:
+            QMessageBox.information(self, title, mes)
 
     def memory_warning(self) -> None:
         """Warning message box used when user wants to generate a single excel file."""
@@ -824,17 +823,13 @@ class SCOUTS(QMainWindow):
         """Defines the message box for when the user wants to quit SCOUTS."""
         title = 'Quit SCOUTS'
         mes = "Are you sure you want to quit?"
-        reply = QMessageBox.question(self, title, mes,
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
+        reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
-            self.stop_threads()
+            self.setEnabled(False)
+            self.threadpool.waitForDone()  # TODO: figure out how to present a message box while waiting for threads
             event.accept()
         else:
             event.ignore()
-
-    def stop_threads(self):
-        pass
 
     # ###
     # ### DEBUG OPTIONS
@@ -843,11 +838,15 @@ class SCOUTS(QMainWindow):
     def debug(self):
         """Pre-loads GUI elements if debug flag is set."""
         gio_data = True
+        laptop = True
+        repo = 'SCOUTS'
+        if laptop:
+            repo = 'scouts'
         if gio_data:
-            inp = ('/home/juliano/Repositories/my-github-repositories/SCOUTS/local/'
+            inp = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/'
                    'giovana files/other sample/raw_data.xlsx')
             self.input_path.setText(inp)
-            out = ('/home/juliano/Repositories/my-github-repositories/SCOUTS/local/'
+            out = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/'
                    'giovana files/other sample/scouts output')
             self.output_path.setText(out)
             self.sample_table.insertRow(0)
@@ -870,38 +869,6 @@ class SCOUTS(QMainWindow):
             self.sample_table.insertRow(2)
             self.sample_table.setItem(2, 0, QTableWidgetItem('Torin'))
             self.sample_table.setItem(2, 1, QTableWidgetItem('no'))
-
-
-class Worker(QRunnable):
-    """Worker thread for SCOUTS analysis."""
-    def __init__(self, data: Dict) -> None:
-        super().__init__()
-        self.data = data
-        self.signals = WorkerSignals()
-
-    @Slot()
-    def run(self) -> None:
-        self.signals.started.emit()
-        try:
-            analyse(**self.data)
-        except Exception as error:
-            self.signals.error.emit(error)
-        else:
-            self.signals.success.emit()
-        finally:
-            self.signals.finished.emit()
-
-
-class WorkerSignals(QObject):
-    """Defines the signals available from a running worker thread. Supported signals are:
-         Started: Worker has begun working. Nothing is emitted.
-         Finished: Worker has done executing (either naturally or by an Exception). Nothing is emitted.
-         Success: Worker has finished executing without errors. Nothing is emitted.
-         Error: an Exception was raised. Emits a Exception object."""
-    started = Signal()
-    finished = Signal()
-    success = Signal()
-    error = Signal(Exception)
 
 
 # Automatically fills fields for quick testing
