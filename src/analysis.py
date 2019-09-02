@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import os
 from collections import namedtuple
-from typing import Dict, Generator, List, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, Generator, List, Optional, TYPE_CHECKING, Tuple
 
 import numpy as np
 import pandas as pd
 # noinspection PyUnresolvedReferences
-from PySide2.QtCore import Slot, Signal, QObject
+from PySide2.QtCore import QObject, Signal, Slot
 from openpyxl import Workbook, load_workbook
 
 from src.utils import NoReferenceError, PandasInputError, SampleNamingError

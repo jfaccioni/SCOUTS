@@ -3,20 +3,19 @@ from __future__ import annotations
 from typing import Callable, TYPE_CHECKING
 
 # noinspection PyUnresolvedReferences
-from PySide2.QtCore import QObject, QRunnable, Slot, Signal
+from PySide2.QtCore import QObject, QRunnable, Signal, Slot
 
 if TYPE_CHECKING:
-    from PySide2.QtWidgets import QMainWindow
+    pass
 
 
 class Worker(QRunnable):
     """Worker thread for SCOUTS analysis. Avoids unresponsive GUI."""
-    def __init__(self, func: Callable, widget: QMainWindow, *args, **kwargs) -> None:
+    def __init__(self, func: Callable, *args, **kwargs) -> None:
         super().__init__()
         self.func = func
         self.args = args
         self.kwargs = kwargs
-        self.kwargs['widget'] = widget
         self.signals = WorkerSignals()
 
     @Slot()

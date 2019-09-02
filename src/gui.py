@@ -9,10 +9,9 @@ from typing import Dict, Generator, TYPE_CHECKING, Tuple
 # noinspection PyUnresolvedReferences
 from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog,
-                               QFormLayout, QFrame, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow,
-                               QMessageBox, QPushButton, QRadioButton, QStackedWidget, QTableWidget,
-                               QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog, QFormLayout, QFrame,
+                               QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton,
+                               QRadioButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 from src.analysis import start_scouts
 from src.interface import Worker
@@ -280,7 +279,6 @@ class SCOUTS(QMainWindow):
         self.run_button.setGeometry(self.margin['left'],
                                     self.widget_vposition(self.output_frame) + 5, self.rlimit(), 30)
         self.set_icon(self.run_button, 'pipe')
-        self.run_button.setText(' Run!')
         self.run_button.setText(' Run!')
         self.run_button.clicked.connect(self.run)
         # Help-quit frame (invisible)
@@ -634,7 +632,8 @@ class SCOUTS(QMainWindow):
         except Exception as error:
             self.propagate_error(error)
         else:
-            worker = Worker(func=start_scouts, widget=self, **data)
+            data['widget'] = self
+            worker = Worker(func=start_scouts, **data)
             worker.signals.started.connect(self.analysis_has_started)
             worker.signals.finished.connect(self.analysis_has_finished)
             worker.signals.success.connect(self.success_message)

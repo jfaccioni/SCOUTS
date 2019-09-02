@@ -30,7 +30,7 @@ SCOUTS_SUMMARY_FILENAME = os.path.join(SCOUTS_OUTPUT_FOLDER, SUMMARY_FILE)
 POPULATION_TO_COMPARE = 'top outliers'
 SAMPLES_TO_COMPARE = ['Ct', 'RT', 'Torin']
 MARKERS_TO_COMPARE = ['CD44']  # TODO: plots are buggy when 2+ markers are plotted at once. Avoid generating 2 plots
-                                #  at once for now (run the script twice changing the markers parameter instead).
+                               #  at once for now (run the script twice changing the markers parameter instead).
 CONSIDER_WHOLE_POPULATION = False
 CUTOFF_FROM_REFERENCE = False
 
