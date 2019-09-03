@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import Callable, TYPE_CHECKING
+from typing import Callable
 
 # noinspection PyUnresolvedReferences
 from PySide2.QtCore import QObject, QRunnable, Signal, Slot
-
-if TYPE_CHECKING:
-    pass
 
 
 class Worker(QRunnable):

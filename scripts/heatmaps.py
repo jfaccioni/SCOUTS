@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 # noinspection PyUnresolvedReferences
 import matplotlib.cm
@@ -10,10 +11,21 @@ import pandas as pd
 import seaborn as sns
 
 # Main arguments
+OTHER_SAMPLE = True
+SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+
 CONTROL = 'Ct'
 TREATMENT = 'RT'
-SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'giovana files')
+FILENAME = 'gio-mass-cytometry-stats.xlsx'
+
+if OTHER_SAMPLE is True:
+    PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'giovana files', 'other sample')
+    FILENAME = 'data_stats.xlsx'
+    CONTROL = 'Pre-Tx'
+    TREATMENT = 'Week4'
+
+SAMPLES = [CONTROL, TREATMENT]
 
 # Colormap options
 CMAP_STR = 'RdBu_r'
@@ -25,22 +37,20 @@ CMAP.set_bad('gray')
 LOG_TRANSFORM = True
 
 # Output options
-SAVE_HEATMAPS = True
+SAVE_HEATMAPS = False
 PLOT_HEATMAPS = True
 
 
-def main(path: str, ct: str, treat: str) -> None:
+def main(path: str, filename: str, ct: str, treat: str, samples: List[str]) -> None:
     """Main function for this script."""
 
     # load dataframe
-    filename = 'gio-mass-cytometry-stats.xlsx'
     df = pd.read_excel(os.path.join(path, filename), index_col=[0, 1, 2])
     control = df.loc[ct]
     treatment = df.loc[treat]
     fig, axes = plt.subplots(3, 1, squeeze=True)
 
     # first image
-    samples = ['Ct', 'RT']
     populations = ['Whole population', 'Outliers', 'Non-outliers']
     index = pd.MultiIndex.from_product([samples, populations])
     first_heatmap = pd.DataFrame([pd.Series(control.loc['whole population'].loc['mean']),
@@ -54,7 +64,7 @@ def main(path: str, ct: str, treat: str) -> None:
     # second image
     out_non_out_ct = control.loc['top outliers'].loc['mean'] / control.loc['non-outliers'].loc['mean']
     out_non_out_rt = treatment.loc['top outliers'].loc['mean'] / treatment.loc['non-outliers'].loc['mean']
-    index = ['Ct Out/Non-Out', 'RT Out/Non-Out']
+    index = [f'{ct} Out/Non-Out', f'{treat} Out/Non-Out']
     second_heatmap = pd.DataFrame([pd.Series(out_non_out_ct), pd.Series(out_non_out_rt)], index=index)
     if LOG_TRANSFORM:
         second_heatmap = np.log(second_heatmap)
@@ -62,7 +72,7 @@ def main(path: str, ct: str, treat: str) -> None:
     # third image
     ruouta = out_non_out_rt / out_non_out_ct
     mean_rt_ct = treatment.loc['whole population'].loc['mean'] / control.loc['whole population'].loc['mean']
-    index = ['RUOutA', 'Mean RT/Mean Ct']
+    index = ['Relative Out/Non-out', f'Mean {treat}/Mean {ct}']
     third_heatmap = pd.DataFrame([pd.Series(ruouta), pd.Series(mean_rt_ct)], index=index)
     if LOG_TRANSFORM:
         third_heatmap = np.log(third_heatmap)
@@ -86,4 +96,4 @@ def main(path: str, ct: str, treat: str) -> None:
 
 
 if __name__ == '__main__':
-    main(path=PATH, ct=CONTROL, treat=TREATMENT)
+    main(path=PATH, filename=FILENAME, ct=CONTROL, treat=TREATMENT, samples=SAMPLES)

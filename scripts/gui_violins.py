@@ -51,6 +51,7 @@ class ViolinGUI(QMainWindow):
 
     def __init__(self) -> None:
         """ViolinGUI Constructor. Defines all aspects of the GUI."""
+        # ## Setup section
         # Inherits from QMainWindow
         super().__init__()
         # QMainWindow basic properties
@@ -93,9 +94,8 @@ class ViolinGUI(QMainWindow):
         self.input_button.setStyleSheet(self.style['button'])
         self.set_icon(self.input_button, 'file')
         self.input_button.setObjectName('file')
-        self.input_button.setText(' Load raw data')
-        self.input_button.setToolTip('Load raw data file '
-                                     '(the file given to SCOUTS as the input file)')
+        self.input_button.setText(' Load raw data file')
+        self.input_button.setToolTip('Load raw data file (the file given to SCOUTS as the input file)')
         self.input_button.clicked.connect(self.get_path)
         # SCOUTS results button
         self.output_button = QPushButton(self.page)
@@ -158,7 +158,7 @@ class ViolinGUI(QMainWindow):
         self.analysis_label_03.setText('for marker')
         self.analysis_label_03.setStyleSheet(self.style['label'])
         self.analysis_label_04 = QLabel(self.page)
-        self.analysis_label_04.setText('Using cutoff from')
+        self.analysis_label_04.setText('Outlier type')
         self.analysis_label_04.setStyleSheet(self.style['label'])
         # Analysis drop-down boxes
         self.drop_down_01 = QComboBox(self.page)
@@ -167,7 +167,7 @@ class ViolinGUI(QMainWindow):
         self.drop_down_02.addItems(['whole population', 'non-outliers'])
         self.drop_down_03 = QComboBox(self.page)
         self.drop_down_04 = QComboBox(self.page)
-        self.drop_down_04.addItems(['each sample', 'reference sample'])
+        self.drop_down_04.addItems(['OutS', 'OutR'])
         # Add widgets above to samples frame Layout
         self.analysis_frame.layout().addRow(self.analysis_label_01, self.drop_down_01)
         self.analysis_frame.layout().addRow(self.analysis_label_02, self.drop_down_02)
@@ -180,8 +180,7 @@ class ViolinGUI(QMainWindow):
                                      self.widget_vposition(self.analysis_frame) + 5, 335, 30)
         self.set_icon(self.plot_button, 'pipe')
         self.plot_button.setText(' Plot')
-        self.plot_button.setToolTip('Plot data after loading the input data '
-                                    'and selecting parameters')
+        self.plot_button.setToolTip('Plot data after loading the input data and selecting parameters')
         self.plot_button.setEnabled(False)
         self.plot_button.clicked.connect(self.run_plot)
         self.secondary_window = QWidget()
@@ -251,21 +250,23 @@ class ViolinGUI(QMainWindow):
         self.summary_path = query
 
     def run_plot(self) -> None:
-        self.plot()
-        # worker = Worker(func=self.plot)
-        # self.threadpool.start(worker)
+        worker = Worker(func=self.plot)
+        self.threadpool.start(worker)
 
     def plot(self) -> None:
-        # plot canvas
+        # Clear figure currently on plot
         self.dynamic_canvas.axes.cla()
-        samples = self.parse_sample_names()
-        marker = self.drop_down_03.currentText()
+        # Initialize values and get parameters from GUI
         columns = ['sample', 'marker', 'population', 'expression']
-        cutoff_from_reference = True if 'reference' in self.drop_down_04.currentText() else False
+        samples = self.parse_sample_names()
         population = self.drop_down_01.currentText()
+        pop_to_analyse = self.drop_down_02.currentText()
+        marker = self.drop_down_03.currentText()
+        cutoff_from_reference = True if 'reference' in self.drop_down_04.currentText() else False
         violin_df = pd.DataFrame(columns=columns)
+        # Start fetching data from files
         # Compare outliers to whole population
-        if self.drop_down_02.currentText() == 'whole population':
+        if pop_to_analyse == 'whole population':
             for partial_df in yield_violin_values(df=self.population_df, population='whole population',
                                                   samples=samples, marker=marker, columns=columns):
                 violin_df = violin_df.append(partial_df)
@@ -286,6 +287,7 @@ class ViolinGUI(QMainWindow):
             for partial_df in yield_violin_values(df=sample_df, population=population, samples=samples,
                                                   marker=marker, columns=columns):
                 violin_df = violin_df.append(partial_df)
+        # Plot data
         populations = violin_df.population.unique()
         subset_by_marker = violin_df[violin_df['marker'] == marker]
         for pop in populations:
@@ -296,6 +298,7 @@ class ViolinGUI(QMainWindow):
                 sat = 1.0 - samples.index(sample) / (len(samples) + 1)
                 self.dynamic_canvas.update_figure(subset_by_sample=subset_by_sample, color=color, sat=sat,
                                                   samples=samples)
+        # Draw plotted data on canvas
         self.dynamic_canvas.axes.set_title(f'{marker} expression')
         self.dynamic_canvas.fig.canvas.draw()
         self.secondary_window.show()
@@ -316,7 +319,7 @@ class ViolinGUI(QMainWindow):
         reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.setEnabled(False)
-            self.threadpool.waitForDone()  # TODO: figure out how to present a message box while waiting for threads
+            self.threadpool.waitForDone()
             event.accept()
         else:
             event.ignore()
@@ -348,15 +351,14 @@ class DynamicCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
-
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.updateGeometry()
 
     def update_figure(self, subset_by_sample, color, sat, samples):
-        sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression', color=color,
-                       saturation=sat, order=samples)
+        sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression', color=color, saturation=sat,
+                       order=samples)
 
 
 if __name__ == '__main__':

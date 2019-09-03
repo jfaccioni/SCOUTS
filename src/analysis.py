@@ -87,6 +87,8 @@ def validate_sample_names(samples: List[str], df: pd.DataFrame) -> None:
     for sample in samples:
         if not any(sample in name for name in sample_names):
             raise SampleNamingError
+        if sample not in sample_names:
+            pass  # TODO: emit warning that sample wasn't found in the DataFrame
 
 
 def get_reference_sample_name(sample_list: List[Tuple[str, str]]) -> str:

@@ -15,8 +15,8 @@ from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpi
 
 from src.analysis import start_scouts
 from src.interface import Worker
-from src.utils import (EmptySampleListError, NoIOPathError, NoReferenceError, NoSampleError, PandasInputError,
-                       SampleNamingError, get_project_root)
+from src.utils import (NoIOPathError, NoReferenceError, NoSampleError, PandasInputError, SampleNamingError,
+                       get_project_root)
 
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
@@ -145,20 +145,23 @@ class SCOUTS(QMainWindow):
         self.analysis_frame.setLayout(QVBoxLayout())
         # Cutoff text
         self.cutoff_text = QLabel(self.main_page)
-        self.cutoff_text.setText('For each sample, consider outliers using cutoff value from:')
+        self.cutoff_text.setText('Type of outlier to select:')
+        self.cutoff_text.setToolTip('Choose whether to select outliers using the cutoff value from a reference\n'
+                                    'sample (OutR) or by using the cutoff value calculated for each sample\n'
+                                    'individually (OutS)')
         self.cutoff_text.setStyleSheet(self.style['bold-label'])
         # Cutoff button group
         self.cutoff_group = QButtonGroup(self)
         # Cutoff by sample
         self.cutoff_sample = QRadioButton(self.main_page)
-        self.cutoff_sample.setText('the sample itself')
+        self.cutoff_sample.setText('OutS')
         self.cutoff_sample.setObjectName('sample')
         self.cutoff_sample.setStyleSheet(self.style['radio button'])
         self.cutoff_sample.setChecked(True)
         self.cutoff_group.addButton(self.cutoff_sample)
         # Cutoff by reference
         self.cutoff_reference = QRadioButton(self.main_page)
-        self.cutoff_reference.setText('a reference sample')
+        self.cutoff_reference.setText('OutR')
         self.cutoff_reference.setObjectName('ref')
         self.cutoff_reference.setStyleSheet(self.style['radio button'])
         self.cutoff_group.addButton(self.cutoff_reference)
@@ -171,12 +174,14 @@ class SCOUTS(QMainWindow):
         # Markers text
         self.markers_text = QLabel(self.main_page)
         self.markers_text.setStyleSheet(self.style['bold-label'])
-        self.markers_text.setText('Select outliers for:')
+        self.markers_text.setText('Show results for:')
+        self.markers_text.setToolTip('individual markers: for each marker, select outliers\n'
+                                     'any marker: select cells that are outliers for AT LEAST one marker')
         # Markers button group
         self.markers_group = QButtonGroup(self)
         # Single marker
         self.single_marker = QRadioButton(self.main_page)
-        self.single_marker.setText('each individual marker')
+        self.single_marker.setText('individual markers')
         self.single_marker.setObjectName('single')
         self.single_marker.setStyleSheet(self.style['radio button'])
         self.single_marker.setChecked(True)
@@ -428,8 +433,10 @@ class SCOUTS(QMainWindow):
         # CyToF gating
         self.cytof_gates = QRadioButton(self.gating_page)
         self.cytof_gates.setObjectName('cytof')
-        cytof_info = 'Mass Cytometry gating - exclude samples with\naverage expression for all markers below:'
+        cytof_info = 'Mass Cytometry gating'
         self.cytof_gates.setText(cytof_info)
+        self.cytof_gates.setToolTip('Exclude cells for which the average expression of all\n'
+                                    'markers is below the selected value')
         self.gating_group.addButton(self.cytof_gates)
         self.cytof_gates.clicked.connect(self.activate_gate)
         # CyToF gating spinbox
@@ -441,8 +448,9 @@ class SCOUTS(QMainWindow):
         self.cytof_gates_value.setEnabled(False)
         # scRNA-Seq gating
         self.rnaseq_gates = QRadioButton(self.gating_page)
-        rnaseq_info = 'scRNA-Seq gating - when calculating cutoff,\nexclude number of reads below:'
+        rnaseq_info = 'scRNA-Seq gating'
         self.rnaseq_gates.setText(rnaseq_info)
+        self.rnaseq_gates.setToolTip('When calculating cutoff, ignore reads below the selected value')
         self.rnaseq_gates.setObjectName('rnaseq')
         self.gating_group.addButton(self.rnaseq_gates)
         self.rnaseq_gates.clicked.connect(self.activate_gate)
@@ -450,7 +458,7 @@ class SCOUTS(QMainWindow):
         self.rnaseq_gates_value = QDoubleSpinBox(self.gating_page)
         self.rnaseq_gates_value.setMinimum(0)
         self.rnaseq_gates_value.setMaximum(10)
-        self.rnaseq_gates_value.setValue(1)
+        self.rnaseq_gates_value.setValue(0)
         self.rnaseq_gates_value.setSingleStep(1)
         self.rnaseq_gates_value.setEnabled(False)
         # Add widgets above to Gate frame layout
@@ -477,10 +485,10 @@ class SCOUTS(QMainWindow):
         self.top_outliers.setText('By default, SCOUTS selects the top outliers from the population')
         # Bottom outliers data
         self.bottom_outliers = QCheckBox(self.gating_page)
-        self.bottom_outliers.setText('Also generate results for low outliers')
+        self.bottom_outliers.setText('Include results for low outliers')
         # Non-outliers data
         self.not_outliers = QCheckBox(self.gating_page)
-        self.not_outliers.setText('Also generate results for non-outliers')
+        self.not_outliers.setText('Include results for non-outliers')
         # Add widgets above to Gate frame layout
         self.outlier_frame.layout().addWidget(self.top_outliers)
         self.outlier_frame.layout().addWidget(self.bottom_outliers)
@@ -626,7 +634,7 @@ class SCOUTS(QMainWindow):
     # ###
 
     def run(self) -> None:
-        """Runs SCOUTS based on user input in the GUI."""
+        """Runs SCOUTS as a Worker, based on user input in the GUI."""
         try:
             data = self.parse_input()
         except Exception as error:
@@ -696,10 +704,12 @@ class SCOUTS(QMainWindow):
     # ### MESSAGE BOXES
     # ###
 
-    def analysis_has_started(self):
+    def analysis_has_started(self) -> None:
+        """Disables run button while SCOUTS analysis is underway."""
         self.run_button.setEnabled(False)
 
-    def analysis_has_finished(self):
+    def analysis_has_finished(self) -> None:
+        """Enables run button after SCOUTS analysis has finished."""
         self.run_button.setEnabled(True)
 
     def success_message(self) -> None:
@@ -744,9 +754,8 @@ class SCOUTS(QMainWindow):
     # ### EXCEPTIONS & ERRORS
     # ###
 
-    def propagate_error(self, error):
-        if isinstance(error, EmptySampleListError):
-            self.empty_sample_list_error_message()
+    def propagate_error(self, error: Exception) -> None:
+        """Calls the appropriate error message box based on type of Exception raised."""
         if isinstance(error, NoIOPathError):
             self.no_io_path_error_message()
         elif isinstance(error, NoReferenceError):
@@ -761,31 +770,30 @@ class SCOUTS(QMainWindow):
             trace = traceback.format_exc()
             self.generic_error_message(error, trace)
 
-    def empty_sample_list_error_message(self) -> None:
-        title = 'Error: No control sample'
-        message = ("Sorry, your samples do not include a control. Please make sure to "
-                   "tag one of the samples as a control.")
-        QMessageBox.critical(self, title, message)
-
     def no_io_path_error_message(self) -> None:
+        """Message displayed when the user did not include an input file path, or an output folder path."""
         title = 'Error: no file/folder'
         message = ("Sorry, no input file and/or output folder was provided. "
                    "Please add the path to the necessary file/folder.")
         QMessageBox.critical(self, title, message)
 
     def no_reference_error_message(self) -> None:
+        """Message displayed when the user wants to analyse cutoff based on a reference, but did not specify what
+        sample corresponds to the reference."""
         title = "Error: No reference selected"
         message = ("Sorry, no reference sample was found on the sample list, but analysis was set to "
                    "reference. Please add a reference sample, or change the rule for cutoff calculation.")
         QMessageBox.critical(self, title, message)
 
     def no_sample_error_message(self) -> None:
+        """Message displayed when the user did not add any samples to the sample table."""
         title = "Error: No samples selected"
         message = ("Sorry, the analysis cannot be performed because no sample names were input. "
                    "Please add your sample names.")
         QMessageBox.critical(self, title, message)
 
     def pandas_input_error_message(self) -> None:
+        """Message displayed when the input file cannot be read (likely because it is not a Excel or csv file)."""
         title = 'Error: unexpected input file'
         message = ("Sorry, the input file could not be read. Please make sure that "
                    "the data is save in a valid format (supported formats are: "
@@ -793,15 +801,16 @@ class SCOUTS(QMainWindow):
         QMessageBox.critical(self, title, message)
 
     def sample_naming_error_message(self) -> None:
+        """Message displayed when none of the sample names passed by the user are found in the input DataFrame."""
         title = 'Error: sample names not in input file'
         message = ("Sorry, your sample names were not found in the input file. Please "
                    "make sure that the names were typed correctly (case-sensitive).")
         QMessageBox.critical(self, title, message)
 
-    def generic_error_message(self, error, trace) -> None:
+    def generic_error_message(self, error: Exception, trace: str) -> None:
         """Error message box used to display any error message (including traceback) for any uncaught errors."""
         title = 'An error occurred!'
-        QMessageBox.critical(self, title, f"{str(error)}\n\nfull traceback:\n{str(trace)}")
+        QMessageBox.critical(self, title, f"{str(error)}\n\nfull traceback:\n{trace}")
 
     def not_implemented_error_message(self) -> None:
         """Error message box used when the user accesses a functionality that hasn't been implemented yet."""
@@ -834,13 +843,13 @@ class SCOUTS(QMainWindow):
     # ### DEBUG OPTIONS
     # ###
 
-    def debug(self):
+    def debug(self) -> None:
         """Pre-loads GUI elements if debug flag is set."""
-        gio_data = True
         laptop = True
         repo = 'SCOUTS'
         if laptop:
             repo = 'scouts'
+        gio_data = True
         if gio_data:
             inp = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/'
                    'giovana files/other sample/raw_data.xlsx')
