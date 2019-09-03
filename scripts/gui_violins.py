@@ -7,8 +7,9 @@ from typing import Generator, List, TYPE_CHECKING
 
 # noinspection PyUnresolvedReferences
 import matplotlib
-matplotlib.use('Qt5Agg')
+# noinspection PyUnresolvedReferences
 from matplotlib.figure import Figure
+# noinspection PyUnresolvedReferences
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pandas as pd
 # noinspection PyUnresolvedReferences,PyPackageRequirements
@@ -16,7 +17,7 @@ import seaborn as sns
 from PySide2.QtCore import QThreadPool, Qt
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QComboBox, QFileDialog, QFormLayout, QFrame, QLabel, QLineEdit,
-                               QMainWindow, QMessageBox, QPushButton, QWidget, QVBoxLayout, QSizePolicy)
+                               QMainWindow, QMessageBox, QPushButton, QWidget, QSizePolicy)
 
 from src.interface import Worker
 from src.utils import get_project_root
@@ -24,6 +25,7 @@ from src.utils import get_project_root
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
 
+matplotlib.use('Qt5Agg')
 sns.set(style="whitegrid")
 
 
@@ -249,13 +251,13 @@ class ViolinGUI(QMainWindow):
         self.summary_path = query
 
     def run_plot(self) -> None:
-        self.dynamic_canvas.axes.cla()
-        worker = Worker(func=self.plot)
-        worker.signals.started.connect(self.dynamic_canvas.axes.cla)
-        self.threadpool.start(worker)
+        self.plot()
+        # worker = Worker(func=self.plot)
+        # self.threadpool.start(worker)
 
     def plot(self) -> None:
         # plot canvas
+        self.dynamic_canvas.axes.cla()
         samples = self.parse_sample_names()
         marker = self.drop_down_03.currentText()
         columns = ['sample', 'marker', 'population', 'expression']
@@ -286,14 +288,16 @@ class ViolinGUI(QMainWindow):
                 violin_df = violin_df.append(partial_df)
         populations = violin_df.population.unique()
         subset_by_marker = violin_df[violin_df['marker'] == marker]
-        self.dynamic_canvas.axes.set_title(f'{marker} expression')
         for pop in populations:
             subset_by_pop = subset_by_marker.loc[subset_by_marker['population'] == pop]
             color = [0.4, 0.76078431, 0.64705882] if pop != population else [0.98823529, 0.55294118, 0.38431373]
             for sample in samples:
                 subset_by_sample = subset_by_pop.loc[subset_by_pop['sample'] == sample]
                 sat = 1.0 - samples.index(sample) / (len(samples) + 1)
-                self.dynamic_canvas.update_figure(subset_by_sample=subset_by_sample, color=color, sat=sat, samples=samples)
+                self.dynamic_canvas.update_figure(subset_by_sample=subset_by_sample, color=color, sat=sat,
+                                                  samples=samples)
+        self.dynamic_canvas.axes.set_title(f'{marker} expression')
+        self.dynamic_canvas.fig.canvas.draw()
         self.secondary_window.show()
 
     def parse_sample_names(self):
@@ -342,17 +346,17 @@ def yield_selected_file_numbers(summary_df: pd.DataFrame, population: str, cutof
 
 class DynamicCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
 
-        FigureCanvas.__init__(self, fig)
+        FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.updateGeometry()
 
     def update_figure(self, subset_by_sample, color, sat, samples):
-        sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression', color=color, saturation=sat,
-                       order=samples)
+        sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression', color=color,
+                       saturation=sat, order=samples)
 
 
 if __name__ == '__main__':
