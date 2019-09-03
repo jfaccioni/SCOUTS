@@ -1,9 +1,9 @@
 import os
 from typing import List
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 import matplotlib.cm
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -11,7 +11,7 @@ import pandas as pd
 import seaborn as sns
 
 # Main arguments
-OTHER_SAMPLE = True
+OTHER_SAMPLE = False
 SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
 CONTROL = 'Ct'

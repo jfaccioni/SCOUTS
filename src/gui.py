@@ -849,7 +849,7 @@ class SCOUTS(QMainWindow):
         repo = 'SCOUTS'
         if laptop:
             repo = 'scouts'
-        gio_data = True
+        gio_data = False
         if gio_data:
             inp = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/'
                    'giovana files/other sample/raw_data.xlsx')

@@ -5,11 +5,11 @@ import sys
 import traceback
 from typing import Generator, List, TYPE_CHECKING
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 import matplotlib
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 from matplotlib.figure import Figure
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pandas as pd
 # noinspection PyUnresolvedReferences,PyPackageRequirements
@@ -314,7 +314,7 @@ class ViolinGUI(QMainWindow):
 
     def closeEvent(self, event: QEvent) -> None:
         """Defines the message box for when the user wants to quit SCOUTS."""
-        title = 'Quit SCOUTS'
+        title = 'Quit Violins'
         mes = "Are you sure you want to quit?"
         reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
