@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List
 
 # noinspection PyUnresolvedReferences,PyPackageRequirements
@@ -11,16 +12,16 @@ import pandas as pd
 import seaborn as sns
 
 # Main arguments
-OTHER_SAMPLE = False
+GIO_DATASET = True
 SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
 CONTROL = 'Ct'
 TREATMENT = 'RT'
-PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'giovana files')
+PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'sample data', 'cytof gio')
 FILENAME = 'gio-mass-cytometry-stats.xlsx'
 
-if OTHER_SAMPLE is True:
-    PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'giovana files', 'other sample')
+if GIO_DATASET is False:
+    PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'sample data', 'MP29_CD45low')
     FILENAME = 'data_stats.xlsx'
     CONTROL = 'Pre-Tx'
     TREATMENT = 'Week4'
@@ -46,6 +47,8 @@ def main(path: str, filename: str, ct: str, treat: str, samples: List[str]) -> N
 
     # load dataframe
     df = pd.read_excel(os.path.join(path, filename), index_col=[0, 1, 2])
+    if not GIO_DATASET:
+        df.rename(columns={col: parse_column_name(col) for col in df.columns}, inplace=True)
     control = df.loc[ct]
     treatment = df.loc[treat]
     fig, axes = plt.subplots(3, 1, squeeze=True)
@@ -91,8 +94,13 @@ def main(path: str, filename: str, ct: str, treat: str, samples: List[str]) -> N
     # plot heatmaps
     if PLOT_HEATMAPS:
         for index, heatmap in enumerate(heatmaps):
-            sns.heatmap(data=heatmap, ax=axes[index], cmap=CMAP, square=True)
+            sns.heatmap(data=heatmap, ax=axes[index], cmap=CMAP, square=True, xticklabels=1)
         plt.show()
+
+
+def parse_column_name(col: str) -> str:
+    """parses column name from CyToF dataset."""
+    return ''.join(re.search('Di<.*', col).group(0)[3:].split('-')[:-1])
 
 
 if __name__ == '__main__':

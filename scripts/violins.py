@@ -17,12 +17,12 @@ SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 PROJECT_ROOT = os.path.join(SCRIPT_DIR, '..')
 
 # Input directory (directory containing file with whole population prior to SCOUTS)
-SCOUTS_INPUT_FOLDER = os.path.join(PROJECT_ROOT, 'local', 'giovana files')
+SCOUTS_INPUT_FOLDER = os.path.join(PROJECT_ROOT, 'local', 'sample data', 'cytof gio')
 POPULATION_FILE = 'gio-mass-cytometry.xlsx'
 SCOUTS_POPULATION_FILENAME = os.path.join(SCOUTS_INPUT_FOLDER, POPULATION_FILE)
 
 # Output directory (directory used to save SCOUTS results)
-SCOUTS_OUTPUT_FOLDER = os.path.join(PROJECT_ROOT, 'local', 'output')
+SCOUTS_OUTPUT_FOLDER = os.path.join(PROJECT_ROOT, 'local', 'sample data', 'cytof gio', 'scouts output')
 SUMMARY_FILE = 'summary.xlsx'
 SCOUTS_SUMMARY_FILENAME = os.path.join(SCOUTS_OUTPUT_FOLDER, SUMMARY_FILE)
 
