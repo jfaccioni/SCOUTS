@@ -205,7 +205,7 @@ class ViolinGUI(QMainWindow):
         """Associates an icon to a widget."""
         i = QIcon()
         i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.root, 'src', 'icons', f'{icon}.svg'))))
-        widget.setIcon(i)
+        widget.setIcon(QIcon.fromTheme(icon, i))
 
     def get_path(self) -> None:
         """Opens a dialog box and sets the chosen file/folder path, depending on the caller widget."""
@@ -314,7 +314,7 @@ class ViolinGUI(QMainWindow):
 
     def closeEvent(self, event: QEvent) -> None:
         """Defines the message box for when the user wants to quit SCOUTS."""
-        title = 'Quit Violins'
+        title = 'Quit Application'
         mes = "Are you sure you want to quit?"
         reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
