@@ -12,7 +12,7 @@ import pandas as pd
 import seaborn as sns
 
 # Input parameters
-GIO_DATASET = False
+GIO_DATASET = True
 if GIO_DATASET is True:
     FILE_DIR = 'cytof gio'
     FILENAME = 'gio-mass-cytometry-stats.xlsx'
@@ -94,13 +94,15 @@ def parse_column_name(col: str) -> str:
 
 def plot_first_heatmap(heatmap: pd.DataFrame, ax: plt.Axes) -> None:
     """Plots the top heatmap in the output figure."""
-    label = 'raw expression'
+    expression = 'expression'
     if LOG2_TRANSFORM and LOG2_FIRST:
+        expression = 'log2(expression)'
         heatmap = np.log2(heatmap)
+    label = f'raw {expression}'
     if NORMALIZE:
-        label = 'expression (normalized for each marker)'
+        label = f'{expression} (normalized for each marker)'
         if GLOBAL_NORMALIZE:
-            label = 'expression (normalized across all markers)'
+            label = f'{expression} (normalized across all markers)'
             heat_max = np.nanmax(heatmap.values)
             heat_min = np.nanmin(heatmap.values)
             heatmap = (2 * (heatmap - heat_min)) / (heat_max - heat_min) - 1
@@ -109,7 +111,7 @@ def plot_first_heatmap(heatmap: pd.DataFrame, ax: plt.Axes) -> None:
 
     sns.heatmap(data=heatmap, ax=ax, cmap=CMAP, square=False, xticklabels=1, linewidths=0.1, vmin=-1, vmax=1)
     if LABEL_NANS:
-        data_labels = heatmap.isnull().replace({True: 'no\noutliers', False: ''})
+        data_labels = heatmap.isnull().replace({True: 'no data', False: ''})
         nan_data = pd.DataFrame(1.0, index=data_labels.index, columns=data_labels.columns)
         sns.heatmap(data=nan_data, ax=ax, cmap='binary', center=1.0, linewidths=0.1, mask=heatmap.notnull(),
                     cbar=False, annot=data_labels, annot_kws={'color': 'k', 'size': 6}, fmt='', xticklabels=1)
@@ -130,7 +132,7 @@ def plot_second_heatmap(heatmap: pd.DataFrame, ax: plt.Axes) -> None:
     cbar = ax.collections[0].colorbar
     cbar.set_label(label)
     if LABEL_NANS:
-        data_labels = heatmap.isnull().replace({True: 'no\noutliers', False: ''})
+        data_labels = heatmap.isnull().replace({True: 'no data', False: ''})
         nan_data = pd.DataFrame(1.0, index=data_labels.index, columns=data_labels.columns)
         sns.heatmap(data=nan_data, ax=ax, cmap='binary', center=1.0, square=True, linewidths=0.1,
                     mask=heatmap.notnull(), cbar=False, annot=data_labels, annot_kws={'color': 'k', 'size': 6},
