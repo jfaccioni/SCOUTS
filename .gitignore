@@ -6,7 +6,7 @@ __pycache__/
 .idea/
 
 # local files I don't want to track
-local/
+/local
 
 # C extensions
 *.so

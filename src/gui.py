@@ -8,10 +8,11 @@ from typing import Dict, Generator, TYPE_CHECKING, Tuple
 
 # noinspection PyUnresolvedReferences
 from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
-from PySide2.QtGui import QIcon, QPixmap
+from PySide2.QtGui import QIcon, QPixmap, QKeySequence
 from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog, QFormLayout, QFrame,
                                QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton,
-                               QRadioButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+                               QRadioButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
+                               QGridLayout, QShortcut)
 
 from src.analysis import start_scouts
 from src.interface import Worker
@@ -40,7 +41,7 @@ class SCOUTS(QMainWindow):
         'header': 'QLabel {font-weight:600}',
         'button': 'QPushButton {font-size: 10pt}',
         'label': 'QLabel {font-size: 10pt}',
-        'bold-label': 'QLabel {font-size: 10pt; font-weight:500}',
+        'bold-label': 'QLabel {font-size: 10pt; font-weight:600}',
         'radio button': 'QRadioButton {font-size: 10pt}',
         'checkbox': 'QCheckBox {font-size: 10pt}',
         'line edit': 'QLineEdit {font-size: 10pt}',
@@ -105,7 +106,7 @@ class SCOUTS(QMainWindow):
         # Input button
         self.input_button = QPushButton(self.main_page)
         self.input_button.setStyleSheet(self.style['button'])
-        self.set_icon(self.input_button, 'file')
+        self.set_icon(self.input_button, 'x-office-spreadsheet')
         self.input_button.setObjectName('input')
         self.input_button.setText(' Select input file (.xlsx or .csv)')
         self.input_button.clicked.connect(self.get_path)
@@ -116,13 +117,13 @@ class SCOUTS(QMainWindow):
         # Go to sample naming page
         self.samples_button = QPushButton(self.main_page)
         self.samples_button.setStyleSheet(self.style['button'])
-        self.set_icon(self.samples_button, 'settings')
+        self.set_icon(self.samples_button, 'system-search')
         self.samples_button.setText(' Name samples...')
         self.samples_button.clicked.connect(self.goto_samples_page)
         # Go to gating page
         self.gates_button = QPushButton(self.main_page)
         self.gates_button.setStyleSheet(self.style['button'])
-        self.set_icon(self.gates_button, 'settings')
+        self.set_icon(self.gates_button, 'system-search')
         self.gates_button.setText(' Gating && outlier options...')
         self.gates_button.clicked.connect(self.goto_gates_page)
         # Add widgets above to input frame Layout
@@ -175,8 +176,8 @@ class SCOUTS(QMainWindow):
         self.markers_text = QLabel(self.main_page)
         self.markers_text.setStyleSheet(self.style['bold-label'])
         self.markers_text.setText('Show results for:')
-        self.markers_text.setToolTip('individual markers: for each marker, select outliers\n'
-                                     'any marker: select cells that are outliers for AT LEAST one marker')
+        self.markers_text.setToolTip('Individual markers: for each marker, select outliers\n'
+                                     'Any marker: select cells that are outliers for AT LEAST one marker')
         # Markers button group
         self.markers_group = QButtonGroup(self)
         # Single marker
@@ -268,7 +269,10 @@ class SCOUTS(QMainWindow):
         self.output_excel.clicked.connect(self.enable_single_excel)
         # Generate single, large XLSX checkbox
         self.single_excel = QCheckBox(self.main_page)
-        self.single_excel.setText('Also save one Excel spreadsheet\nwith each analysis in individual sheets')
+        self.single_excel.setText('Also save one multi-sheet Excel spreadsheet')
+        self.single_excel.setToolTip('After generating all Excel spreadsheets, SCOUTS combines them into '
+                                     'a single\nExcel spreadsheet where each sheet corresponds to an output'
+                                     'file from SCOUTS')
         self.single_excel.setStyleSheet(self.style['checkbox'])
         self.single_excel.setEnabled(False)
         self.single_excel.clicked.connect(self.memory_warning)
@@ -283,7 +287,7 @@ class SCOUTS(QMainWindow):
         self.run_button = QPushButton(self.main_page)
         self.run_button.setGeometry(self.margin['left'],
                                     self.widget_vposition(self.output_frame) + 5, self.rlimit(), 30)
-        self.set_icon(self.run_button, 'pipe')
+        self.set_icon(self.run_button, 'system-run')
         self.run_button.setText(' Run!')
         self.run_button.clicked.connect(self.run)
         # Help-quit frame (invisible)
@@ -295,12 +299,12 @@ class SCOUTS(QMainWindow):
         self.helpquit_frame.setLayout(helpquit_layout)
         # Help button
         self.help_button = QPushButton(self.main_page)
-        self.set_icon(self.help_button, 'help')
+        self.set_icon(self.help_button, 'help-about')
         self.help_button.setText(' Help')
         self.help_button.clicked.connect(self.get_help)
         # Quit button
         self.quit_button = QPushButton(self.main_page)
-        self.set_icon(self.quit_button, 'quit')
+        self.set_icon(self.quit_button, 'process-stop')
         self.quit_button.setText(' Quit')
         self.quit_button.clicked.connect(self.close)
         # Add widgets above to help-quit layout
@@ -315,17 +319,16 @@ class SCOUTS(QMainWindow):
         # Title
         self.samples_title = QLabel(self.samples_page)
         self.samples_title.move(self.margin['left'], self.margin['top'])
-        self.samples_title.setText('Sample names')
+        self.samples_title.setText('Name your samples')
         self.samples_title.setStyleSheet(self.style['title'])
         self.samples_title.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         # Subtitle
         self.samples_subtitle = QLabel(self.samples_page)
         self.samples_subtitle.move(self.margin['left'], self.widget_vposition(self.samples_title) + 5)
-        string = ('Please insert your sample names\ne.g. Control, Drug-01, '
-                  'Treatment_X ...\n\nSCOUTS locates the exact string as '
-                  'part of\nthe names on the first column of your data.')
+        string = ('Please name the samples to be analysed by SCOUTS.\n\nSCOUTS searches the first '
+                  'column of your data\nand locates the exact string as part of the sample name.')
         self.samples_subtitle.setText(string)
-        self.samples_subtitle.setStyleSheet(self.style['bold-label'])
+        self.samples_subtitle.setStyleSheet(self.style['label'])
         self.samples_subtitle.adjustSize()
 
         # ## Sample addition section
@@ -334,31 +337,35 @@ class SCOUTS(QMainWindow):
         self.samples_frame.setGeometry(self.margin['left'],
                                        self.widget_vposition(self.samples_subtitle) + 5, self.rlimit(), 80)
         self.samples_frame.setFrameShape(QFrame.StyledPanel)
-        self.samples_frame.setLayout(QFormLayout())
+        self.samples_layout = QGridLayout()
+        self.samples_frame.setLayout(self.samples_layout)
         # Sample name box
         self.sample_name = QLineEdit(self.samples_page)
         self.sample_name.setStyleSheet(self.style['line edit'])
-        self.sample_name.resize(400, self.sample_name.height())
-        self.sample_name.setPlaceholderText('Insert sample name  ...')
+        self.sample_name.setPlaceholderText('Sample name ...')
         # Reference check
         self.is_reference = QCheckBox(self.samples_page)
-        self.is_reference.setText('This is my reference sample')
+        self.is_reference.setText('Reference?')
         self.is_reference.setStyleSheet(self.style['checkbox'])
         # Add sample to table
         self.add_sample_button = QPushButton(self.samples_page)
-        self.set_icon(self.add_sample_button, 'ok')
-        self.add_sample_button.setText(' Add sample to table')
+        QShortcut(QKeySequence("Return"), self.add_sample_button, self.write_to_sample_table)
+        self.set_icon(self.add_sample_button, 'list-add')
+        self.add_sample_button.setText(' Add sample')
         self.add_sample_button.setStyleSheet(self.style['button'])
         self.add_sample_button.clicked.connect(self.write_to_sample_table)
         # Remove sample from table
         self.remove_sample_button = QPushButton(self.samples_page)
-        self.set_icon(self.remove_sample_button, 'back')
-        self.remove_sample_button.setText(' Remove sample from table')
+        QShortcut(QKeySequence("Delete"), self.remove_sample_button, self.remove_from_sample_table)
+        self.set_icon(self.remove_sample_button, 'list-remove')
+        self.remove_sample_button.setText(' Remove sample (del)')
         self.remove_sample_button.setStyleSheet(self.style['button'])
         self.remove_sample_button.clicked.connect(self.remove_from_sample_table)
         # Add widgets above to sample addition layout
-        self.samples_frame.layout().addRow(self.sample_name, self.is_reference)
-        self.samples_frame.layout().addRow(self.add_sample_button, self.remove_sample_button)
+        self.samples_layout.addWidget(self.sample_name, 0, 0)
+        self.samples_layout.addWidget(self.is_reference, 1, 0)
+        self.samples_layout.addWidget(self.add_sample_button, 0, 1)
+        self.samples_layout.addWidget(self.remove_sample_button, 1, 1)
 
         # ## Sample table
         self.sample_table = QTableWidget(self.samples_page)
@@ -381,13 +388,13 @@ class SCOUTS(QMainWindow):
         self.saveclear_frame.setLayout(saveclear_layout)
         # Clear samples button
         self.clear_samples = QPushButton(self.samples_page)
-        self.set_icon(self.clear_samples, 'clear')
+        self.set_icon(self.clear_samples, 'edit-delete')
         self.clear_samples.setText(' Clear table')
         self.clear_samples.setStyleSheet(self.style['button'])
         self.clear_samples.clicked.connect(self.prompt_clear_data)
         # Save samples button
         self.save_samples = QPushButton(self.samples_page)
-        self.set_icon(self.save_samples, 'ok')
+        self.set_icon(self.save_samples, 'document-save')
         self.save_samples.setText(' Save samples')
         self.save_samples.setStyleSheet(self.style['button'])
         self.save_samples.clicked.connect(self.goto_main_page)
@@ -498,7 +505,7 @@ class SCOUTS(QMainWindow):
         self.save_gates = QPushButton(self.gating_page)
         self.save_gates.setGeometry(self.margin['left'],
                                     self.widget_vposition(self.outlier_frame) + 25, self.rlimit(), 40)
-        self.set_icon(self.save_gates, 'ok')
+        self.set_icon(self.save_gates, 'go-next')
         self.save_gates.setText(' Back to menu')
         self.save_gates.clicked.connect(self.goto_main_page)
 
@@ -524,7 +531,7 @@ class SCOUTS(QMainWindow):
         """Associates an icon to a widget."""
         i = QIcon()
         i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.root, 'src', 'icons', f'{icon}.svg'))))
-        widget.setIcon(i)
+        widget.setIcon(QIcon.fromTheme(icon, i))
 
     # ###
     # ### STACKED WIDGET PAGE SWITCHING

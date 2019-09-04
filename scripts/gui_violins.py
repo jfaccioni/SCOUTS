@@ -92,7 +92,7 @@ class ViolinGUI(QMainWindow):
         # Raw data button
         self.input_button = QPushButton(self.page)
         self.input_button.setStyleSheet(self.style['button'])
-        self.set_icon(self.input_button, 'file')
+        self.set_icon(self.input_button, 'x-office-spreadsheet')
         self.input_button.setObjectName('file')
         self.input_button.setText(' Load raw data file')
         self.input_button.setToolTip('Load raw data file (the file given to SCOUTS as the input file)')
@@ -178,7 +178,7 @@ class ViolinGUI(QMainWindow):
         self.plot_button = QPushButton(self.page)
         self.plot_button.setGeometry(self.margin['left'],
                                      self.widget_vposition(self.analysis_frame) + 5, 335, 30)
-        self.set_icon(self.plot_button, 'pipe')
+        self.set_icon(self.plot_button, 'system-run')
         self.plot_button.setText(' Plot')
         self.plot_button.setToolTip('Plot data after loading the input data and selecting parameters')
         self.plot_button.setEnabled(False)
