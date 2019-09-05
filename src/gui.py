@@ -2,20 +2,20 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 import traceback
 import webbrowser
-from typing import Dict, Generator, TYPE_CHECKING, Tuple
+from typing import Dict, Generator, TYPE_CHECKING, Tuple, Callable
 
 # noinspection PyUnresolvedReferences
 from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
-from PySide2.QtGui import QIcon, QPixmap, QKeySequence
-from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDoubleSpinBox, QFileDialog, QFormLayout, QFrame,
-                               QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton,
-                               QRadioButton, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
-                               QGridLayout, QShortcut)
+from PySide2.QtGui import QIcon, QKeySequence, QPixmap
+from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDialog, QDoubleSpinBox, QFileDialog, QFormLayout,
+                               QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow,
+                               QMessageBox, QPushButton, QRadioButton, QShortcut, QStackedWidget, QTableWidget,
+                               QTableWidgetItem, QVBoxLayout, QWidget)
 
 from src.analysis import start_scouts
-from src.interface import Worker
 from src.utils import (NoIOPathError, NoReferenceError, NoSampleError, PandasInputError, SampleNamingError,
                        get_project_root)
 
@@ -58,7 +58,6 @@ class SCOUTS(QMainWindow):
         # Inherits from QMainWindow
         super().__init__()
         self.root = get_project_root()
-
         self.threadpool = QThreadPool()
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
@@ -724,7 +723,7 @@ class SCOUTS(QMainWindow):
         """Info message box used when SCOUTS finished without errors."""
         title = "Analysis finished!"
         mes = "Your analysis has finished. No errors were reported."
-        if self.isEnabled() is True:
+        if self.stacked_pages.isEnabled() is True:
             QMessageBox.information(self, title, mes)
 
     def memory_warning(self) -> None:
@@ -841,11 +840,26 @@ class SCOUTS(QMainWindow):
         mes = "Are you sure you want to quit?"
         reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
-            self.setEnabled(False)
-            self.threadpool.waitForDone()  # TODO: figure out how to present a message box while waiting for threads
-            event.accept()
-        else:
-            event.ignore()
+            self.stacked_pages.setEnabled(False)
+            message = self.quit_message()
+            waiter = Waiter(waiter_func=self.threadpool.activeThreadCount)
+            waiter.signals.started.connect(message.show)
+            waiter.signals.finished.connect(message.destroy)
+            waiter.signals.finished.connect(sys.exit)
+            self.threadpool.start(waiter)
+        event.ignore()
+
+    def quit_message(self) -> QDialog:
+        """Displays a window while SCOUTS is exiting"""
+        message = QDialog(self)
+        message.setWindowTitle('Exiting SCOUTS')
+        message.resize(300, 50)
+        label = QLabel('SCOUTS is exiting, please wait...', message)
+        label.setStyleSheet(self.style['label'])
+        label.adjustSize()
+        label.setAlignment(Qt.AlignCenter)
+        label.move(int((message.width() - label.width())/2), int((message.height() - label.height())/2))
+        return message
 
     # ###
     # ### DEBUG OPTIONS
@@ -884,6 +898,59 @@ class SCOUTS(QMainWindow):
             self.sample_table.setItem(1, 1, QTableWidgetItem('no'))
         self.input_path.setText(inp)
         self.output_path.setText(out)
+
+
+class Worker(QRunnable):
+    """Worker thread for SCOUTS analysis. Avoids unresponsive GUI."""
+    def __init__(self, func: Callable, *args, **kwargs) -> None:
+        super().__init__()
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+    @Slot()
+    def run(self) -> None:
+        """Runs the Worker thread."""
+        self.signals.started.emit()
+        try:
+            self.func(*self.args, **self.kwargs)
+        except Exception as error:
+            trace = traceback.format_exc()
+            self.signals.error.emit((error, trace))
+        else:
+            self.signals.success.emit()
+        finally:
+            self.signals.finished.emit()
+
+
+class Waiter(QRunnable):
+    """Wait until this is the last Worker running."""
+    def __init__(self, waiter_func: Callable) -> None:
+        super().__init__()
+        self.waiter_func = waiter_func
+        self.signals = WorkerSignals()
+
+    @Slot()
+    def run(self) -> None:
+        """Runs the Worker thread."""
+        self.signals.started.emit()
+        while self.waiter_func() > 1:
+            time.sleep(0.1)
+        self.signals.finished.emit()
+
+
+class WorkerSignals(QObject):
+    """Defines the signals available from a running worker thread. Supported signals are:
+         Started: Worker has begun working. Nothing is emitted.
+         Finished: Worker has done executing (either naturally or by an Exception). Nothing is emitted.
+         Success: Worker has finished executing without errors. Nothing is emitted.
+         Error: an Exception was raised. Emits a tuple containing an Exception object and the traceback as a string.
+         Aborted: the thread was aborted at some point. Nothing is emitted."""
+    started = Signal()
+    finished = Signal()
+    success = Signal()
+    error = Signal(Exception)
 
 
 # Automatically fills fields for quick testing

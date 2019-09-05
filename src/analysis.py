@@ -184,7 +184,7 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
                                                       bottom_outliers=bottom_outliers), 1):
         summary_df = add_info_to_summary(summary_df, i, info)
         add_info_to_stats(data, samples, stats_df_dict, info)
-        if not widget.isEnabled():  # user has exited the GUI
+        if not widget.stacked_pages.isEnabled():  # user has exited the GUI
             return
         if export_csv:
             csv_path = os.path.join(output_path, '%04d.csv' % i)

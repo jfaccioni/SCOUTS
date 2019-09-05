@@ -14,11 +14,13 @@ import seaborn as sns
 from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QComboBox, QFileDialog, QFormLayout, QFrame, QLabel, QLineEdit,
-                               QMainWindow, QMessageBox, QPushButton, QSizePolicy, QWidget)
+                               QMainWindow, QMessageBox, QPushButton, QSizePolicy, QWidget, QDialog, QCheckBox)
 # noinspection PyUnresolvedReferences,PyPackageRequirements
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavBar
 # noinspection PyUnresolvedReferences,PyPackageRequirements
 from matplotlib.figure import Figure
+# noinspection PyUnresolvedReferences
+from matplotlib.lines import Line2D
 
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
@@ -173,10 +175,15 @@ class ViolinGUI(QMainWindow):
         self.analysis_frame.layout().addRow(self.analysis_label_03, self.drop_down_03)
         self.analysis_frame.layout().addRow(self.analysis_label_04, self.drop_down_04)
 
+        self.legend_checkbox = QCheckBox(self.page)
+        self.legend_checkbox.setGeometry(self.margin['left'],
+                                         self.widget_vposition(self.analysis_frame) + 5, 335, 30)
+        self.legend_checkbox.setText('Add legend to the plot')
+
         # Plot button (stand-alone)
         self.plot_button = QPushButton(self.page)
         self.plot_button.setGeometry(self.margin['left'],
-                                     self.widget_vposition(self.analysis_frame) + 5, 335, 30)
+                                     self.widget_vposition(self.legend_checkbox) + 5, 335, 30)
         self.set_icon(self.plot_button, 'system-run')
         self.plot_button.setText(' Plot')
         self.plot_button.setToolTip('Plot data after loading the input data and selecting parameters')
@@ -216,33 +223,41 @@ class ViolinGUI(QMainWindow):
         """Opens a dialog box and sets the chosen file/folder path, depending on the caller widget."""
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
+        query = None
         func = None
         if self.sender().objectName() == 'file':
             query, _ = QFileDialog.getOpenFileName(self, "Select file", "", "All Files (*)", options=options)
-            if query:
-                func = self.load_raw_data
-            else:
-                self.population_df = None
-                self.plot_button.setEnabled(False)
+            func = self.load_raw_data
         elif self.sender().objectName() == 'folder':
             query = QFileDialog.getExistingDirectory(self, "Select Directory", options=options)
-            if query:
-                func = self.load_scouts_results
-            else:
-                self.summary_df = None
-                self.plot_button.setEnabled(False)
-        if func is not None:
-            # noinspection PyUnboundLocalVariable
-            worker = Worker(func=func, query=query)
-            worker.signals.error.connect(self.generic_error_message)
-            self.threadpool.start(worker)
-            message = QMessageBox(self.page)
-            message.setText('Loading...')
-            message.show()
-            self.threadpool.waitForDone(-1)
-            message.close()
-            if isinstance(self.summary_df, pd.DataFrame) and isinstance(self.population_df, pd.DataFrame):
-                self.plot_button.setEnabled(True)
+            func = self.load_scouts_results
+        if query:
+            self.load_data(query, func)
+
+    def load_data(self, query: str, func: Callable) -> None:
+        """str"""  # TODO
+        worker = Worker(func=func, query=query)
+        message = self.loading_message()
+        worker.signals.started.connect(message.show)
+        worker.signals.started.connect(self.page.setDisabled)
+        worker.signals.error.connect(self.generic_error_message)
+        worker.signals.failed.connect(self.plot_button.setDisabled)
+        worker.signals.success.connect(message.destroy)
+        worker.signals.success.connect(self.enable_plot)
+        worker.signals.finished.connect(self.page.setEnabled)
+        self.threadpool.start(worker)
+
+    def loading_message(self) -> QDialog:
+        """str"""  # TODO
+        message = QDialog(self)
+        message.setWindowTitle('Loading')
+        message.resize(300, 50)
+        label = QLabel('loading DataFrame into memory...', message)
+        label.setStyleSheet(self.style['label'])
+        label.adjustSize()
+        label.setAlignment(Qt.AlignCenter)
+        label.move(int((message.width() - label.width())/2), int((message.height() - label.height())/2))
+        return message
 
     def load_raw_data(self, query: str) -> None:
         """str"""  # TODO
@@ -255,6 +270,10 @@ class ViolinGUI(QMainWindow):
         """str"""  # TODO
         self.summary_df = pd.read_excel(os.path.join(query, 'summary.xlsx'), index_col=None)
         self.summary_path = query
+
+    def enable_plot(self) -> None:
+        if isinstance(self.summary_df, pd.DataFrame) and isinstance(self.population_df, pd.DataFrame):
+            self.plot_button.setEnabled(True)
 
     def run_plot(self) -> None:
         """str"""  # TODO
@@ -295,21 +314,18 @@ class ViolinGUI(QMainWindow):
                                                                    marker=marker, columns=columns):
                             violin_df = violin_df.append(partial_df)
         # Plot data
-        colors = {'top outliers':     [0.988, 0.553, 0.384],  # green
-                  'bottom outliers':  [0.259, 0.455, 0.643],  # blue
-                  'non-outliers':     [0.400, 0.761, 0.647],  # orange
-                  'whole population': [0.600, 0.600, 0.600]}  # gray
         pops_to_analyse = [p for p in pops_to_analyse if p != 'none']
         violin_df = violin_df[violin_df['marker'] == marker]
         for pop in pops_to_analyse:
             pop_subset = violin_df.loc[violin_df['population'] == pop]
-            color = colors[pop]
             for sample in samples:
                 sample_subset = pop_subset.loc[pop_subset['sample'] == sample]
                 sat = 1.0 - samples.index(sample) / (len(samples) + 1)
-                self.dynamic_canvas.update_figure(subset_by_sample=sample_subset, color=color, sat=sat, samples=samples)
+                self.dynamic_canvas.update_figure(subset_by_sample=sample_subset, pop=pop, sat=sat, samples=samples)
         # Draw plotted data on canvas
-        self.dynamic_canvas.axes.set_title(f'{marker} expression')
+        if self.legend_checkbox.isChecked():
+            self.dynamic_canvas.add_legend()
+        self.dynamic_canvas.axes.set_title(f'{marker} expression - {self.drop_down_04.currentText()}')
         self.dynamic_canvas.fig.canvas.draw()
 
     def parse_sample_names(self):
@@ -369,6 +385,12 @@ class ViolinGUI(QMainWindow):
 
 
 class DynamicCanvas(FigureCanvas):
+    colors = {
+              'top outliers':     [0.988, 0.553, 0.384],  # green
+              'bottom outliers':  [0.259, 0.455, 0.643],  # blue
+              'non-outliers':     [0.400, 0.761, 0.647],  # orange
+              'whole population': [0.600, 0.600, 0.600]   # gray
+    }
     """str"""  # TODO
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
@@ -378,10 +400,17 @@ class DynamicCanvas(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def update_figure(self, subset_by_sample, color, sat, samples):
+    def update_figure(self, subset_by_sample, pop, sat, samples):
         """str"""  # TODO
+        color = self.colors[pop]
         sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression',
                        color=color, saturation=sat, order=samples)
+
+    def add_legend(self):
+        """str"""  # TODO
+        labels = {name: Line2D([], [], color=color, marker='s', linestyle='None')
+                  for name, color in self.colors.items()}
+        self.axes.legend(labels.values(), labels.keys(), fontsize=8)
 
 
 class Worker(QRunnable):
@@ -395,28 +424,35 @@ class Worker(QRunnable):
 
     @Slot()
     def run(self) -> None:
-        """Run the Worker thread."""
-        self.signals.started.emit()
+        """Runs the Worker thread."""
+        self.signals.started.emit(True)
         try:
             self.func(*self.args, **self.kwargs)
         except Exception as error:
             trace = traceback.format_exc()
             self.signals.error.emit((error, trace))
+            self.signals.failed.emit()
         else:
             self.signals.success.emit()
         finally:
-            self.signals.finished.emit()
+            self.signals.finished.emit(True)
 
 
 class WorkerSignals(QObject):
     """Defines the signals available from a running worker thread. Supported signals are:
-    Success: Worker has finished executing without errors. Nothing is emitted.
-    Error: an Exception was raised. Emits a tuple containing an Exception object and the traceback as a string."""
-    success = Signal()
+       Started: Worker has started its job. Emits a boolean.
+       Error: an Exception was raised. Emits a tuple containing an Exception object and the traceback as a string.
+       Failed: Worker has not finished its job due to an error. Nothing is emitted.
+       Success: Worker has finished executing without errors. Nothing is emitted.
+       Finished: Worker has stopped working (either naturally or by raising an Exception). Emits a boolean."""
+    started = Signal(bool)
     error = Signal(Exception)
+    failed = Signal()
+    success = Signal()
+    finished = Signal(bool)
 
 
-DEBUG = True
+DEBUG = False
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
