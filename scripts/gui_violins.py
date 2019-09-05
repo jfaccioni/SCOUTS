@@ -2,24 +2,23 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Generator, List, TYPE_CHECKING, Tuple
+from typing import Generator, Callable, List, TYPE_CHECKING, Tuple
 
 # noinspection PyUnresolvedReferences,PyPackageRequirements
 import matplotlib
-# noinspection PyUnresolvedReferences,PyPackageRequirements
-from matplotlib.figure import Figure
-# noinspection PyUnresolvedReferences,PyPackageRequirements
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavBar
 import pandas as pd
+import traceback
 # noinspection PyUnresolvedReferences,PyPackageRequirements
 import seaborn as sns
-from PySide2.QtCore import QThreadPool, Qt
+# noinspection PyUnresolvedReferences
+from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QComboBox, QFileDialog, QFormLayout, QFrame, QLabel, QLineEdit,
-                               QMainWindow, QMessageBox, QPushButton, QWidget, QSizePolicy)
-
-from src.interface import Worker
-from src.utils import get_project_root
+                               QMainWindow, QMessageBox, QPushButton, QSizePolicy, QWidget)
+# noinspection PyUnresolvedReferences,PyPackageRequirements
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavBar
+# noinspection PyUnresolvedReferences,PyPackageRequirements
+from matplotlib.figure import Figure
 
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
@@ -55,7 +54,6 @@ class ViolinGUI(QMainWindow):
         super().__init__()
         # QMainWindow basic properties
         self.setWindowTitle("Plot Violins")
-        self.root = get_project_root()
         self.setMinimumSize(*self.size.values())
         self.setMaximumSize(*self.size.values())
         # Creates QWidget as QMainWindow's central widget
@@ -161,9 +159,11 @@ class ViolinGUI(QMainWindow):
         self.analysis_label_04.setStyleSheet(self.style['label'])
         # Analysis drop-down boxes
         self.drop_down_01 = QComboBox(self.page)
-        self.drop_down_01.addItems(['top outliers', 'bottom outliers', 'none'])
+        self.drop_down_01.addItems(['whole population', 'non-outliers', 'top outliers', 'bottom outliers', 'none'])
+        self.drop_down_01.setCurrentIndex(2)
         self.drop_down_02 = QComboBox(self.page)
-        self.drop_down_02.addItems(['whole population', 'non-outliers', 'bottom outliers', 'none'])
+        self.drop_down_02.addItems(['whole population', 'non-outliers', 'top outliers', 'bottom outliers', 'none'])
+        self.drop_down_02.setCurrentIndex(0)
         self.drop_down_03 = QComboBox(self.page)
         self.drop_down_04 = QComboBox(self.page)
         self.drop_down_04.addItems(['OutS', 'OutR'])
@@ -185,7 +185,7 @@ class ViolinGUI(QMainWindow):
 
         # ## Secondary Window
         # This is used to plot the violins only
-        self.secondary_window = QMainWindow()
+        self.secondary_window = QMainWindow(self)
         self.secondary_window.resize(720, 720)
         self.dynamic_canvas = DynamicCanvas(self.secondary_window, width=6, height=6, dpi=120)
         self.secondary_window.setCentralWidget(self.dynamic_canvas)
@@ -205,10 +205,11 @@ class ViolinGUI(QMainWindow):
         """Returns the Y position of the bottommost part of the widget."""
         return widget.height() + widget.y()
 
-    def set_icon(self, widget: QWidget, icon: str) -> None:
+    @staticmethod
+    def set_icon(widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.root, 'src', 'icons', f'{icon}.svg'))))
+        i.addPixmap(QPixmap(os.path.abspath(f'{icon}.svg')))
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     def get_path(self) -> None:
@@ -244,76 +245,75 @@ class ViolinGUI(QMainWindow):
                 self.plot_button.setEnabled(True)
 
     def load_raw_data(self, query: str) -> None:
+        """str"""  # TODO
         self.population_df = pd.read_excel(query, index_col=0)
         self.drop_down_03.clear()
         self.drop_down_03.addItems(list(self.population_df.columns))
         self.drop_down_03.setCurrentIndex(0)
 
     def load_scouts_results(self, query: str) -> None:
+        """str"""  # TODO
         self.summary_df = pd.read_excel(os.path.join(query, 'summary.xlsx'), index_col=None)
         self.summary_path = query
 
     def run_plot(self) -> None:
+        """str"""  # TODO
         worker = Worker(func=self.plot)
         worker.signals.error.connect(self.generic_error_message)
         worker.signals.success.connect(self.secondary_window.show)
         self.threadpool.start(worker)
 
     def plot(self) -> None:
+        """str"""  # TODO
         # Clear figure currently on plot
         self.dynamic_canvas.axes.cla()
         # Initialize values and get parameters from GUI
         columns = ['sample', 'marker', 'population', 'expression']
         samples = self.parse_sample_names()
-        population = self.drop_down_01.currentText()
-        pop_to_analyse = self.drop_down_02.currentText()
+        pop_01 = self.drop_down_01.currentText()
+        pop_02 = self.drop_down_02.currentText()
+        pops_to_analyse = [pop_01, pop_02]
         marker = self.drop_down_03.currentText()
         cutoff_from_reference = True if self.drop_down_04.currentText() == 'OutR' else False
         violin_df = pd.DataFrame(columns=columns)
         # Start fetching data from files
-        # Compare outliers to whole population
-        if pop_to_analyse == 'whole population':
-            for partial_df in yield_violin_values(df=self.population_df, population='whole population',
-                                                  samples=samples, marker=marker, columns=columns):
-                violin_df = violin_df.append(partial_df)
-        # Compare outliers to non-outlier population
-        elif pop_to_analyse != 'none':
-            for file_number in yield_selected_file_numbers(summary_df=self.summary_df, population=pop_to_analyse,
-                                                           cutoff_from_reference=cutoff_from_reference, marker=marker):
-                df_path = os.path.join(self.summary_path, 'data', f'{"%04d" % file_number}.csv')
-                sample_df = pd.read_csv(df_path, index_col=0)
-                if not sample_df.empty:
-                    for partial_df in yield_violin_values(df=sample_df, population='non-outliers', samples=samples,
-                                                          marker=marker, columns=columns):
-                        violin_df = violin_df.append(partial_df)
-        # Get outlier values
-        if population != 'none':
-            for file_number in yield_selected_file_numbers(summary_df=self.summary_df, population=population,
-                                                           cutoff_from_reference=cutoff_from_reference, marker=marker):
-                df_path = os.path.join(self.summary_path, 'data', f'{"%04d" % file_number}.csv')
-                sample_df = pd.read_csv(df_path, index_col=0)
-                if not sample_df.empty:
-                    for partial_df in yield_violin_values(df=sample_df, population=population, samples=samples,
-                                                          marker=marker, columns=columns):
-                        violin_df = violin_df.append(partial_df)
+        # Whole population
+        for pop in pops_to_analyse:
+            if pop == 'whole population':
+                for partial_df in self.yield_violin_values(df=self.population_df, population='whole population',
+                                                           samples=samples, marker=marker, columns=columns):
+                    violin_df = violin_df.append(partial_df)
+        # Other comparisons
+            elif pop != 'none':
+                for file_number in self.yield_selected_file_numbers(summary_df=self.summary_df, population=pop,
+                                                                    cutoff_from_reference=cutoff_from_reference,
+                                                                    marker=marker):
+                    df_path = os.path.join(self.summary_path, 'data', f'{"%04d" % file_number}.csv')
+                    sample_df = pd.read_csv(df_path, index_col=0)
+                    if not sample_df.empty:
+                        for partial_df in self.yield_violin_values(df=sample_df, population=pop, samples=samples,
+                                                                   marker=marker, columns=columns):
+                            violin_df = violin_df.append(partial_df)
         # Plot data
-        populations = violin_df.population.unique()
-        colors = {'top outliers': [0.988, 0.553, 0.384], 'non-outliers': [0.400, 0.761, 0.647],
-                  'whole population': [0.400, 0.761, 0.647], 'bottom outliers': [0.259, 0.455, 0.643]}
-        subset_by_marker = violin_df[violin_df['marker'] == marker]
-        for pop in populations:
-            subset_by_pop = subset_by_marker.loc[subset_by_marker['population'] == pop]
+        colors = {'top outliers':     [0.988, 0.553, 0.384],  # green
+                  'bottom outliers':  [0.259, 0.455, 0.643],  # blue
+                  'non-outliers':     [0.400, 0.761, 0.647],  # orange
+                  'whole population': [0.600, 0.600, 0.600]}  # gray
+        pops_to_analyse = [p for p in pops_to_analyse if p != 'none']
+        violin_df = violin_df[violin_df['marker'] == marker]
+        for pop in pops_to_analyse:
+            pop_subset = violin_df.loc[violin_df['population'] == pop]
             color = colors[pop]
             for sample in samples:
-                subset_by_sample = subset_by_pop.loc[subset_by_pop['sample'] == sample]
+                sample_subset = pop_subset.loc[pop_subset['sample'] == sample]
                 sat = 1.0 - samples.index(sample) / (len(samples) + 1)
-                self.dynamic_canvas.update_figure(subset_by_sample=subset_by_sample, color=color, sat=sat,
-                                                  samples=samples)
+                self.dynamic_canvas.update_figure(subset_by_sample=sample_subset, color=color, sat=sat, samples=samples)
         # Draw plotted data on canvas
         self.dynamic_canvas.axes.set_title(f'{marker} expression')
         self.dynamic_canvas.fig.canvas.draw()
 
     def parse_sample_names(self):
+        """str"""  # TODO
         return self.sample_names.text().split(';')
 
     def generic_error_message(self, error: Tuple[Exception, str]) -> None:
@@ -334,36 +334,42 @@ class ViolinGUI(QMainWindow):
             event.ignore()
 
     def debug(self):
-        path = '/home/juliano/Repositories/my-github-repositories/scouts/local/sample data/cytof gio/'
+        """str"""  # TODO
+        laptop = False
+        repo = "SCOUTS"
+        if laptop:
+            repo = "scouts"
+        path = f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/cytof gio/'
         self.load_raw_data(os.path.join(path, 'gio-mass-cytometry.xlsx'))
         self.load_scouts_results(os.path.join(path, 'scouts output'))
         self.sample_names.setText('Ct;RT;Torin')
         self.plot_button.setEnabled(True)
 
+    @staticmethod
+    def yield_violin_values(df: pd.DataFrame, population: str, samples: List[str], marker: str,
+                            columns: List[str]) -> pd.DataFrame:
+        """Returns a DataFrame from expression values, along with information of sample, marker and population. This
+        DataFrame is appended to the violin plot DataFrame in order to simplify plotting the violins afterwards."""
+        for sample in samples:
+            series = df.loc[df.index.str.contains(sample)].loc[:, marker]
+            yield pd.DataFrame({'sample': sample, 'marker': marker, 'population': population, 'expression': series},
+                               columns=columns)
 
-def yield_violin_values(df: pd.DataFrame, population: str, samples: List[str], marker: str,
-                        columns: List[str]) -> pd.DataFrame:
-    """Returns a DataFrame from expression values, along with information of sample, marker and population. This
-    DataFrame is appended to the violin plot DataFrame in order to simplify plotting the violins afterwards."""
-    for sample in samples:
-        series = df.loc[df.index.str.contains(sample)].loc[:, marker]
-        yield pd.DataFrame({'sample': sample, 'marker': marker, 'population': population, 'expression': series},
-                           columns=columns)
-
-
-def yield_selected_file_numbers(summary_df: pd.DataFrame, population: str, cutoff_from_reference: bool,
-                                marker: str) -> Generator[pd.DataFrame, None, None]:
-    """Yields file numbers from DataFrames resulting from SCOUTS analysis. DataFrames are yielded based on
-    global values, i.e. the comparisons the user wants to perform."""
-    cutoff = 'sample'
-    if cutoff_from_reference:
-        cutoff = 'reference'
-    for index, (file_number, cutoff_from, reference, outliers_for, category) in summary_df.iterrows():
-        if cutoff_from == cutoff and outliers_for == marker and category == population:
-            yield file_number
+    @staticmethod
+    def yield_selected_file_numbers(summary_df: pd.DataFrame, population: str, cutoff_from_reference: bool,
+                                    marker: str) -> Generator[pd.DataFrame, None, None]:
+        """Yields file numbers from DataFrames resulting from SCOUTS analysis. DataFrames are yielded based on
+        global values, i.e. the comparisons the user wants to perform."""
+        cutoff = 'sample'
+        if cutoff_from_reference is True:
+            cutoff = 'reference'
+        for index, (file_number, cutoff_from, reference, outliers_for, category) in summary_df.iterrows():
+            if cutoff_from == cutoff and outliers_for == marker and category == population:
+                yield file_number
 
 
 class DynamicCanvas(FigureCanvas):
+    """str"""  # TODO
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
@@ -373,8 +379,41 @@ class DynamicCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
     def update_figure(self, subset_by_sample, color, sat, samples):
-        sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression', color=color, saturation=sat,
-                       order=samples)
+        """str"""  # TODO
+        sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression',
+                       color=color, saturation=sat, order=samples)
+
+
+class Worker(QRunnable):
+    """Worker thread for loading DataFrames and generating plots. Avoids unresponsive GUI."""
+    def __init__(self, func: Callable, *args, **kwargs) -> None:
+        super().__init__()
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+    @Slot()
+    def run(self) -> None:
+        """Run the Worker thread."""
+        self.signals.started.emit()
+        try:
+            self.func(*self.args, **self.kwargs)
+        except Exception as error:
+            trace = traceback.format_exc()
+            self.signals.error.emit((error, trace))
+        else:
+            self.signals.success.emit()
+        finally:
+            self.signals.finished.emit()
+
+
+class WorkerSignals(QObject):
+    """Defines the signals available from a running worker thread. Supported signals are:
+    Success: Worker has finished executing without errors. Nothing is emitted.
+    Error: an Exception was raised. Emits a tuple containing an Exception object and the traceback as a string."""
+    success = Signal()
+    error = Signal(Exception)
 
 
 DEBUG = True
