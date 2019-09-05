@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import traceback
 from typing import Callable
 
 # noinspection PyUnresolvedReferences
@@ -22,7 +23,8 @@ class Worker(QRunnable):
         try:
             self.func(*self.args, **self.kwargs)
         except Exception as error:
-            self.signals.error.emit(error)
+            trace = traceback.format_exc()
+            self.signals.error.emit((error, trace))
         else:
             self.signals.success.emit()
         finally:
@@ -34,7 +36,7 @@ class WorkerSignals(QObject):
          Started: Worker has begun working. Nothing is emitted.
          Finished: Worker has done executing (either naturally or by an Exception). Nothing is emitted.
          Success: Worker has finished executing without errors. Nothing is emitted.
-         Error: an Exception was raised. Emits a Exception object.
+         Error: an Exception was raised. Emits a tuple containing an Exception object and the traceback as a string.
          Aborted: the thread was aborted at some point. Nothing is emitted."""
     started = Signal()
     finished = Signal()

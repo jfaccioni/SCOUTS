@@ -645,7 +645,8 @@ class SCOUTS(QMainWindow):
         try:
             data = self.parse_input()
         except Exception as error:
-            self.propagate_error(error)
+            trace = traceback.format_exc()
+            self.propagate_error((error, trace))
         else:
             data['widget'] = self
             worker = Worker(func=start_scouts, **data)
@@ -761,7 +762,7 @@ class SCOUTS(QMainWindow):
     # ### EXCEPTIONS & ERRORS
     # ###
 
-    def propagate_error(self, error: Exception) -> None:
+    def propagate_error(self, error: Tuple[Exception, str]) -> None:
         """Calls the appropriate error message box based on type of Exception raised."""
         if isinstance(error, NoIOPathError):
             self.no_io_path_error_message()
@@ -774,8 +775,7 @@ class SCOUTS(QMainWindow):
         elif isinstance(error, SampleNamingError):
             self.sample_naming_error_message()
         else:
-            trace = traceback.format_exc()
-            self.generic_error_message(error, trace)
+            self.generic_error_message(error)
 
     def no_io_path_error_message(self) -> None:
         """Message displayed when the user did not include an input file path, or an output folder path."""
@@ -814,10 +814,11 @@ class SCOUTS(QMainWindow):
                    "make sure that the names were typed correctly (case-sensitive).")
         QMessageBox.critical(self, title, message)
 
-    def generic_error_message(self, error: Exception, trace: str) -> None:
+    def generic_error_message(self, error: Tuple[Exception, str]) -> None:
         """Error message box used to display any error message (including traceback) for any uncaught errors."""
         title = 'An error occurred!'
-        QMessageBox.critical(self, title, f"{str(error)}\n\nfull traceback:\n{trace}")
+        name, trace = error
+        QMessageBox.critical(self, title, f"{str(name)}\n\nfull traceback:\n{trace}")
 
     def not_implemented_error_message(self) -> None:
         """Error message box used when the user accesses a functionality that hasn't been implemented yet."""
