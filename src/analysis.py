@@ -6,8 +6,6 @@ from typing import Dict, Generator, List, Optional, TYPE_CHECKING, Tuple
 
 import numpy as np
 import pandas as pd
-# noinspection PyUnresolvedReferences
-from PySide2.QtCore import QObject, Signal, Slot
 from openpyxl import Workbook, load_workbook
 
 from src.utils import NoReferenceError, PandasInputError, SampleNamingError
@@ -48,7 +46,7 @@ def start_scouts(widget: QMainWindow, input_file: str, output_folder: str, cutof
     elif gating == 'rnaseq':
         apply_rnaseq_gating(df=df, cutoff=gate_cutoff_value)
 
-    # Gets cutoff dict -> { 'sample' : { 'marker' : (Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) } }
+    # Gets cutoff dict -> { 'sample' : { 'marker' : Stats(Q1, Q3, IQR, CUTOFF_LOW, CUTOFF_HIGH) } }
     cutoff_df = get_cutoff_dataframe(df=df, samples=samples, markers=markers, reference=reference,
                                      cutoff_rule=cutoff_rule, tukey=tukey_factor)
 
@@ -115,6 +113,7 @@ def apply_rnaseq_gating(df: pd.DataFrame, cutoff: float) -> None:
     """Applies gating for Single-Cell RNASeq onto input dataframe, excluding values below threshold from
     calculations of outlier values."""
     df.mask(df <= cutoff, np.nan, inplace=True)
+    df.dropna(how='all', inplace=True)
 
 
 def get_cutoff_dataframe(df: pd.DataFrame, samples: List[str], markers: List[str], reference: Optional[str],

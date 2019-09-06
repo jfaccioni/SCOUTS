@@ -1,101 +1,7 @@
+from unittest.mock import patch
 import unittest
-
 from src.analysis import *
-from src.gui import *
-from src.utils import *
-
-
-class TestSCOUTSGui(unittest.TestCase):
-    """Tests all methods (and other elements) from src.gui.SCOUTS class."""
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.app = QApplication(sys.argv)
-        cls.gui = SCOUTS()
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        pass
-
-    def setUp(self) -> None:
-        pass
-
-    def tearDown(self) -> None:
-        pass
-
-    def test_special_method_init(self) -> None:
-        pass
-
-    def test_method_rlimit(self) -> None:
-        pass
-
-    def test_method_widget_hposition(self) -> None:
-        pass
-
-    def test_method_goto_main_page(self) -> None:
-        pass
-
-    def test_method_goto_samples_page(self) -> None:
-        pass
-
-    def test_method_goto_gates_page(self) -> None:
-        pass
-
-    def test_method_get_path(self) -> None:
-        pass
-
-    def test_method_enable_single_excel(self) -> None:
-        pass
-
-    def test_method_write_to_sample_table(self) -> None:
-        pass
-
-    def test_method_remove_from_sample_table(self) -> None:
-        pass
-
-    def test_method_prompt_clear_data(self) -> None:
-        pass
-
-    def test_method_activate_gate(self) -> None:
-        pass
-
-    def test_method_analyse(self) -> None:
-        pass
-
-    def test_method_parse_input(self) -> None:
-        pass
-
-    def test_method_yield_samples_from_table(self) -> None:
-        pass
-
-    def test_method_module_done(self) -> None:
-        pass
-
-    def test_method_memory_warning(self) -> None:
-        pass
-
-    def test_method_same_sample(self) -> None:
-        pass
-
-    def test_method_more_than_one_reference(self) -> None:
-        pass
-
-    def test_method_confirm_clear_data(self) -> None:
-        pass
-
-    def test_method_generic_error_message(self) -> None:
-        pass
-
-    def test_method_not_implemented_error_message(self) -> None:
-        pass
-
-    def test_method_debug(self) -> None:
-        pass
-
-    def test_method_get_help(self) -> None:
-        pass
-
-    def test_method_closeEvent(self) -> None:
-        pass
+from itertools import product
 
 
 class TestSCOUTSAnalysis(unittest.TestCase):
@@ -109,24 +15,30 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         cls.markers = ['Marker01', 'Marker02', 'Marker03', 'Marker04', 'Marker05']
         cls.tukey = 1.5
         # Test data from spreadsheets
-        cls.backup_df = pd.read_excel('test-case.xlsx', sheet_name='raw data')
+        cls._backup_df = pd.read_excel('test-case.xlsx', sheet_name='raw data')
+        cls.description_df = pd.read_excel('test-case.xlsx', sheet_name='raw data description',
+                                           index_col=[0, 1])
         cls.cytof_df = pd.read_excel('test-case.xlsx', sheet_name='cytof gate 1.5').set_index('Sample')
+        cls.cytof_description_df = pd.read_excel('test-case.xlsx', sheet_name='cytof gate 1.5 description',
+                                                 index_col=[0, 1])
         cls.rnaseq_df = pd.read_excel('test-case.xlsx', sheet_name='rnaseq gate 2.0').set_index('Sample')
-        cls.description_df = pd.read_excel('test-case.xlsx', sheet_name='raw data description', index_col=[0, 1])
-        cls.cutoff_table_df = pd.read_excel('test-case.xlsx', sheet_name='cutoff table').set_index('Sample')
+        cls.rnaseq_description_df = pd.read_excel('test-case.xlsx', sheet_name='rnaseq gate 2.0 description',
+                                                  index_col=[0, 1])
+        cls.cutoff_table_df = pd.read_excel('test-case.xlsx', sheet_name='raw data cutoff table').set_index('Sample')
         cls.quantiles_df = pd.read_excel('test-case.xlsx', sheet_name='quantiles', index_col=[0, 1])
-        # Test data with reorganized logic (pandas DataFrame with Stats instances in its cells)
-        cls.cutoff_df = cls.get_cutoff_df()
-        cls.reference_df = cls.cutoff_df.loc[[cls.reference]]
+        cls.cutoff_df = cls.get_cutoff_df(cls.description_df)
+        cls.cytof_cutoff_df = cls.get_cutoff_df(cls.cytof_description_df)
+        cls.rnaseq_cutoff_df = cls.get_cutoff_df(cls.rnaseq_description_df)
+        cls.reference_cutoff_df = cls.cutoff_df.loc[[cls.reference]]
 
     # noinspection PyUnresolvedReferences
     @classmethod
-    def get_cutoff_df(cls) -> pd.DataFrame:
+    def get_cutoff_df(cls, df: pd.DataFrame) -> pd.DataFrame:
         """Used internally for construction of cutoff df, which contains Stats instances."""
         cutoff_df = pd.DataFrame(columns=cls.markers, index=cls.samples)
         for sample in cls.samples:
             for marker in cls.markers:
-                cutoff_df.loc[sample, marker] = cls.build_stats(df=cls.description_df, sample=sample, marker=marker)
+                cutoff_df.loc[sample, marker] = cls.build_stats(df=df, sample=sample, marker=marker)
         return cutoff_df
 
     @staticmethod
@@ -141,25 +53,143 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         pass
 
     def setUp(self) -> None:
-        self.raw_df = self.backup_df.copy()
-        self.indexed_df = self.backup_df.copy().set_index('Sample')
+        self.raw_df = self._backup_df.copy()
+        self.indexed_df = self._backup_df.copy().set_index('Sample')
 
     def tearDown(self) -> None:
         del self.raw_df
         del self.indexed_df
 
     def test_namedtuple_stats(self) -> None:
-        pass
+        attrs = ['first_quartile', 'third_quartile', 'iqr', 'lower_cutoff', 'upper_cutoff']
+        values = [1, 2, 3, 4, 5]
+        stats = Stats(*values)
+        for attr, value in zip(attrs, values):
+            self.assertTrue(hasattr(stats, attr))
+            self.assertEqual(getattr(stats, attr), value)
 
     def test_namedtuple_info(self) -> None:
-        pass
+        attrs = ['cutoff_from', 'reference', 'outliers_for', 'category']
+        values = [1, 2, 3, 4]
+        info = Info(*values)
+        for attr, value in zip(attrs, values):
+            self.assertTrue(hasattr(info, attr))
+            self.assertEqual(getattr(info, attr), value)
 
-    def test_function_analyse(self) -> None:
-        pass
+    @patch('src.analysis.run_scouts')
+    def test_function_start_scouts_marker_and_cutoff_rules(self, mock_run_scouts) -> None:
+        start_scouts_kwargs = {
+            'widget': 'QMainWindow',
+            'input_file': 'test-case.xlsx',
+            'output_folder': '.',
+            'cutoff_rule': 'INPUT_VALUE',
+            'marker_rule': 'INPUT_VALUE',
+            'tukey_factor': 1.5,
+            'export_csv': False,
+            'export_excel': False,
+            'single_excel': False,
+            'sample_list': self.sample_table_data,
+            'gating': 'no_gate',
+            'gate_cutoff_value': None,
+            'non_outliers': False,
+            'bottom_outliers': False
+        }
+        expected_kwargs = {
+            'widget': 'QMainWindow',
+            'df': self.indexed_df,
+            'cutoff_df': 'TEST_CASE',
+            'samples': self.samples,
+            'markers': self.markers,
+            'reference': 'TEST_CASE',
+            'cutoff_rule': 'TEST_CASE',
+            'marker_rule': 'TEST_CASE',
+            'export_csv': False,
+            'export_excel': False,
+            'single_excel': False,
+            'non_outliers': False,
+            'bottom_outliers': False,
+            'output_folder': '.'
+        }
+        for marker_rule, cutoff_rule in product(['any', 'single', 'any single'], ['ref', 'sample', 'ref sample']):
+            # Set input values
+            start_scouts_kwargs['cutoff_rule'] = cutoff_rule
+            start_scouts_kwargs['marker_rule'] = marker_rule
+            # Fetch expected values
+            expected_kwargs['cutoff_rule'] = cutoff_rule
+            expected_kwargs['marker_rule'] = marker_rule
+            if 'ref' in cutoff_rule:
+                expected_kwargs['reference'] = self.reference
+                if cutoff_rule == 'ref':
+                    expected_kwargs['cutoff_df'] = self.reference_cutoff_df
+                else:
+                    expected_kwargs['cutoff_df'] = self.cutoff_df
+            else:
+                expected_kwargs['reference'] = None
+                expected_kwargs['cutoff_df'] = self.cutoff_df
+            # Run tests
+            start_scouts(**start_scouts_kwargs)
+            self.start_scouts_kwargs_test(expected_kwargs=expected_kwargs, actual_kwargs=mock_run_scouts.call_args[1])
+
+    @patch('src.analysis.run_scouts')
+    def test_function_start_scouts_gating_rules(self, mock_run_scouts) -> None:
+        start_scouts_kwargs = {
+            'widget': 'QMainWindow',
+            'input_file': 'test-case.xlsx',
+            'output_folder': '.',
+            'cutoff_rule': 'sample',
+            'marker_rule': 'single',
+            'tukey_factor': 1.5,
+            'export_csv': False,
+            'export_excel': False,
+            'single_excel': False,
+            'sample_list': self.sample_table_data,
+            'gating': 'INPUT_VALUE',
+            'gate_cutoff_value': 'INPUT_VALUE',
+            'non_outliers': False,
+            'bottom_outliers': False}
+        expected_kwargs = {
+            'widget': 'QMainWindow',
+            'df': 'TEST_CASE',
+            'cutoff_df': 'TEST_CASE',
+            'samples': self.samples,
+            'markers': self.markers,
+            'reference': None,
+            'cutoff_rule': 'sample',
+            'marker_rule': 'single',
+            'export_csv': False,
+            'export_excel': False,
+            'single_excel': False,
+            'non_outliers': False,
+            'bottom_outliers': False,
+            'output_folder': '.'
+        }
+        for gating_rule, gating_value in {'no_gate': None, 'cytof': 1.5, 'rnaseq': 2.0}.items():
+            # Set input values
+            start_scouts_kwargs['gating'] = gating_rule
+            start_scouts_kwargs['gate_cutoff_value'] = gating_value
+            # Fetch expected values
+            if gating_rule == 'no_gate':
+                expected_kwargs['df'] = self.indexed_df
+                expected_kwargs['cutoff_df'] = self.cutoff_df
+            elif gating_rule == 'cytof':
+                expected_kwargs['df'] = self.cytof_df
+                expected_kwargs['cutoff_df'] = self.cytof_cutoff_df
+            elif gating_rule == 'rnaseq':
+                expected_kwargs['df'] = self.rnaseq_df
+                expected_kwargs['cutoff_df'] = self.rnaseq_cutoff_df
+            start_scouts(**start_scouts_kwargs)
+            self.start_scouts_kwargs_test(expected_kwargs=expected_kwargs, actual_kwargs=mock_run_scouts.call_args[1])
+
+    def start_scouts_kwargs_test(self, expected_kwargs: Dict, actual_kwargs: Dict) -> None:
+        for expected_arg, actual_arg in zip(expected_kwargs.values(), actual_kwargs.values()):
+            if isinstance(expected_arg, pd.DataFrame):
+                pd.testing.assert_frame_equal(expected_arg, actual_arg, check_dtype=False)
+            else:
+                self.assertEqual(expected_arg, actual_arg)
 
     def test_function_load_dataframe(self) -> None:
-        self.assertTrue(self.raw_df.equals(load_dataframe('test-case.xlsx')))
-        self.assertTrue(self.raw_df.equals(load_dataframe('test-case.csv')))
+        pd.testing.assert_frame_equal(self.raw_df, load_dataframe('test-case.xlsx'), check_dtype=False)
+        pd.testing.assert_frame_equal(self.raw_df, load_dataframe('test-case.csv'), check_dtype=False)
         with self.assertRaises(FileNotFoundError):
             load_dataframe('this-file-does-not-exist.xlsx')
         with self.assertRaises(PandasInputError):
@@ -188,28 +218,28 @@ class TestSCOUTSAnalysis(unittest.TestCase):
 
     def test_function_apply_cytof_gating(self) -> None:
         apply_cytof_gating(df=self.indexed_df, cutoff=1.5)
-        self.assertTrue(self.indexed_df.equals(self.cytof_df))
+        pd.testing.assert_frame_equal(self.indexed_df, self.cytof_df, check_dtype=False)
 
     def test_function_apply_rnaseq_gating(self) -> None:
         apply_rnaseq_gating(df=self.indexed_df, cutoff=2.0)
-        self.assertTrue(self.indexed_df.equals(self.rnaseq_df))
+        pd.testing.assert_frame_equal(self.indexed_df, self.rnaseq_df, check_dtype=False)
 
     def test_function_get_cutoff_dataframe(self) -> None:
         cutoff = get_cutoff_dataframe(df=self.indexed_df, samples=self.samples, markers=self.markers,
                                       reference=None, cutoff_rule='sample', tukey=1.5)
-        self.assertTrue(cutoff.equals(self.cutoff_df))
+        pd.testing.assert_frame_equal(cutoff, self.cutoff_df, check_dtype=False)
         cutoff = get_cutoff_dataframe(df=self.indexed_df, samples=self.samples, markers=self.markers,
                                       reference=self.reference, cutoff_rule='ref', tukey=1.5)
-        self.assertTrue(cutoff.equals(self.reference_df))
+        pd.testing.assert_frame_equal(cutoff, self.reference_cutoff_df, check_dtype=False)
         cutoff = get_cutoff_dataframe(df=self.indexed_df, samples=self.samples, markers=self.markers,
                                       reference=self.reference, cutoff_rule='ref sample', tukey=1.5)
-        self.assertTrue(cutoff.equals(self.cutoff_df))
+        pd.testing.assert_frame_equal(cutoff, self.cutoff_df, check_dtype=False)
 
     def test_function_get_cutoff(self) -> None:
         cutoff = get_cutoff(df=self.indexed_df, samples=self.samples, markers=self.markers, tukey=self.tukey)
-        self.assertTrue(cutoff.equals(self.cutoff_df))
+        pd.testing.assert_frame_equal(cutoff, self.cutoff_df, check_dtype=False)
         cutoff = get_cutoff(df=self.indexed_df, samples=[self.reference], markers=self.markers, tukey=self.tukey)
-        self.assertTrue(cutoff.equals(self.reference_df))
+        pd.testing.assert_frame_equal(cutoff, self.reference_cutoff_df, check_dtype=False)
 
     def test_function_get_sample_cutoff(self) -> None:
         for sample in self.samples:
@@ -237,7 +267,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
     def test_function_run_scouts(self) -> None:
         pass
 
-    def test_function_create_stats_df(self) -> None:
+    def test_function_create_stats_dfs(self) -> None:
         pass
 
     def test_function_yield_dataframes(self) -> None:
