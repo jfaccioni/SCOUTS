@@ -19,7 +19,7 @@ from PySide2.QtWidgets import (QApplication, QComboBox, QFileDialog, QFormLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavBar
 # noinspection PyUnresolvedReferences,PyPackageRequirements
 from matplotlib.figure import Figure
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 from matplotlib.lines import Line2D
 
 if TYPE_CHECKING:

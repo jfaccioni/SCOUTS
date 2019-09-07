@@ -20,7 +20,7 @@ Info = namedtuple("Info", ['cutoff_from', 'reference', 'outliers_for', 'category
 def start_scouts(widget: QMainWindow, input_file: str, output_folder: str, cutoff_rule: str, marker_rule: str,
                  tukey_factor: float, export_csv: bool, export_excel: bool, single_excel: bool,
                  sample_list: List[Tuple[str, str]], gating: str, gate_cutoff_value: Optional[float],
-                 non_outliers: bool, bottom_outliers: bool) -> None:
+                 export_gated: bool, non_outliers: bool, bottom_outliers: bool) -> None:
     """Main SCOUTS function that organizes user input and calls related functions accordingly."""
     # Loads df and checks for file extension
     df = load_dataframe(input_file=input_file)
@@ -53,8 +53,8 @@ def start_scouts(widget: QMainWindow, input_file: str, output_folder: str, cutof
     # generate outlier tables (SCOUTS)
     run_scouts(widget=widget, df=df, cutoff_df=cutoff_df, samples=samples, markers=markers, reference=reference,
                cutoff_rule=cutoff_rule, marker_rule=marker_rule, export_csv=export_csv, export_excel=export_excel,
-               single_excel=single_excel, non_outliers=non_outliers, bottom_outliers=bottom_outliers,
-               output_folder=output_folder)
+               single_excel=single_excel, export_gated=export_gated, non_outliers=non_outliers,
+               bottom_outliers=bottom_outliers, output_folder=output_folder)
 
 
 def load_dataframe(input_file: str) -> pd.DataFrame:
@@ -164,7 +164,7 @@ def get_marker_statistics(tukey: float, marker_series: pd.Series) -> Stats:
 
 def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], markers: List[str],
                reference: Optional[str], cutoff_df: pd.DataFrame, cutoff_rule: str, marker_rule: str,
-               export_csv: bool, export_excel: bool, single_excel: bool, non_outliers: bool,
+               export_csv: bool, export_excel: bool, single_excel: bool, export_gated: bool, non_outliers: bool,
                bottom_outliers: bool, output_folder: str) -> None:
     """Function responsible for calling SCOUTS subsetting routines, yielding DataFrames, saving them in
     the appropriate format/directory and recording information about each saved result."""
@@ -192,13 +192,15 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
             excel_path = os.path.join(output_path, '%04d.xlsx' % i)
             data.to_excel(excel_path)
             excel_file_list.append(excel_path)
-
     summary_path = os.path.join(output_folder, 'summary.xlsx')
     generate_summary_table(summary_df, summary_path)
     stats_path = os.path.join(output_folder, 'stats.xlsx')
     generate_stats_table(stats_df_dict, stats_path)
     cutoff_path = os.path.join(output_folder, 'cutoff_values.xlsx')
     generate_cutoff_table(cutoff_df, cutoff_path)
+    if export_gated:
+        gated_path = os.path.join(output_folder, 'gated_population.xlsx')
+        generate_gated_table(df, gated_path)
     if single_excel:
         merged_excel = merge_excel_files(output_path=output_path, summary_path=summary_path, excels=excel_file_list)
         merged_path = os.path.join(output_folder, 'merged_data.xlsx')
@@ -410,6 +412,11 @@ def generate_cutoff_table(cutoff_df: pd.DataFrame, summary_path: str) -> None:
         cutoff_df[f'{marker}_lower_cutoff'] = [stats.lower_cutoff for stats in cutoff_df[marker]]
     filter_rule = [col for col in cutoff_df.columns if any(['_lower_' in col, '_upper_' in col])]
     cutoff_df[filter_rule].to_excel(summary_path, sheet_name='Cutoff', index_label='Sample')
+
+
+def generate_gated_table(df: pd.DataFrame, gated_path: str) -> None:
+    """Generates table with the whole starting population, except for cells gated according to user choice."""
+    df.to_excel(gated_path, sheet_name='Gated Population')
 
 
 def merge_excel_files(output_path: str, summary_path: str, excels: List[str]) -> Workbook:

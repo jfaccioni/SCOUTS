@@ -91,6 +91,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
             'sample_list': self.sample_table_data,
             'gating': 'no_gate',
             'gate_cutoff_value': None,
+            'export_gated': False,
             'non_outliers': False,
             'bottom_outliers': False
         }
@@ -106,6 +107,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
             'export_csv': False,
             'export_excel': False,
             'single_excel': False,
+            'export_gated': False,
             'non_outliers': False,
             'bottom_outliers': False,
             'output_folder': '.'
@@ -145,6 +147,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
             'sample_list': self.sample_table_data,
             'gating': 'INPUT_VALUE',
             'gate_cutoff_value': 'INPUT_VALUE',
+            'export_gated': False,
             'non_outliers': False,
             'bottom_outliers': False}
         expected_kwargs = {
@@ -159,6 +162,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
             'export_csv': False,
             'export_excel': False,
             'single_excel': False,
+            'export_gated': False,
             'non_outliers': False,
             'bottom_outliers': False,
             'output_folder': '.'
@@ -304,6 +308,9 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         pass
 
     def test_function_generate_cutoff_table(self) -> None:
+        pass
+
+    def test_function_generate_gated_table(self) -> None:
         pass
 
     def test_function_merge_excel_files(self) -> None:

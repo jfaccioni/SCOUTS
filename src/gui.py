@@ -467,10 +467,15 @@ class SCOUTS(QMainWindow):
         self.rnaseq_gates_value.setValue(0)
         self.rnaseq_gates_value.setSingleStep(1)
         self.rnaseq_gates_value.setEnabled(False)
+        # export gated population checkbox
+        self.export_gated = QCheckBox(self.gating_page)
+        self.export_gated.setText('Export gated cells as an output file')
+        self.export_gated.setEnabled(False)
         # Add widgets above to Gate frame layout
         self.gate_frame.layout().addRow(self.no_gates, QLabel())
         self.gate_frame.layout().addRow(self.cytof_gates, self.cytof_gates_value)
         self.gate_frame.layout().addRow(self.rnaseq_gates, self.rnaseq_gates_value)
+        self.gate_frame.layout().addRow(self.export_gated, QLabel())
 
         # ## Outlier options section
         # Outlier header
@@ -628,12 +633,16 @@ class SCOUTS(QMainWindow):
         if self.sender().objectName() == 'no_gate':
             self.cytof_gates_value.setEnabled(False)
             self.rnaseq_gates_value.setEnabled(False)
+            self.export_gated.setEnabled(False)
+            self.export_gated.setChecked(False)
         elif self.sender().objectName() == 'cytof':
             self.cytof_gates_value.setEnabled(True)
             self.rnaseq_gates_value.setEnabled(False)
+            self.export_gated.setEnabled(True)
         elif self.sender().objectName() == 'rnaseq':
             self.cytof_gates_value.setEnabled(False)
             self.rnaseq_gates_value.setEnabled(True)
+            self.export_gated.setEnabled(True)
 
     # ###
     # ### CONNECT SCOUTS TO ANALYTICAL MODULES
@@ -668,15 +677,9 @@ class SCOUTS(QMainWindow):
         # Tukey factor used for calculating cutoff
         input_dict['tukey_factor'] = float(self.tukey_group.checkedButton().text())  # '1.5', '3.0'
         # Output settings
-        input_dict['export_csv'] = False
-        if self.output_csv.isChecked():
-            input_dict['export_csv'] = True
-        input_dict['export_excel'] = False
-        if self.output_excel.isChecked():
-            input_dict['export_excel'] = True
-        input_dict['single_excel'] = False
-        if self.single_excel.isChecked():
-            input_dict['single_excel'] = True
+        input_dict['export_csv'] = True if self.output_csv.isChecked() else False
+        input_dict['export_excel'] = True if self.output_excel.isChecked() else False
+        input_dict['single_excel'] = True if self.single_excel.isChecked() else False
         # Retrieve samples from sample table
         input_dict['sample_list'] = []
         for tuples in self.yield_samples_from_table():
@@ -684,18 +687,16 @@ class SCOUTS(QMainWindow):
         if not input_dict['sample_list']:
             raise NoSampleError
         # Set gate cutoff (if any)
-        input_dict['gate_cutoff_value'] = None
         input_dict['gating'] = self.gating_group.checkedButton().objectName()  # 'no_gate', 'cytof', 'rnaseq'
-        if not self.no_gates.isChecked():
-            input_dict['gating_value'] = getattr(self, f'{input_dict["gating"]}_gates_value').value()
+        input_dict['gate_cutoff_value'] = None
+        if input_dict['gating'] != 'no_gate':
+            input_dict['gate_cutoff_value'] = getattr(self, f'{input_dict["gating"]}_gates_value').value()
+        # Save gated population
+        input_dict['export_gated'] = True if self.export_gated.isChecked() else False
         # Generate results for non-outliers
-        input_dict['non_outliers'] = False
-        if self.not_outliers.isChecked():
-            input_dict['non_outliers'] = True
+        input_dict['non_outliers'] = True if self.not_outliers.isChecked() else False
         # Generate results for bottom outliers
-        input_dict['bottom_outliers'] = False
-        if self.bottom_outliers.isChecked():
-            input_dict['bottom_outliers'] = True
+        input_dict['bottom_outliers'] = True if self.bottom_outliers.isChecked() else False
         # return dictionary with all gathered inputs
         return input_dict
 
