@@ -270,6 +270,9 @@ class TestSCOUTSAnalysis(unittest.TestCase):
     def test_function_create_stats_dfs(self) -> None:
         pass
 
+    def add_whole_population_to_stats_dfs(self) -> None:
+        pass
+
     def test_function_yield_dataframes(self) -> None:
         pass
 
@@ -285,10 +288,10 @@ class TestSCOUTSAnalysis(unittest.TestCase):
     def test_function_scouts_by_sample_single_marker(self) -> None:
         pass
 
-    def test_function_add_info_to_summary(self) -> None:
+    def test_function_add_scouts_data_to_summary(self) -> None:
         pass
 
-    def test_function_add_info_to_stats(self) -> None:
+    def test_function_add_scouts_data_to_stats(self) -> None:
         pass
 
     def test_function_get_values_df(self) -> None:

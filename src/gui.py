@@ -350,14 +350,14 @@ class SCOUTS(QMainWindow):
         self.add_sample_button = QPushButton(self.samples_page)
         QShortcut(QKeySequence("Return"), self.add_sample_button, self.write_to_sample_table)
         self.set_icon(self.add_sample_button, 'list-add')
-        self.add_sample_button.setText(' Add sample')
+        self.add_sample_button.setText(' Add sample (Enter)')
         self.add_sample_button.setStyleSheet(self.style['button'])
         self.add_sample_button.clicked.connect(self.write_to_sample_table)
         # Remove sample from table
         self.remove_sample_button = QPushButton(self.samples_page)
         QShortcut(QKeySequence("Delete"), self.remove_sample_button, self.remove_from_sample_table)
         self.set_icon(self.remove_sample_button, 'list-remove')
-        self.remove_sample_button.setText(' Remove sample (del)')
+        self.remove_sample_button.setText(' Remove sample (Del)')
         self.remove_sample_button.setStyleSheet(self.style['button'])
         self.remove_sample_button.clicked.connect(self.remove_from_sample_table)
         # Add widgets above to sample addition layout
@@ -556,14 +556,15 @@ class SCOUTS(QMainWindow):
         """Opens a dialog box and sets the chosen file/folder path, depending on the caller widget."""
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        if self.sender().objectName() == 'input':
+        sender_name = self.sender().objectName()
+        if sender_name == 'input':
             query, _ = QFileDialog.getOpenFileName(self, "Select file", "", "All Files (*)", options=options)
-        elif self.sender().objectName() == 'output':
+        elif sender_name == 'output':
             query = QFileDialog.getExistingDirectory(self, "Select Directory", options=options)
         else:
             return
         if query:
-            self.sender().setText(query)
+            getattr(self, f'{sender_name}_path').setText(query)
 
     def enable_single_excel(self):
         """Enables checkbox for generating a single Excel output."""
