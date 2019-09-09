@@ -3,11 +3,11 @@ from __future__ import annotations
 import os
 from collections import namedtuple
 from typing import Dict, Generator, List, Optional, TYPE_CHECKING, Tuple
-
+import time
 import numpy as np
 import pandas as pd
 from openpyxl import Workbook, load_workbook
-
+from itertools import chain
 from src.utils import NoReferenceError, PandasInputError, SampleNamingError
 
 if TYPE_CHECKING:
@@ -168,6 +168,8 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
                bottom_outliers: bool, output_folder: str) -> None:
     """Function responsible for calling SCOUTS subsetting routines, yielding DataFrames, saving them in
     the appropriate format/directory and recording information about each saved result."""
+    start = time.time()
+    print('starting scouts...', end='')
     summary_df = pd.DataFrame(columns=['file number'] + list(Info._fields))
     stats_df_dict = create_stats_dfs(markers=markers, cutoff_rule=cutoff_rule, marker_rule=marker_rule,
                                      samples=samples, bottom=bottom_outliers, non=non_outliers)
@@ -176,6 +178,9 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
     if not os.path.exists(output_path):
         os.mkdir(output_path)
     excel_file_list = []
+    end = time.time()
+    print(f'took {round(end - start, 2)} seconds')
+    print('yielding dataframes...')
     for i, (data, info) in enumerate(yield_dataframes(input_df=df, samples=samples, markers=markers,
                                                       reference=reference, cutoff_df=cutoff_df, cutoff_rule=cutoff_rule,
                                                       marker_rule=marker_rule, non_outliers=non_outliers,
@@ -185,22 +190,46 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
         if not widget.stacked_pages.isEnabled():  # user has exited the GUI
             return
         if export_csv:
+            start = time.time()
+            print('generating csv', i, '...', end='')
             csv_path = os.path.join(output_path, '%04d.csv' % i)
             data.to_csv(csv_path)
+            end = time.time()
+            print(f'took {round(end - start, 2)} seconds')
         if export_excel:
+            start = time.time()
+            print('generating excel', i, '...', end='')
             excel_path = os.path.join(output_path, '%04d.xlsx' % i)
             excel_file_list.append(excel_path)
             data.to_excel(excel_path)
+            end = time.time()
+            print(f'took {round(end - start, 2)} seconds')
+    start = time.time()
+    print('generating summary...', end='')
     summary_path = os.path.join(output_folder, 'summary.xlsx')
     generate_summary_table(summary_df, summary_path)
+    end = time.time()
+    print(f'took {round(end - start, 2)} seconds')
+    start = time.time()
+    print('generating stats...', end='')
     stats_path = os.path.join(output_folder, 'stats.xlsx')
     generate_stats_table(stats_df_dict, stats_path)
+    end = time.time()
+    print(f'took {round(end - start, 2)} seconds')
+    start = time.time()
+    print('generating cutoff...', end='')
     cutoff_path = os.path.join(output_folder, 'cutoff_values.xlsx')
     generate_cutoff_table(cutoff_df, cutoff_path)
+    end = time.time()
+    print(f'took {round(end - start, 2)} seconds')
     if single_excel:
+        start = time.time()
+        print('generating single excel...', end='')
         merged_excel = merge_excel_files(output_path=output_path, summary_path=summary_path, excels=excel_file_list)
         merged_path = os.path.join(output_folder, 'merged_data.xlsx')
         merged_excel.save(merged_path)
+        end = time.time()
+        print(f'took {round(end - start, 2)} seconds')
 
 
 def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, samples: List[str],
@@ -413,12 +442,15 @@ def generate_stats_table(stats_df_dict: Dict[str, pd.DataFrame], stats_path: str
 
 def generate_cutoff_table(cutoff_df: pd.DataFrame, summary_path: str) -> None:
     """Generates table with cutoff values for each sample/marker combination (both high and low)."""
-    markers = cutoff_df.columns
-    for marker in markers:
-        cutoff_df[f'{marker}_upper_cutoff'] = [stats.upper_cutoff for stats in cutoff_df[marker]]
-        cutoff_df[f'{marker}_lower_cutoff'] = [stats.lower_cutoff for stats in cutoff_df[marker]]
-    filter_rule = [col for col in cutoff_df.columns if any(['_lower_' in col, '_upper_' in col])]
-    cutoff_df[filter_rule].to_excel(summary_path, sheet_name='Cutoff', index_label='Sample')
+    uppers = [f'{marker}_upper_cutoff' for marker in cutoff_df.columns]
+    lowers = [f'{marker}_lower_cutoff' for marker in cutoff_df.columns]
+    columns = [m for m in chain.from_iterable(zip(uppers, lowers))]
+    output_cutoff_df = pd.DataFrame(index=cutoff_df.index, columns=columns)
+    for sample in cutoff_df.index:
+        for marker in cutoff_df.columns:
+            output_cutoff_df.at[sample, f'{marker}_upper_cutoff'] = cutoff_df.at[sample, marker].upper_cutoff
+            output_cutoff_df.at[sample, f'{marker}_lower_cutoff'] = cutoff_df.at[sample, marker].lower_cutoff
+    output_cutoff_df.to_excel(summary_path, sheet_name='Cutoff', index_label='Sample')
 
 
 def merge_excel_files(output_path: str, summary_path: str, excels: List[str]) -> Workbook:

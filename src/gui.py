@@ -669,15 +669,9 @@ class SCOUTS(QMainWindow):
         # Tukey factor used for calculating cutoff
         input_dict['tukey_factor'] = float(self.tukey_group.checkedButton().text())  # '1.5', '3.0'
         # Output settings
-        input_dict['export_csv'] = False
-        if self.output_csv.isChecked():
-            input_dict['export_csv'] = True
-        input_dict['export_excel'] = False
-        if self.output_excel.isChecked():
-            input_dict['export_excel'] = True
-        input_dict['single_excel'] = False
-        if self.single_excel.isChecked():
-            input_dict['single_excel'] = True
+        input_dict['export_csv'] = True if self.output_csv.isChecked() else False
+        input_dict['export_excel'] = True if self.output_excel.isChecked() else False
+        input_dict['single_excel'] = True if self.single_excel.isChecked() else False
         # Retrieve samples from sample table
         input_dict['sample_list'] = []
         for tuples in self.yield_samples_from_table():
@@ -689,14 +683,9 @@ class SCOUTS(QMainWindow):
         input_dict['gating'] = self.gating_group.checkedButton().objectName()  # 'no_gate', 'cytof', 'rnaseq'
         if not self.no_gates.isChecked():
             input_dict['gating_value'] = getattr(self, f'{input_dict["gating"]}_gates_value').value()
-        # Generate results for non-outliers
-        input_dict['non_outliers'] = False
-        if self.not_outliers.isChecked():
-            input_dict['non_outliers'] = True
-        # Generate results for bottom outliers
-        input_dict['bottom_outliers'] = False
-        if self.bottom_outliers.isChecked():
-            input_dict['bottom_outliers'] = True
+        # Generate results for non-outliers and/or bottom outliers
+        input_dict['non_outliers'] = True if self.not_outliers.isChecked() else False
+        input_dict['bottom_outliers'] = True if self.bottom_outliers.isChecked() else False
         # return dictionary with all gathered inputs
         return input_dict
 
@@ -866,17 +855,19 @@ class SCOUTS(QMainWindow):
     # ### DEBUG OPTIONS
     # ###
 
-    def debug(self, gio_dataset: bool) -> None:
+    def debug(self, gio_dataset: bool,  gio_test_env: bool,  laptop_repo: bool) -> None:
         """Pre-loads GUI elements if debug flag is set."""
-        laptop = False
         repo = 'SCOUTS'
-        if laptop:
+        if laptop_repo:
             repo = 'scouts'
         if gio_dataset:  # use Giovana's dataset
             inp = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/'
                    'cytof gio/gio-mass-cytometry.xlsx')
             out = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/'
                    'cytof gio/scouts output')
+            if gio_test_env:
+                out = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/'
+                       'cytof gio/_test')
             self.sample_table.insertRow(0)
             self.sample_table.setItem(0, 0, QTableWidgetItem('Ct'))
             self.sample_table.setItem(0, 1, QTableWidgetItem('yes'))
@@ -954,14 +945,16 @@ class WorkerSignals(QObject):
     error = Signal(Exception)
 
 
-# Automatically fills fields for quick testing
+# Debug booleans: automatically fills fields for quick testing
 DEBUG = True
-GIO_DATASET = False
+GIO_DATASET = True
+GIO_TEST_ENV = True
+LAPTOP_REPO = False
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     scouts = SCOUTS()
     if DEBUG:
-        scouts.debug(gio_dataset=GIO_DATASET)
+        scouts.debug(gio_dataset=GIO_DATASET, gio_test_env=GIO_TEST_ENV, laptop_repo=LAPTOP_REPO)
     scouts.show()
     sys.exit(app.exec_())
