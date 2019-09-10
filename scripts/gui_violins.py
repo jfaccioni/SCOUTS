@@ -454,7 +454,8 @@ class WorkerSignals(QObject):
 
 DEBUG = False
 
-if __name__ == '__main__':
+
+def main():
     app = QApplication(sys.argv)
     violin_gui = ViolinGUI()
     if DEBUG:

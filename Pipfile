@@ -6,9 +6,10 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+scouts = {editable = true,path = "."}
 pandas = "*"
 numpy = "*"
-scouts = {editable = true,path = "."}
 pyside2 = "*"
 openpyxl = "*"
 xlrd = "*"
+pyinstaller = "*"

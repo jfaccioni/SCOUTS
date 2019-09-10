@@ -959,10 +959,11 @@ class WorkerSignals(QObject):
 
 
 # Automatically fills fields for quick testing
-DEBUG = True
+DEBUG = False
 GIO_DATASET = False
 
-if __name__ == '__main__':
+
+def main():
     app = QApplication(sys.argv)
     scouts = SCOUTS()
     if DEBUG:
