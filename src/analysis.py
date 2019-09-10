@@ -3,11 +3,10 @@ from __future__ import annotations
 import os
 from collections import namedtuple
 from typing import Dict, Generator, List, Optional, TYPE_CHECKING, Tuple
-
 import numpy as np
 import pandas as pd
 from openpyxl import Workbook, load_workbook
-
+from itertools import chain
 from src.utils import NoReferenceError, PandasInputError, SampleNamingError
 
 if TYPE_CHECKING:
@@ -171,18 +170,17 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
     summary_df = pd.DataFrame(columns=['file number'] + list(Info._fields))
     stats_df_dict = create_stats_dfs(markers=markers, cutoff_rule=cutoff_rule, marker_rule=marker_rule,
                                      samples=samples, bottom=bottom_outliers, non=non_outliers)
-
+    add_whole_population_to_stats_dfs(input_df=df, stats_df_dict=stats_df_dict, samples=samples)
     output_path = os.path.join(output_folder, 'data')
     if not os.path.exists(output_path):
         os.mkdir(output_path)
-
     excel_file_list = []
     for i, (data, info) in enumerate(yield_dataframes(input_df=df, samples=samples, markers=markers,
                                                       reference=reference, cutoff_df=cutoff_df, cutoff_rule=cutoff_rule,
                                                       marker_rule=marker_rule, non_outliers=non_outliers,
                                                       bottom_outliers=bottom_outliers), 1):
-        summary_df = add_info_to_summary(summary_df, i, info)
-        add_info_to_stats(data, samples, stats_df_dict, info)
+        summary_df = add_scouts_data_to_summary(summary_df, i, info)
+        add_scouts_data_to_stats(data, samples, stats_df_dict, info)
         if not widget.stacked_pages.isEnabled():  # user has exited the GUI
             return
         if export_csv:
@@ -190,8 +188,8 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
             data.to_csv(csv_path)
         if export_excel:
             excel_path = os.path.join(output_path, '%04d.xlsx' % i)
-            data.to_excel(excel_path)
             excel_file_list.append(excel_path)
+            data.to_excel(excel_path)
     summary_path = os.path.join(output_folder, 'summary.xlsx')
     generate_summary_table(summary_df, summary_path)
     stats_path = os.path.join(output_folder, 'stats.xlsx')
@@ -210,7 +208,7 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
 def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, samples: List[str],
                      bottom: bool, non: bool) -> Dict[str, pd.DataFrame]:
     """str"""  # TODO
-    outliers = ['top outliers']
+    outliers = ['whole population', 'top outliers']
     if non is True:
         outliers += ['non-outliers']
     if bottom is True:
@@ -227,6 +225,17 @@ def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, sam
     if 'ref' in cutoff_rule and 'single' in marker_rule:
         df_dict['OutR single marker'] = pd.DataFrame(columns=markers, index=index)
     return df_dict
+
+
+def add_whole_population_to_stats_dfs(input_df: pd.DataFrame, stats_df_dict: Dict[str, pd.DataFrame],
+                                      samples: List[str]) -> None:
+    """Adds whole population info (divided by sample) to each stats DataFrame."""
+    for stats_df in stats_df_dict.values():
+        for sample in samples:
+            filtered_df = filter_df_by_sample_in_index(df=input_df, sample=sample)
+            values_df = filtered_df.describe().loc[['count', 'mean', '50%', 'std']]
+            values_df.index = ['#', 'mean', 'median', 'sd']
+            stats_df.loc[sample].loc['whole population'] = values_df.values
 
 
 def yield_dataframes(input_df: pd.DataFrame, samples: List[str], markers: List[str], reference: Optional[str],
@@ -346,14 +355,14 @@ def scouts_by_sample_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFra
             yield pd.concat(lower_dfs), info_lower
 
 
-def add_info_to_summary(df: pd.DataFrame, i: int, info: Info) -> pd.DataFrame:
+def add_scouts_data_to_summary(df: pd.DataFrame, i: int, info: Info) -> pd.DataFrame:
     """Adds info to the summary df with each new yielded dataframe from SCOUTS."""
     series = pd.Series([i, *info._asdict().values()], index=df.columns, name=f'{len(df)}')
     return df.append(series)
 
 
-def add_info_to_stats(data: pd.DataFrame, samples: List[str], stats_df_dict: Dict[str, pd.DataFrame],
-                      info: Info) -> None:
+def add_scouts_data_to_stats(data: pd.DataFrame, samples: List[str], stats_df_dict: Dict[str, pd.DataFrame],
+                             info: Info) -> None:
     """str"""  # TODO
     for sample in samples:
         values_df = get_values_df(data, sample, info)
@@ -406,17 +415,20 @@ def generate_stats_table(stats_df_dict: Dict[str, pd.DataFrame], stats_path: str
 
 def generate_cutoff_table(cutoff_df: pd.DataFrame, summary_path: str) -> None:
     """Generates table with cutoff values for each sample/marker combination (both high and low)."""
-    markers = cutoff_df.columns
-    for marker in markers:
-        cutoff_df[f'{marker}_upper_cutoff'] = [stats.upper_cutoff for stats in cutoff_df[marker]]
-        cutoff_df[f'{marker}_lower_cutoff'] = [stats.lower_cutoff for stats in cutoff_df[marker]]
-    filter_rule = [col for col in cutoff_df.columns if any(['_lower_' in col, '_upper_' in col])]
-    cutoff_df[filter_rule].to_excel(summary_path, sheet_name='Cutoff', index_label='Sample')
+    uppers = [f'{marker}_upper_cutoff' for marker in cutoff_df.columns]
+    lowers = [f'{marker}_lower_cutoff' for marker in cutoff_df.columns]
+    columns = [m for m in chain.from_iterable(zip(uppers, lowers))]
+    output_cutoff_df = pd.DataFrame(index=cutoff_df.index, columns=columns)
+    for sample in cutoff_df.index:
+        for marker in cutoff_df.columns:
+            output_cutoff_df.at[sample, f'{marker}_upper_cutoff'] = cutoff_df.at[sample, marker].upper_cutoff
+            output_cutoff_df.at[sample, f'{marker}_lower_cutoff'] = cutoff_df.at[sample, marker].lower_cutoff
+    output_cutoff_df.to_excel(summary_path, sheet_name='Cutoff', index_label='Sample')
 
 
-def generate_gated_table(df: pd.DataFrame, gated_path: str) -> None:
-    """Generates table with the whole starting population, except for cells gated according to user choice."""
-    df.to_excel(gated_path, sheet_name='Gated Population')
+def generate_gated_table(gated_df: pd.DataFrame, gated_path: str) -> None:
+    """Generates table with gated population, i.e. same as the input file except for the gated cells."""
+    gated_df.to_excel(gated_path, sheet_name='Gated Population', index=False)
 
 
 def merge_excel_files(output_path: str, summary_path: str, excels: List[str]) -> Workbook:

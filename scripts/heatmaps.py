@@ -15,17 +15,16 @@ import seaborn as sns
 GIO_DATASET = True
 if GIO_DATASET is True:
     FILE_DIR = 'cytof gio'
-    FILENAME = 'gio-mass-cytometry-stats.xlsx'
     CONTROL = 'Ct'
     TREATMENT = 'RT'
 else:
     FILE_DIR = 'MP29_CD45low'
-    FILENAME = 'raw_data_stats.xlsx'
     CONTROL = 'Pre-Tx'
     TREATMENT = 'Week4'
 SAMPLES = [CONTROL, TREATMENT]
 SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'sample data', FILE_DIR)
+FILENAME = 'stats.xlsx'
+PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'sample data', FILE_DIR, 'scouts output')
 
 # Colormap parameters
 CMAP = getattr(matplotlib.cm, 'RdBu_r')

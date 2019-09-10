@@ -357,7 +357,7 @@ class SCOUTS(QMainWindow):
         self.remove_sample_button = QPushButton(self.samples_page)
         QShortcut(QKeySequence("Delete"), self.remove_sample_button, self.remove_from_sample_table)
         self.set_icon(self.remove_sample_button, 'list-remove')
-        self.remove_sample_button.setText(' Remove sample (del)')
+        self.remove_sample_button.setText(' Remove sample (Del)')
         self.remove_sample_button.setStyleSheet(self.style['button'])
         self.remove_sample_button.clicked.connect(self.remove_from_sample_table)
         # Add widgets above to sample addition layout
@@ -561,14 +561,15 @@ class SCOUTS(QMainWindow):
         """Opens a dialog box and sets the chosen file/folder path, depending on the caller widget."""
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        if self.sender().objectName() == 'input':
+        sender_name = self.sender().objectName()
+        if sender_name == 'input':
             query, _ = QFileDialog.getOpenFileName(self, "Select file", "", "All Files (*)", options=options)
-        elif self.sender().objectName() == 'output':
+        elif sender_name == 'output':
             query = QFileDialog.getExistingDirectory(self, "Select Directory", options=options)
         else:
             return
         if query:
-            self.sender().setText(query)
+            getattr(self, f'{sender_name}_path').setText(query)
 
     def enable_single_excel(self):
         """Enables checkbox for generating a single Excel output."""
@@ -691,12 +692,15 @@ class SCOUTS(QMainWindow):
         input_dict['gate_cutoff_value'] = None
         if input_dict['gating'] != 'no_gate':
             input_dict['gate_cutoff_value'] = getattr(self, f'{input_dict["gating"]}_gates_value').value()
-        # Save gated population
         input_dict['export_gated'] = True if self.export_gated.isChecked() else False
         # Generate results for non-outliers
-        input_dict['non_outliers'] = True if self.not_outliers.isChecked() else False
+        input_dict['non_outliers'] = False
+        if self.not_outliers.isChecked():
+            input_dict['non_outliers'] = True
         # Generate results for bottom outliers
-        input_dict['bottom_outliers'] = True if self.bottom_outliers.isChecked() else False
+        input_dict['bottom_outliers'] = False
+        if self.bottom_outliers.isChecked():
+            input_dict['bottom_outliers'] = True
         # return dictionary with all gathered inputs
         return input_dict
 
