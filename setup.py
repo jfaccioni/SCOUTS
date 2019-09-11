@@ -11,7 +11,7 @@ through the program's interface."""
 setup(
     name="SCOUTS",
     version=VERSION,
-    description="Single Cell OUTlier Selector",
+    description="Single Cell Outlier Selector",
     author="Juliano Luiz Faccioni",
     author_email="julianofaccioni@gmail.com",
     mantainer="Juliano Luiz Faccioni",
