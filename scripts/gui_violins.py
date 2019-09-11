@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from os.path import join
-from sys import argv, exit as sys_exit
-from traceback import format_exc
+import os
+import sys
+import traceback
 from typing import Callable, Generator, List, TYPE_CHECKING, Tuple
 
+import pandas as pd
+import seaborn as sns
 from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFileDialog, QFormLayout, QFrame, QLabel,
@@ -13,14 +15,12 @@ from matplotlib import use as set_backend
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavBar
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
-from pandas import DataFrame, read_csv, read_excel
-from seaborn import set as set_style, violinplot
 
 if TYPE_CHECKING:
     from PySide2.QtCore import QEvent
 
 set_backend('Qt5Agg')
-set_style(style="whitegrid")
+sns.set(style="whitegrid")
 
 
 class ViolinGUI(QMainWindow):
@@ -41,6 +41,9 @@ class ViolinGUI(QMainWindow):
         'button': 'QPushButton {font-size: 10pt}',
         'label': 'QLabel {font-size: 10pt}',
         'line edit': 'QLineEdit {font-size: 10pt}',
+        'drop down': 'QComboBox {font-size: 10pt}',
+        'check box': 'QCheckBox {font-size: 10pt}',
+        'run button': 'QPushButton {font-size: 12pt; font-weight: 600}'
     }
 
     def __init__(self) -> None:
@@ -122,7 +125,7 @@ class ViolinGUI(QMainWindow):
         self.samples_label.setStyleSheet(self.style['label'])
         # Sample names line edit
         self.sample_names = QLineEdit(self.page)
-        self.samples_label.setStyleSheet(self.style['line edit'])
+        self.sample_names.setStyleSheet(self.style['line edit'])
         # Add widgets above to samples frame Layout
         self.samples_frame.layout().addRow(self.samples_label)
         self.samples_frame.layout().addRow(self.sample_names)
@@ -156,13 +159,17 @@ class ViolinGUI(QMainWindow):
         # Analysis drop-down boxes
         self.drop_down_01 = QComboBox(self.page)
         self.drop_down_01.addItems(['whole population', 'non-outliers', 'top outliers', 'bottom outliers', 'none'])
+        self.drop_down_01.setStyleSheet(self.style['drop down'])
         self.drop_down_01.setCurrentIndex(2)
         self.drop_down_02 = QComboBox(self.page)
         self.drop_down_02.addItems(['whole population', 'non-outliers', 'top outliers', 'bottom outliers', 'none'])
+        self.drop_down_02.setStyleSheet(self.style['drop down'])
         self.drop_down_02.setCurrentIndex(0)
         self.drop_down_03 = QComboBox(self.page)
+        self.drop_down_03.setStyleSheet(self.style['drop down'])
         self.drop_down_04 = QComboBox(self.page)
         self.drop_down_04.addItems(['OutS', 'OutR'])
+        self.drop_down_04.setStyleSheet(self.style['drop down'])
         # Add widgets above to samples frame Layout
         self.analysis_frame.layout().addRow(self.analysis_label_01, self.drop_down_01)
         self.analysis_frame.layout().addRow(self.analysis_label_02, self.drop_down_02)
@@ -173,14 +180,16 @@ class ViolinGUI(QMainWindow):
         self.legend_checkbox.setGeometry(self.margin['left'],
                                          self.widget_vposition(self.analysis_frame) + 5, 335, 30)
         self.legend_checkbox.setText('Add legend to the plot')
+        self.legend_checkbox.setStyleSheet(self.style['check box'])
 
         # Plot button (stand-alone)
         self.plot_button = QPushButton(self.page)
         self.plot_button.setGeometry(self.margin['left'],
-                                     self.widget_vposition(self.legend_checkbox) + 5, 335, 30)
+                                     self.widget_vposition(self.legend_checkbox), 335, 30)
         self.set_icon(self.plot_button, 'system-run')
         self.plot_button.setText(' Plot')
         self.plot_button.setToolTip('Plot data after loading the input data and selecting parameters')
+        self.plot_button.setStyleSheet(self.style['run button'])
         self.plot_button.setEnabled(False)
         self.plot_button.clicked.connect(self.run_plot)
 
@@ -210,7 +219,7 @@ class ViolinGUI(QMainWindow):
     def set_icon(widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(join('default_icons', f'{icon}.svg')))
+        i.addPixmap(QPixmap(os.path.join('default_icons', f'{icon}.svg')))
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     def get_path(self) -> None:
@@ -255,18 +264,18 @@ class ViolinGUI(QMainWindow):
 
     def load_raw_data(self, query: str) -> None:
         """str"""  # TODO
-        self.population_df = read_excel(query, index_col=0)
+        self.population_df = pd.read_excel(query, index_col=0)
         self.drop_down_03.clear()
         self.drop_down_03.addItems(list(self.population_df.columns))
         self.drop_down_03.setCurrentIndex(0)
 
     def load_scouts_results(self, query: str) -> None:
         """str"""  # TODO
-        self.summary_df = read_excel(join(query, 'summary.xlsx'), index_col=None)
+        self.summary_df = pd.read_excel(os.path.join(query, 'summary.xlsx'), index_col=None)
         self.summary_path = query
 
     def enable_plot(self) -> None:
-        if isinstance(self.summary_df, DataFrame) and isinstance(self.population_df, DataFrame):
+        if isinstance(self.summary_df, pd.DataFrame) and isinstance(self.population_df, pd.DataFrame):
             self.plot_button.setEnabled(True)
 
     def run_plot(self) -> None:
@@ -288,7 +297,7 @@ class ViolinGUI(QMainWindow):
         pops_to_analyse = [pop_01, pop_02]
         marker = self.drop_down_03.currentText()
         cutoff_from_reference = True if self.drop_down_04.currentText() == 'OutR' else False
-        violin_df = DataFrame(columns=columns)
+        violin_df = pd.DataFrame(columns=columns)
         # Start fetching data from files
         # Whole population
         for pop in pops_to_analyse:
@@ -301,8 +310,8 @@ class ViolinGUI(QMainWindow):
                 for file_number in self.yield_selected_file_numbers(summary_df=self.summary_df, population=pop,
                                                                     cutoff_from_reference=cutoff_from_reference,
                                                                     marker=marker):
-                    df_path = join(self.summary_path, 'data', f'{"%04d" % file_number}.csv')
-                    sample_df = read_csv(df_path, index_col=0)
+                    df_path = os.path.join(self.summary_path, 'data', f'{"%04d" % file_number}.csv')
+                    sample_df = pd.read_csv(df_path, index_col=0)
                     if not sample_df.empty:
                         for partial_df in self.yield_violin_values(df=sample_df, population=pop, samples=samples,
                                                                    marker=marker, columns=columns):
@@ -350,24 +359,24 @@ class ViolinGUI(QMainWindow):
         if laptop:
             repo = "scouts"
         path = f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/cytof gio/'
-        self.load_raw_data(join(path, 'gio-mass-cytometry.xlsx'))
-        self.load_scouts_results(join(path, 'scouts output'))
+        self.load_raw_data(os.path.join(path, 'gio-mass-cytometry.xlsx'))
+        self.load_scouts_results(os.path.join(path, 'scouts output'))
         self.sample_names.setText('Ct;RT;Torin')
         self.plot_button.setEnabled(True)
 
     @staticmethod
-    def yield_violin_values(df: DataFrame, population: str, samples: List[str], marker: str,
-                            columns: List[str]) -> DataFrame:
+    def yield_violin_values(df: pd.DataFrame, population: str, samples: List[str], marker: str,
+                            columns: List[str]) -> pd.DataFrame:
         """Returns a DataFrame from expression values, along with information of sample, marker and population. This
         DataFrame is appended to the violin plot DataFrame in order to simplify plotting the violins afterwards."""
         for sample in samples:
             series = df.loc[df.index.str.contains(sample)].loc[:, marker]
-            yield DataFrame({'sample': sample, 'marker': marker, 'population': population, 'expression': series},
-                            columns=columns)
+            yield pd.DataFrame({'sample': sample, 'marker': marker, 'population': population, 'expression': series},
+                               columns=columns)
 
     @staticmethod
-    def yield_selected_file_numbers(summary_df: DataFrame, population: str, cutoff_from_reference: bool,
-                                    marker: str) -> Generator[DataFrame, None, None]:
+    def yield_selected_file_numbers(summary_df: pd.DataFrame, population: str, cutoff_from_reference: bool,
+                                    marker: str) -> Generator[pd.DataFrame, None, None]:
         """Yields file numbers from DataFrames resulting from SCOUTS analysis. DataFrames are yielded based on
         global values, i.e. the comparisons the user wants to perform."""
         cutoff = 'sample'
@@ -397,8 +406,8 @@ class DynamicCanvas(FigureCanvas):
     def update_figure(self, subset_by_sample, pop, sat, samples):
         """str"""  # TODO
         color = self.colors[pop]
-        violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression', color=color, saturation=sat,
-                   order=samples)
+        sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression', color=color, saturation=sat,
+                       order=samples)
 
     def add_legend(self):
         """str"""  # TODO
@@ -423,7 +432,7 @@ class Worker(QRunnable):
         try:
             self.func(*self.args, **self.kwargs)
         except Exception as error:
-            trace = format_exc()
+            trace = traceback.format_exc()
             self.signals.error.emit((error, trace))
             self.signals.failed.emit()
         else:
@@ -450,9 +459,9 @@ DEBUG = False
 
 
 def main():
-    app = QApplication(argv)
+    app = QApplication(sys.argv)
     violin_gui = ViolinGUI()
     if DEBUG:
         violin_gui.debug()
     violin_gui.show()
-    sys_exit(app.exec_())
+    sys.exit(app.exec_())

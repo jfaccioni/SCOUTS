@@ -5,9 +5,8 @@ import sys
 import time
 import traceback
 import webbrowser
-from typing import Dict, Generator, TYPE_CHECKING, Tuple, Callable
+from typing import Callable, Dict, Generator, TYPE_CHECKING, Tuple
 
-# noinspection PyUnresolvedReferences
 from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QKeySequence, QPixmap
 from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDialog, QDoubleSpinBox, QFileDialog, QFormLayout,
@@ -46,6 +45,7 @@ class SCOUTS(QMainWindow):
         'checkbox': 'QCheckBox {font-size: 10pt}',
         'line edit': 'QLineEdit {font-size: 10pt}',
         'credits': 'QLabel {font-style:italic; font-size:10pt}',
+        'run button': 'QPushButton {font-size: 12pt; font-weight: 600}'
     }
 
     def __init__(self) -> None:
@@ -288,6 +288,7 @@ class SCOUTS(QMainWindow):
                                     self.widget_vposition(self.output_frame) + 5, self.rlimit(), 30)
         self.set_icon(self.run_button, 'system-run')
         self.run_button.setText(' Run!')
+        self.run_button.setStyleSheet(self.style['run button'])
         self.run_button.clicked.connect(self.run)
         # Help-quit frame (invisible)
         self.helpquit_frame = QFrame(self.main_page)
@@ -534,7 +535,7 @@ class SCOUTS(QMainWindow):
     def set_icon(self, widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.root, 'src', 'icons', f'{icon}.svg'))))
+        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.root, 'src', 'default_icons', f'{icon}.svg'))))
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     # ###

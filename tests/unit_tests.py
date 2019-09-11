@@ -1,7 +1,8 @@
-from unittest.mock import patch
 import unittest
-from src.analysis import *
 from itertools import product
+from unittest.mock import patch
+
+from src.analysis import *
 
 
 class TestSCOUTSAnalysis(unittest.TestCase):

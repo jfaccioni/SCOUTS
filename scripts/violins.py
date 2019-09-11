@@ -3,10 +3,8 @@ from __future__ import annotations
 import os
 from typing import Generator, List
 
-# noinspection PyUnresolvedReferences,PyPackageRequirements
 import matplotlib.pyplot as plt
 import pandas as pd
-# noinspection PyUnresolvedReferences,PyPackageRequirements
 import seaborn as sns
 
 # Plot styling

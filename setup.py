@@ -1,9 +1,16 @@
 from setuptools import find_packages, setup
 
 
+VERSION = "1.1.0"
+
+LONG_DESCRIPTION = """SCOUTS is a tool that quickly finds outliers in your single-cell data, generating information
+about your population organized by target molecules. SCOUTS takes your single-cell input and generates output files
+containing only outliers. The method used by SCOUTS to subset the population and find the outliers is customizable
+through the program's interface."""
+
 setup(
     name="SCOUTS",
-    version='1.0.0',
+    version=VERSION,
     description="Single Cell OUTlier Selector",
     author="Juliano Luiz Faccioni",
     author_email="julianofaccioni@gmail.com",
@@ -16,16 +23,18 @@ setup(
         'Documentation': 'https://scouts.readthedocs.io/en/master/',
         'Source Code': 'https://github.com/jfaccioni/scouts'
     },
-    long_description="SCOUTS is a tool that quickly finds outliers in your single-cell data, generating information about your population organized by target molecules. SCOUTS takes your single-cell input and generates output files containing only outliers. The method used by SCOUTS to subset the population and find the outliers is customizable through the program's interface.",
+    long_description=LONG_DESCRIPTION,
     license="MIT",
     platforms="any",
     packages=find_packages(),
     install_requires=[
-        "pandas",
         "numpy",
+        "pandas",
+        "matplotlib",
+        "seaborn",
         "pyside2",
         "openpyxl",
-        "xlrd"
+        "xlrd",
     ],
     entry_points={
         'console_scripts': [

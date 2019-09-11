@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import os
 from collections import namedtuple
+from itertools import chain
 from typing import Dict, Generator, List, Optional, TYPE_CHECKING, Tuple
+
 import numpy as np
 import pandas as pd
 from openpyxl import Workbook, load_workbook
-from itertools import chain
+
 from src.utils import NoReferenceError, PandasInputError, SampleNamingError
 
 if TYPE_CHECKING:
