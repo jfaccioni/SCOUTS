@@ -3,9 +3,9 @@ import sys
 import time
 import traceback
 import webbrowser
-from typing import Callable, Dict, Generator, TYPE_CHECKING, Tuple
+from typing import Callable, Dict, Generator, Tuple
 
-from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
+from PySide2.QtCore import QEvent, QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QKeySequence, QPixmap
 from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDialog, QDoubleSpinBox, QFileDialog, QFormLayout,
                                QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow,
@@ -15,9 +15,6 @@ from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDialog, Q
 from src.analysis import start_scouts
 from src.utils import (NoIOPathError, NoReferenceError, NoSampleError, PandasInputError, SampleNamingError,
                        get_project_root)
-
-if TYPE_CHECKING:
-    from PySide2.QtCore import QEvent
 
 
 class SCOUTS(QMainWindow):

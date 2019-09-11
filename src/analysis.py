@@ -1,16 +1,15 @@
 import os
 from collections import namedtuple
 from itertools import chain
-from typing import Dict, Generator, List, Optional, TYPE_CHECKING, Tuple
+from typing import Dict, Generator, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
+from PySide2.QtWidgets import QMainWindow
 from openpyxl import Workbook, load_workbook
 
 from src.utils import NoReferenceError, PandasInputError, SampleNamingError
 
-if TYPE_CHECKING:
-    from PySide2.QtWidgets import QMainWindow
 
 Stats = namedtuple("Stats", ['first_quartile', 'third_quartile', 'iqr', 'lower_cutoff', 'upper_cutoff'])
 Info = namedtuple("Info", ['cutoff_from', 'reference', 'outliers_for', 'category'])

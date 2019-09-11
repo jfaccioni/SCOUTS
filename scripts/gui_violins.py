@@ -1,11 +1,11 @@
 import os
 import sys
 import traceback
-from typing import Callable, Generator, List, TYPE_CHECKING, Tuple
+from typing import Callable, Generator, List, Tuple
 
 import pandas as pd
 import seaborn as sns
-from PySide2.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot
+from PySide2.QtCore import QEvent, QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFileDialog, QFormLayout, QFrame, QLabel,
                                QLineEdit, QMainWindow, QMessageBox, QPushButton, QSizePolicy, QWidget)
@@ -13,9 +13,6 @@ from matplotlib import use as set_backend
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavBar
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
-
-if TYPE_CHECKING:
-    from PySide2.QtCore import QEvent
 
 set_backend('Qt5Agg')
 sns.set(style="whitegrid")
