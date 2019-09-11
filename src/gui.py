@@ -61,7 +61,7 @@ class SCOUTS(QMainWindow):
         self.threadpool = QThreadPool()
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
-        self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.root, 'src', 'icons', f'scouts.ico'))))
+        self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.root, 'src', f'scouts.ico'))))
         self.resize(*self.size.values())
         # Creates StackedWidget as QMainWindow's central widget
         self.stacked_pages = QStackedWidget(self)
