@@ -42,10 +42,13 @@ setup(
         "openpyxl",
         "xlrd",
     ],
+    extras_require={
+        'violins': ['matplotlib', 'seaborn']
+    },
     entry_points={
         'console_scripts': [
             'scouts=src.gui:main',
-            'scouts-violins=scripts.gui_violins:main'
+            'scouts-violins=scripts.gui_violins:main [violins]'
         ]
     }
 )
