@@ -8,23 +8,18 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-# Input parameters
-GIO_DATASET = True
-if GIO_DATASET is True:
-    FILE_DIR = 'cytof gio'
-    CONTROL = 'Ct'
-    TREATMENT = 'RT'
-else:
-    FILE_DIR = 'MP29_CD45low'
-    CONTROL = 'Pre-Tx'
-    TREATMENT = 'Week4'
+# Input parameters - please modify these
+CONTROL = 'your-control-sample-name-here'
+TREATMENT = 'your-treatment-sample-name-here'
 SAMPLES = [CONTROL, TREATMENT]
-SCRIPT_DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-FILENAME = 'stats.xlsx'
-PATH = os.path.join(SCRIPT_DIR, '..', 'local', 'sample data', FILE_DIR, 'scouts output')
+PLOT_NAME = 'your-plot-name-here'  # can be None
+DIRNAME = 'path/to/your/file/here'
+FILENAME = 'stats.xlsx'  # SCOUTS output file
+PATH = os.path.join(DIRNAME, FILENAME)
 
 # Colormap parameters
 CMAP = getattr(matplotlib.cm, 'RdBu_r')
+
 # Analysis & output parameters
 LOG2_TRANSFORM = True
 LOG2_FIRST = True
@@ -141,4 +136,4 @@ def plot_third_heatmap(heatmap: pd.DataFrame, ax: plt.Axes) -> None:
 
 
 if __name__ == '__main__':
-    main(path=PATH, filename=FILENAME, ct=CONTROL, treat=TREATMENT, samples=SAMPLES, plot_name=FILE_DIR)
+    main(path=PATH, filename=FILENAME, ct=CONTROL, treat=TREATMENT, samples=SAMPLES, plot_name=PLOT_NAME)

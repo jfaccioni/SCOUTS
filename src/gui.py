@@ -61,7 +61,7 @@ class SCOUTS(QMainWindow):
         self.threadpool = QThreadPool()
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
-        self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.root, 'src', f'scouts.ico'))))
+        self.setWindowIcon(QIcon(f'scouts.ico'))
         self.resize(*self.size.values())
         # Creates StackedWidget as QMainWindow's central widget
         self.stacked_pages = QStackedWidget(self)
@@ -867,44 +867,6 @@ class SCOUTS(QMainWindow):
         label.move(int((message.width() - label.width())/2), int((message.height() - label.height())/2))
         return message
 
-    # ###
-    # ### DEBUG OPTIONS
-    # ###
-
-    def debug(self, gio_dataset: bool) -> None:
-        """Pre-loads GUI elements if debug flag is set."""
-        laptop = False
-        repo = 'SCOUTS'
-        if laptop:
-            repo = 'scouts'
-        if gio_dataset:  # use Giovana's dataset
-            inp = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/'
-                   'cytof gio/gio-mass-cytometry.xlsx')
-            out = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/'
-                   'cytof gio/scouts output')
-            self.sample_table.insertRow(0)
-            self.sample_table.setItem(0, 0, QTableWidgetItem('Ct'))
-            self.sample_table.setItem(0, 1, QTableWidgetItem('yes'))
-            self.sample_table.insertRow(1)
-            self.sample_table.setItem(1, 0, QTableWidgetItem('RT'))
-            self.sample_table.setItem(1, 1, QTableWidgetItem('no'))
-            self.sample_table.insertRow(2)
-            self.sample_table.setItem(2, 0, QTableWidgetItem('Torin'))
-            self.sample_table.setItem(2, 1, QTableWidgetItem('no'))
-        else:  # use MP29_CD45low dataset
-            inp = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/'
-                   'MP29_CD45low/raw_data.xlsx')
-            out = (f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/'
-                   'MP29_CD45low/scouts output')
-            self.sample_table.insertRow(0)
-            self.sample_table.setItem(0, 0, QTableWidgetItem('Pre-Tx'))
-            self.sample_table.setItem(0, 1, QTableWidgetItem('yes'))
-            self.sample_table.insertRow(1)
-            self.sample_table.setItem(1, 0, QTableWidgetItem('Week4'))
-            self.sample_table.setItem(1, 1, QTableWidgetItem('no'))
-        self.input_path.setText(inp)
-        self.output_path.setText(out)
-
 
 class Worker(QRunnable):
     """Worker thread for SCOUTS analysis. Avoids unresponsive GUI."""
@@ -959,15 +921,8 @@ class WorkerSignals(QObject):
     error = Signal(Exception)
 
 
-# Automatically fills fields for quick testing
-DEBUG = False
-GIO_DATASET = False
-
-
 def main():
     app = QApplication(sys.argv)
     scouts = SCOUTS()
-    if DEBUG:
-        scouts.debug(gio_dataset=GIO_DATASET)
     scouts.show()
     sys.exit(app.exec_())
