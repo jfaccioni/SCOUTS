@@ -27,9 +27,10 @@ setup(
         "openpyxl",
         "xlrd"
     ],
-    entry_points = {
-    'console_scripts': [
+    entry_points={
+        'console_scripts': [
             'scouts=src.gui:main',
+            'scouts-violins=scripts.gui_violins:main'
         ]
     }
 )
