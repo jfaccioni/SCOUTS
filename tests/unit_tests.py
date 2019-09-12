@@ -355,9 +355,6 @@ class TestSCOUTSAnalysis(unittest.TestCase):
                                                      non_outliers=False))
         self.assertEqual(len(result), 1)
         df, info = result[0]
-        print(df)
-        print('EXCEL:')
-        print(self.outr_any_df)
         pd.testing.assert_frame_equal(self.outr_any_df, df)
         self.assertEqual(info, Info(cutoff_from='reference', reference=self.reference, outliers_for='any marker',
                                     category='top outliers'))
@@ -392,7 +389,17 @@ class TestSCOUTSAnalysis(unittest.TestCase):
                                     category='top outliers'))
 
     def test_function_add_scouts_data_to_summary(self) -> None:
-        pass
+        columns = ['file number'] + list(Info._fields)
+        df = pd.DataFrame(columns=columns)
+        self.assertTrue(df.empty)
+        info = Info(cutoff_from='sample', reference='n/a', outliers_for='Marker02', category='top outliers')
+        df = add_scouts_data_to_summary(df=df, i=1, info=info)
+        self.assertTrue(len(df), 1)
+        pd.testing.assert_series_equal(df.iloc[0], pd.Series([1, 'sample', 'n/a', 'Marker02', 'top outliers'],
+                                                             index=columns), check_names=False)
+        for i in range(2, 5):
+            df = add_scouts_data_to_summary(df=df, i=i, info=info)
+            self.assertTrue(len(df), i)
 
     def test_function_add_scouts_data_to_stats(self) -> None:
         pass
