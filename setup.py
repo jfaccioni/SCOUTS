@@ -46,7 +46,7 @@ setup(
     entry_points={
         'console_scripts': [
             'scouts=src.gui:main',
-            'scouts-violins=scripts.gui_violins:main [violins]'
+            'scouts-violins=src.gui_violins:main [violins]'
         ]
     }
 )

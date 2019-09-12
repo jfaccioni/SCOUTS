@@ -57,7 +57,8 @@ class SCOUTS(QMainWindow):
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
         self.setWindowIcon(QIcon(f'scouts.ico'))
-        self.resize(*self.size.values())
+        self.setMinimumSize(*self.size.values())
+        self.setMaximumSize(*self.size.values())
         # Creates StackedWidget as QMainWindow's central widget
         self.stacked_pages = QStackedWidget(self)
         self.setCentralWidget(self.stacked_pages)
