@@ -27,6 +27,10 @@ class TestSCOUTSAnalysis(unittest.TestCase):
                                                   index_col=[0, 1])
         cls.cutoff_table_df = pd.read_excel('test-case.xlsx', sheet_name='raw data cutoff table').set_index('Sample')
         cls.quantiles_df = pd.read_excel('test-case.xlsx', sheet_name='quantiles', index_col=[0, 1])
+        cls.outr_any_df = pd.read_excel('test-case.xlsx', sheet_name='OutR any', index_col=[0])
+        cls.outr_mk2_df = pd.read_excel('test-case.xlsx', sheet_name='OutR Marker02', index_col=[0])
+        cls.outs_any_df = pd.read_excel('test-case.xlsx', sheet_name='OutS any', index_col=[0])
+        cls.outs_mk2_df = pd.read_excel('test-case.xlsx', sheet_name='OutS Marker02', index_col=[0])
         cls.cutoff_df = cls.get_cutoff_df(cls.description_df)
         cls.cytof_cutoff_df = cls.get_cutoff_df(cls.cytof_description_df)
         cls.rnaseq_cutoff_df = cls.get_cutoff_df(cls.rnaseq_description_df)
@@ -273,25 +277,119 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         pass
 
     def test_function_create_stats_dfs(self) -> None:
-        pass
+        # OutS any marker, no bottom, no non
+        df_dict = create_stats_dfs(markers=self.markers, cutoff_rule='sample', marker_rule='any',
+                                   samples=self.samples, bottom=False, non=False)
+        self.assertTrue('OutS any marker' in df_dict)
+        self.assertTrue(all(sheetname not in df_dict for sheetname in ['OutS single marker',
+                                                                       'OutR any marker',
+                                                                       'OutR single marker']))
+        self.assertEqual(len(df_dict['OutS any marker']), 2 * len(self.samples) * 4)
+        # OutS single marker, with bottom, no non
+        df_dict = create_stats_dfs(markers=self.markers, cutoff_rule='sample', marker_rule='single',
+                                   samples=self.samples, bottom=True, non=False)
+        self.assertTrue('OutS single marker' in df_dict)
+        self.assertTrue(all(sheetname not in df_dict for sheetname in ['OutS any marker',
+                                                                       'OutR any marker',
+                                                                       'OutR single marker']))
+        self.assertEqual(len(df_dict['OutS single marker']), 3 * len(self.samples) * 4)
+        # OutR single marker, no bottom, with non
+        df_dict = create_stats_dfs(markers=self.markers, cutoff_rule='ref', marker_rule='any',
+                                   samples=self.samples, bottom=False, non=True)
+        self.assertTrue('OutR any marker' in df_dict)
+        self.assertTrue(all(sheetname not in df_dict for sheetname in ['OutS any marker',
+                                                                       'OutS single marker',
+                                                                       'OutR single marker']))
+        self.assertEqual(len(df_dict['OutR any marker']), 3 * len(self.samples) * 4)
+        # OutR single marker, with bottom, with non
+        df_dict = create_stats_dfs(markers=self.markers, cutoff_rule='ref', marker_rule='single',
+                                   samples=self.samples, bottom=True, non=True)
+        self.assertTrue('OutR single marker' in df_dict)
+        self.assertTrue(all(sheetname not in df_dict for sheetname in ['OutS any marker',
+                                                                       'OutS single marker',
+                                                                       'OutR any marker']))
+        self.assertEqual(len(df_dict['OutR single marker']), 4 * len(self.samples) * 4)
 
-    def add_whole_population_to_stats_dfs(self) -> None:
-        pass
+    def test_function_add_whole_population_to_stats_dfs(self) -> None:
+        # OutS any marker, no bottom, no non
+        df_dict = create_stats_dfs(markers=self.markers, cutoff_rule='sample', marker_rule='any',
+                                   samples=self.samples, bottom=True, non=False)
+        for sample in self.samples:
+            self.assertTrue(df.loc[sample].loc['whole population'].isnull().all() for df in df_dict.values())
+        add_whole_population_to_stats_dfs(input_df=self.indexed_df, stats_df_dict=df_dict, samples=self.samples)
+        for sample in self.samples:
+            self.assertTrue(not df.loc[sample].loc['whole population'].isnull().all() for df in df_dict.values())
 
-    def test_function_yield_dataframes(self) -> None:
-        pass
+    @patch('src.analysis.scouts_by_sample_single_marker')
+    @patch('src.analysis.scouts_by_sample_any_marker')
+    @patch('src.analysis.scouts_by_reference_single_marker')
+    @patch('src.analysis.scouts_by_reference_any_marker')
+    def test_function_yield_dataframes(self, mock_outr_any, mock_outr_single, mock_outs_any, mock_outs_single) -> None:
+        mocks = (mock_outr_any, mock_outr_single, mock_outs_any, mock_outs_single)
+        kwargs = {'input_df': '_', 'samples': '_', 'markers': '_', 'reference': '_', 'cutoff_df': '_',
+                  'cutoff_rule': 'TEST_CASE', 'marker_rule': 'TEST_CASE', 'non_outliers': '_', 'bottom_outliers': '_'}
+        list(yield_dataframes(**kwargs))
+        for mock in mocks:
+            mock.assert_not_called()
+        kwargs['cutoff_rule'] = 'ref'
+        kwargs['marker_rule'] = 'any'
+        list(yield_dataframes(**kwargs))
+        mock_outr_any.assert_called_once()
+        kwargs['marker_rule'] = 'single'
+        list(yield_dataframes(**kwargs))
+        mock_outr_single.assert_called_once()
+        kwargs['cutoff_rule'] = 'sample'
+        kwargs['marker_rule'] = 'any'
+        list(yield_dataframes(**kwargs))
+        mock_outs_any.assert_called_once()
+        kwargs['cutoff_rule'] = 'sample'
+        kwargs['marker_rule'] = 'single'
+        list(yield_dataframes(**kwargs))
+        mock_outs_single.assert_called_once()
+        for mock in mocks:
+            mock.assert_called_once()
 
     def test_function_scouts_by_reference_any_marker(self) -> None:
-        pass
+        result = list(scouts_by_reference_any_marker(input_df=self.indexed_df, cutoff_df=self.cutoff_df,
+                                                     reference=self.reference, bottom_outliers=False,
+                                                     non_outliers=False))
+        self.assertEqual(len(result), 1)
+        df, info = result[0]
+        print(df)
+        print('EXCEL:')
+        print(self.outr_any_df)
+        pd.testing.assert_frame_equal(self.outr_any_df, df)
+        self.assertEqual(info, Info(cutoff_from='reference', reference=self.reference, outliers_for='any marker',
+                                    category='top outliers'))
 
     def test_function_scouts_by_reference_single_marker(self) -> None:
-        pass
+        result = list(scouts_by_reference_single_marker(input_df=self.indexed_df, cutoff_df=self.cutoff_df,
+                                                        markers=['Marker02'], reference=self.reference,
+                                                        bottom_outliers=False, non_outliers=False))
+        self.assertEqual(len(result), 1)
+        df, info = result[0]
+        pd.testing.assert_frame_equal(self.outr_mk2_df, df)
+        self.assertEqual(info, Info(cutoff_from='reference', reference=self.reference, outliers_for='Marker02',
+                                    category='top outliers'))
 
     def test_function_scouts_by_sample_any_marker(self) -> None:
-        pass
+        result = list(scouts_by_sample_any_marker(input_df=self.indexed_df, cutoff_df=self.cutoff_df,
+                                                  samples=self.samples, bottom_outliers=False, non_outliers=False))
+        self.assertEqual(len(result), 1)
+        df, info = result[0]
+        pd.testing.assert_frame_equal(self.outs_any_df, df)
+        self.assertEqual(info, Info(cutoff_from='sample', reference='n/a', outliers_for='any marker',
+                                    category='top outliers'))
 
     def test_function_scouts_by_sample_single_marker(self) -> None:
-        pass
+        result = list(scouts_by_sample_single_marker(input_df=self.indexed_df, cutoff_df=self.cutoff_df,
+                                                     samples=self.samples, markers=['Marker02'], bottom_outliers=False,
+                                                     non_outliers=False))
+        self.assertEqual(len(result), 1)
+        df, info = result[0]
+        pd.testing.assert_frame_equal(self.outs_mk2_df, df)
+        self.assertEqual(info, Info(cutoff_from='sample', reference='n/a', outliers_for='Marker02',
+                                    category='top outliers'))
 
     def test_function_add_scouts_data_to_summary(self) -> None:
         pass

@@ -207,13 +207,13 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
 def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, samples: List[str],
                      bottom: bool, non: bool) -> Dict[str, pd.DataFrame]:
     """str"""  # TODO
-    outliers = ['whole population', 'top outliers']
+    populations = ['whole population', 'top outliers']
     if non is True:
-        outliers += ['non-outliers']
+        populations += ['non-outliers']
     if bottom is True:
-        outliers += ['bottom outliers']
+        populations += ['bottom outliers']
     stats = ['#', 'mean', 'median', 'sd']
-    index = pd.MultiIndex.from_product([samples, outliers, stats])
+    index = pd.MultiIndex.from_product([samples, populations, stats])
     df_dict = {}
     if 'sample' in cutoff_rule and 'any' in marker_rule:
         df_dict['OutS any marker'] = pd.DataFrame(columns=markers, index=index)
@@ -234,7 +234,7 @@ def add_whole_population_to_stats_dfs(input_df: pd.DataFrame, stats_df_dict: Dic
             filtered_df = filter_df_by_sample_in_index(df=input_df, sample=sample)
             values_df = filtered_df.describe().loc[['count', 'mean', '50%', 'std']]
             values_df.index = ['#', 'mean', 'median', 'sd']
-            stats_df.loc[sample].loc['whole population'] = values_df.values
+            stats_df.loc[(sample, 'whole population')] = values_df.values
 
 
 def yield_dataframes(input_df: pd.DataFrame, samples: List[str], markers: List[str], reference: Optional[str],
@@ -368,9 +368,9 @@ def add_scouts_data_to_stats(data: pd.DataFrame, samples: List[str], stats_df_di
         key = get_key_from_info(info)
         df = stats_df_dict[key]
         if 'any' in info.outliers_for:
-            df.loc[sample].loc[info.category] = values_df.values
+            df.loc[(sample, info.category)] = values_df.values
         else:
-            df.loc[sample].at[info.category, info.outliers_for] = values_df.values
+            df.loc[(sample, info.category), info.outliers_for] = values_df.values
 
 
 def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> pd.DataFrame:

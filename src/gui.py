@@ -765,15 +765,15 @@ class SCOUTS(QMainWindow):
 
     def propagate_error(self, error: Tuple[Exception, str]) -> None:
         """Calls the appropriate error message box based on type of Exception raised."""
-        if isinstance(error, NoIOPathError):
+        if isinstance(error[0], NoIOPathError):
             self.no_io_path_error_message()
-        elif isinstance(error, NoReferenceError):
+        elif isinstance(error[0], NoReferenceError):
             self.no_reference_error_message()
-        elif isinstance(error, NoSampleError):
+        elif isinstance(error[0], NoSampleError):
             self.no_sample_error_message()
-        elif isinstance(error, PandasInputError):
+        elif isinstance(error[0], PandasInputError):
             self.pandas_input_error_message()
-        elif isinstance(error, SampleNamingError):
+        elif isinstance(error[0], SampleNamingError):
             self.sample_naming_error_message()
         else:
             self.generic_error_message(error)
