@@ -111,13 +111,13 @@ class SCOUTS(QMainWindow):
         # Go to sample naming page
         self.samples_button = QPushButton(self.main_page)
         self.samples_button.setStyleSheet(self.style['button'])
-        self.set_icon(self.samples_button, 'system-search')
+        self.set_icon(self.samples_button, 'preferences-other')
         self.samples_button.setText(' Name samples...')
         self.samples_button.clicked.connect(self.goto_samples_page)
         # Go to gating page
         self.gates_button = QPushButton(self.main_page)
         self.gates_button.setStyleSheet(self.style['button'])
-        self.set_icon(self.gates_button, 'system-search')
+        self.set_icon(self.gates_button, 'preferences-other')
         self.gates_button.setText(' Gating && outlier options...')
         self.gates_button.clicked.connect(self.goto_gates_page)
         # Add widgets above to input frame Layout
@@ -346,7 +346,7 @@ class SCOUTS(QMainWindow):
         self.add_sample_button = QPushButton(self.samples_page)
         QShortcut(QKeySequence("Return"), self.add_sample_button, self.write_to_sample_table)
         self.set_icon(self.add_sample_button, 'list-add')
-        self.add_sample_button.setText(' Add sample')
+        self.add_sample_button.setText(' Add sample (Enter)')
         self.add_sample_button.setStyleSheet(self.style['button'])
         self.add_sample_button.clicked.connect(self.write_to_sample_table)
         # Remove sample from table

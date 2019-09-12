@@ -1,7 +1,7 @@
 import os
 from collections import namedtuple
 from itertools import chain
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -447,7 +447,7 @@ def merge_excel_files(output_path: str, summary_path: str, excels: List[str]) ->
     return wb
 
 
-def read_excel_data(path: str) -> List[List[Optional[str, float]]]:
+def read_excel_data(path: str) -> List[List[Optional[Union[str, float]]]]:
     """Reads file from the first worksheet from an Excel workbook as a list of list of values."""
     ws = load_workbook(path).active
     rows = []

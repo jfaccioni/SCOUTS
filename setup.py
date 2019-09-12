@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 
-VERSION = "1.0.0"
+VERSION = "1.0.2"
 
 LONG_DESCRIPTION = """SCOUTS is a tool that quickly finds outliers in your single-cell data, generating information
 about your population organized by target molecules. SCOUTS takes your single-cell input and generates output files
@@ -9,7 +9,7 @@ containing only outliers. The method used by SCOUTS to subset the population and
 through the program's interface."""
 
 setup(
-    name="SCOUTS",
+    name="scouts",
     version=VERSION,
     description="Single Cell Outlier Selector",
     author="Juliano Luiz Faccioni",
@@ -36,8 +36,6 @@ setup(
     install_requires=[
         "numpy",
         "pandas",
-        "matplotlib",
-        "seaborn",
         "pyside2",
         "openpyxl",
         "xlrd",
