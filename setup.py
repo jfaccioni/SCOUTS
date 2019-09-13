@@ -27,6 +27,7 @@ setup(
     license="MIT",
     platforms="any",
     packages=find_packages(),
+    include_package_data=True,
     python_requires='>=3.6',
     classifiers=[
         "Programming Language :: Python :: 3",
