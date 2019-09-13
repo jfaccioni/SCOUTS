@@ -25,12 +25,13 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         cls.rnaseq_df = pd.read_excel('test-case.xlsx', sheet_name='rnaseq gate 2.0').set_index('Sample')
         cls.rnaseq_description_df = pd.read_excel('test-case.xlsx', sheet_name='rnaseq gate 2.0 description',
                                                   index_col=[0, 1])
-        cls.cutoff_table_df = pd.read_excel('test-case.xlsx', sheet_name='raw data cutoff table').set_index('Sample')
+        cls.output_cutoff_df = pd.read_excel('test-case.xlsx', sheet_name='raw data cutoff table').set_index('Sample')
         cls.quantiles_df = pd.read_excel('test-case.xlsx', sheet_name='quantiles', index_col=[0, 1])
         cls.outr_any_df = pd.read_excel('test-case.xlsx', sheet_name='OutR any', index_col=[0])
         cls.outr_mk2_df = pd.read_excel('test-case.xlsx', sheet_name='OutR Marker02', index_col=[0])
         cls.outs_any_df = pd.read_excel('test-case.xlsx', sheet_name='OutS any', index_col=[0])
         cls.outs_mk2_df = pd.read_excel('test-case.xlsx', sheet_name='OutS Marker02', index_col=[0])
+        cls.stats_df = pd.read_excel('test-case.xlsx', sheet_name='raw data stats', index_col=[0, 1, 2])
         cls.cutoff_df = cls.get_cutoff_df(cls.description_df)
         cls.cytof_cutoff_df = cls.get_cutoff_df(cls.cytof_description_df)
         cls.rnaseq_cutoff_df = cls.get_cutoff_df(cls.rnaseq_description_df)
@@ -259,11 +260,10 @@ class TestSCOUTSAnalysis(unittest.TestCase):
 
     def test_function_filter_df_by_sample_in_index(self) -> None:
         for sample in self.samples:
-            with self.subTest(sample=sample):
-                filtered_df = filter_df_by_sample_in_index(df=self.indexed_df, sample=sample)
-                self.assertTrue(all(sample in i for i in filtered_df.index))
-                for other_sample_name in [s for s in self.samples if s != sample]:
-                    self.assertFalse(any(other_sample_name in i for i in filtered_df.index))
+            filtered_df = filter_df_by_sample_in_index(df=self.indexed_df, sample=sample)
+            self.assertTrue(all(sample in i for i in filtered_df.index))
+            for other_sample_name in [s for s in self.samples if s != sample]:
+                self.assertFalse(any(other_sample_name in i for i in filtered_df.index))
 
     def test_function_get_marker_statistics(self) -> None:
         for sample in self.samples:
@@ -274,6 +274,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
                 self.assertEqual(stats.upper_cutoff, self.description_df.loc[sample].loc['Upper Tukey fence', marker])
 
     def test_function_run_scouts(self) -> None:
+        # TODO: how to test this? (central function)
         pass
 
     def test_function_create_stats_dfs(self) -> None:
@@ -402,31 +403,106 @@ class TestSCOUTSAnalysis(unittest.TestCase):
             self.assertTrue(len(df), i)
 
     def test_function_add_scouts_data_to_stats(self) -> None:
-        pass
+        df_dict = create_stats_dfs(markers=self.markers, cutoff_rule='sample', marker_rule='single',
+                                   samples=self.samples, bottom=False, non=False)
+        data, info = list(scouts_by_sample_single_marker(input_df=self.indexed_df, cutoff_df=self.cutoff_df,
+                                                         samples=self.samples, markers=['Marker02'],
+                                                         bottom_outliers=False, non_outliers=False))[0]
+        add_scouts_data_to_stats(data=data, samples=self.samples, stats_df_dict=df_dict, info=info)
+        df = df_dict['OutS single marker']
+        for sample in self.samples:
+            values = get_values_df(data, sample, info)
+            pd.testing.assert_series_equal(df.loc[(sample, info.category), info.outliers_for], values,
+                                           check_dtype=False)
+            pd.testing.assert_series_equal(self.stats_df.loc[(sample, info.category), info.outliers_for], values,
+                                           check_dtype=False)
 
     def test_function_get_values_df(self) -> None:
-        pass
+        data, info = list(scouts_by_sample_single_marker(input_df=self.indexed_df, cutoff_df=self.cutoff_df,
+                                                         samples=self.samples, markers=['Marker02'],
+                                                         bottom_outliers=False, non_outliers=False))[0]
+        for sample in self.samples:
+            values = get_values_df(data=data, sample=sample, info=info)
+            pd.testing.assert_series_equal(self.stats_df.loc[(sample, info.category), info.outliers_for], values,
+                                           check_dtype=False)
 
     def test_function_get_key_from_info(self) -> None:
-        pass
+        info = Info(cutoff_from='sample', reference='', outliers_for='any marker', category='')
+        self.assertEqual('OutS any marker', get_key_from_info(info))
+        info = Info(cutoff_from='sample', reference='', outliers_for='some other marker', category='')
+        self.assertEqual('OutS single marker', get_key_from_info(info))
+        info = Info(cutoff_from='reference', reference='', outliers_for='any marker', category='')
+        self.assertEqual('OutR any marker', get_key_from_info(info))
+        info = Info(cutoff_from='reference', reference='', outliers_for='some other marker', category='')
+        self.assertEqual('OutR single marker', get_key_from_info(info))
 
-    def test_function_generate_summary_table(self) -> None:
-        pass
+    @patch('src.analysis.pd.DataFrame.to_excel')
+    def test_function_generate_summary_table(self, mock_to_excel) -> None:
+        path = 'some/path/to/file.xlsx'
+        generate_summary_table(summary_df=self.indexed_df, summary_path=path)
+        expected_args = [path]
+        expected_kwargs = {'sheet_name': 'Summary', 'index': False}
+        mock_to_excel.assert_called_with(*expected_args, **expected_kwargs)
 
-    def test_function_generate_stats_table(self) -> None:
-        pass
+    @patch('src.analysis.pd.DataFrame.to_excel')
+    @patch('src.analysis.pd.ExcelWriter')
+    def test_function_generate_stats_table(self, mock_excel_writer, mock_to_excel) -> None:
+        df_dict = create_stats_dfs(markers=self.markers, cutoff_rule='sample', marker_rule='any', samples=self.samples,
+                                   bottom=False, non=False)
+        path = 'some/path/to/file.xlsx'
+        sheet_name = list(df_dict.keys())[-1]
+        generate_stats_table(stats_df_dict=df_dict, stats_path=path)
+        mock_excel_writer.assert_called_with(path)
+        mock_to_excel.assert_called_with(mock_excel_writer.return_value, sheet_name=sheet_name)
+        mock_excel_writer.return_value.save.assert_called_once()
 
-    def test_function_generate_cutoff_table(self) -> None:
-        pass
+    @patch('src.analysis.pd.DataFrame.to_excel')
+    def test_function_generate_cutoff_table(self, mock_to_excel) -> None:
+        path = 'some/path/to/file.xlsx'
+        generate_cutoff_table(cutoff_df=self.cutoff_df, cutoff_path=path)
+        expected_args = [path]
+        expected_kwargs = {'sheet_name': 'Cutoff', 'index_label': 'Sample'}
+        mock_to_excel.assert_called_with(*expected_args, **expected_kwargs)
 
-    def test_function_generate_gated_table(self) -> None:
-        pass
+    def test_function_get_output_cutoff_df(self) -> None:
+        output_cutoff_df = get_output_cutoff_df(cutoff_df=self.cutoff_df, columns=self.output_cutoff_df.columns)
+        pd.testing.assert_frame_equal(output_cutoff_df, self.output_cutoff_df, check_names=False, check_dtype=False)
 
-    def test_function_merge_excel_files(self) -> None:
-        pass
+    @patch('src.analysis.pd.DataFrame.to_excel')
+    def test_function_generate_gated_table(self, mock_to_excel) -> None:
+        path = 'some/path/to/file.xlsx'
+        generate_gated_table(gated_df=self.indexed_df, gated_path=path)
+        expected_args = [path]
+        expected_kwargs = {'sheet_name': 'Gated Population', 'index': False}
+        mock_to_excel.assert_called_with(*expected_args, **expected_kwargs)
 
-    def test_function_read_excel_data(self) -> None:
-        pass
+    @patch('src.analysis.read_excel_data')
+    def test_function_merge_excel_files(self, mock_read_excel_data) -> None:
+        output_path = 'some/path/to/folder/subfolder'
+        summary_path = 'some/path/to/summary.xlsx'
+        excels = ['some.xlsx', 'excel.xslx', 'file.xlsx', 'names.xlsx']
+        mock_sheet = [['A1', 'B1', 'C1'], ['A2', 'B2', 'C2']]
+        mock_read_excel_data.return_value = mock_sheet
+        wb = merge_excel_files(output_path=output_path, summary_path=summary_path, excels=excels)
+        self.assertEqual(len(wb.sheetnames), len(excels) + 1)
+        for sheet in wb.sheetnames:
+            for row, mock_row in zip(wb[sheet].iter_rows(), mock_sheet):
+                for cell, mock_cell_value in zip(row, mock_row):
+                    self.assertEqual(cell.value, mock_cell_value)
+
+    @patch('src.analysis.load_workbook')
+    def test_function_read_excel_data(self, mock_load_workbook) -> None:
+        path = 'some/path/to/file.xlsx'
+        wb = Workbook()
+        ws = wb.active
+        ws.cell(row=1, column=1, value='a')
+        ws.cell(row=1, column=2, value='b')
+        ws.cell(row=2, column=1, value='c')
+        ws.cell(row=2, column=2, value='d')
+        mock_load_workbook.return_value = wb
+        result = read_excel_data(path=path)
+        self.assertEqual(result, [['a', 'b'], ['c', 'd']])
+        mock_load_workbook.assert_called_once_with(path)
 
 
 if __name__ == '__main__':

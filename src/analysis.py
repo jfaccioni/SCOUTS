@@ -273,8 +273,8 @@ def scouts_by_reference_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFra
         yield input_df.loc[(input_df < lower_cutoffs).any(axis=1)], info_lower
     if non_outliers is True:
         info_non = Info('reference', reference, 'any marker', 'non-outliers')
-        yield input_df.loc[(input_df < upper_cutoffs).any(axis=1) &
-                           (input_df > lower_cutoffs).any(axis=1)], info_non
+        yield input_df.loc[(input_df <= upper_cutoffs).any(axis=1) &
+                           (input_df >= lower_cutoffs).any(axis=1)], info_non
 
 
 def scouts_by_reference_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, markers: List[str],
@@ -292,8 +292,8 @@ def scouts_by_reference_single_marker(input_df: pd.DataFrame, cutoff_df: pd.Data
             yield input_df.loc[input_df[marker] < lower_cutoff], info_lower
         if non_outliers is True:
             info_non = Info('reference', reference, marker, 'non-outliers')
-            yield input_df.loc[(input_df[marker] < upper_cutoff) &
-                               (input_df[marker] > lower_cutoff)], info_non
+            yield input_df.loc[(input_df[marker] <= upper_cutoff) &
+                               (input_df[marker] >= lower_cutoff)], info_non
 
 
 # noinspection PyTypeChecker,PyUnresolvedReferences
@@ -302,18 +302,18 @@ def scouts_by_sample_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame,
     """Subsets DataFrame by sample cutoff, selecting samples that have at least 1 marker above
     outlier cutoff value."""
     upper_dfs = []
-    non_dfs = []
     lower_dfs = []
+    non_dfs = []
     for sample in samples:
         upper_cutoffs = [stat.upper_cutoff for stat in cutoff_df.loc[sample]]
         lower_cutoffs = [stat.lower_cutoff for stat in cutoff_df.loc[sample]]
         filtered_df = filter_df_by_sample_in_index(df=input_df, sample=sample)
         upper_dfs.append(filtered_df.loc[(filtered_df > upper_cutoffs).any(axis=1)])
-        if non_outliers is True:
-            non_dfs.append(filtered_df.loc[(filtered_df < upper_cutoffs).any(axis=1) &
-                                           (filtered_df > lower_cutoffs).any(axis=1)])
         if bottom_outliers is True:
             lower_dfs.append(filtered_df.loc[(filtered_df < lower_cutoffs).any(axis=1)])
+        if non_outliers is True:
+            non_dfs.append(filtered_df.loc[(filtered_df <= upper_cutoffs).any(axis=1) &
+                                           (filtered_df >= lower_cutoffs).any(axis=1)])
     info_upper = Info('sample', 'n/a', 'any marker', 'top outliers')
     yield pd.concat(upper_dfs), info_upper
     if non_outliers is True:
@@ -331,19 +331,18 @@ def scouts_by_sample_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFra
     dataframe separately)."""
     for marker in markers:
         upper_dfs = []
-        non_dfs = []
         lower_dfs = []
+        non_dfs = []
         for sample in samples:
             upper_cutoff = cutoff_df.loc[sample, marker].upper_cutoff
             lower_cutoff = cutoff_df.loc[sample, marker].lower_cutoff
             filtered_df = filter_df_by_sample_in_index(df=input_df, sample=sample)
             upper_dfs.append(filtered_df.loc[filtered_df[marker] > upper_cutoff])
-            if non_outliers is True:
-                non_dfs.append(filtered_df.loc[(filtered_df[marker] < upper_cutoff) &
-                                               (filtered_df[marker] > lower_cutoff)])
             if bottom_outliers is True:
                 lower_dfs.append(filtered_df.loc[filtered_df[marker] < lower_cutoff])
-
+            if non_outliers is True:
+                non_dfs.append(filtered_df.loc[(filtered_df[marker] <= upper_cutoff) &
+                                               (filtered_df[marker] >= lower_cutoff)])
         info_upper = Info('sample', 'n/a', marker, 'top outliers')
         yield pd.concat(upper_dfs), info_upper
         if non_outliers is True:
@@ -373,7 +372,7 @@ def add_scouts_data_to_stats(data: pd.DataFrame, samples: List[str], stats_df_di
             df.loc[(sample, info.category), info.outliers_for] = values_df.values
 
 
-def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> pd.DataFrame:
+def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> Union[pd.DataFrame, pd.Series]:
     """str"""  # TODO
     filtered_df = filter_df_by_sample_in_index(df=data, sample=sample)
     if 'any' in info.outliers_for:
@@ -387,12 +386,12 @@ def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> pd.DataFrame:
 def get_key_from_info(info: Info) -> str:
     """str"""  # TODO
     if info.cutoff_from == 'sample':
-        if 'any marker' == info.outliers_for:
+        if info.outliers_for == 'any marker':
             return 'OutS any marker'
         else:
             return 'OutS single marker'
     else:
-        if 'any marker' == info.outliers_for:
+        if info.outliers_for == 'any marker':
             return 'OutR any marker'
         else:
             return 'OutR single marker'
@@ -412,17 +411,22 @@ def generate_stats_table(stats_df_dict: Dict[str, pd.DataFrame], stats_path: str
     writer.save()
 
 
-def generate_cutoff_table(cutoff_df: pd.DataFrame, summary_path: str) -> None:
+def generate_cutoff_table(cutoff_df: pd.DataFrame, cutoff_path: str) -> None:
     """Generates table with cutoff values for each sample/marker combination (both high and low)."""
     uppers = [f'{marker}_upper_cutoff' for marker in cutoff_df.columns]
     lowers = [f'{marker}_lower_cutoff' for marker in cutoff_df.columns]
-    columns = [m for m in chain.from_iterable(zip(uppers, lowers))]
+    columns = [marker for marker in chain.from_iterable(zip(uppers, lowers))]
+    output_cutoff_df = get_output_cutoff_df(cutoff_df=cutoff_df, columns=columns)
+    output_cutoff_df.to_excel(cutoff_path, sheet_name='Cutoff', index_label='Sample')
+
+
+def get_output_cutoff_df(cutoff_df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
     output_cutoff_df = pd.DataFrame(index=cutoff_df.index, columns=columns)
     for sample in cutoff_df.index:
         for marker in cutoff_df.columns:
             output_cutoff_df.at[sample, f'{marker}_upper_cutoff'] = cutoff_df.at[sample, marker].upper_cutoff
             output_cutoff_df.at[sample, f'{marker}_lower_cutoff'] = cutoff_df.at[sample, marker].lower_cutoff
-    output_cutoff_df.to_excel(summary_path, sheet_name='Cutoff', index_label='Sample')
+    return output_cutoff_df
 
 
 def generate_gated_table(gated_df: pd.DataFrame, gated_path: str) -> None:
