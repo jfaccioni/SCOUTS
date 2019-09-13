@@ -23,14 +23,14 @@ sns.set(style="whitegrid")
 class ViolinGUI(QMainWindow):
     """Main Window Widget for ViolinGUI."""
     style = {
-        'title': 'QLabel {font-size:18pt; font-weight:700}',
-        'header': 'QLabel {font-weight:600}',
-        'button': 'QPushButton {font-size: 10pt}',
+        'title': 'QLabel {font-size: 18pt; font-weight: 600}',
+        'header': 'QLabel {font-size: 12pt; font-weight: 520}',
         'label': 'QLabel {font-size: 10pt}',
+        'button': 'QPushButton {font-size: 10pt}',
+        'run button': 'QPushButton {font-size: 18pt; font-weight: 600}',
         'line edit': 'QLineEdit {font-size: 10pt}',
-        'drop down': 'QComboBox {font-size: 10pt}',
-        'check box': 'QCheckBox {font-size: 10pt}',
-        'run button': 'QPushButton {font-size: 12pt; font-weight: 600}'
+        'checkbox': 'QCheckBox {font-size: 10pt}',
+        'drop down': 'QComboBox {font-size: 10pt}'
     }
 
     def __init__(self) -> None:
@@ -41,7 +41,7 @@ class ViolinGUI(QMainWindow):
         self.rootdir = get_project_root()
         # QMainWindow basic properties
         self.setWindowTitle("SCOUTS - Violins")
-        self.setWindowIcon(QIcon(f'scouts.ico'))
+        self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.rootdir, 'src', 'scouts.ico'))))
         # Creates QWidget as QMainWindow's central widget
         self.page = QWidget(self)
         self.setCentralWidget(self.page)
@@ -164,7 +164,7 @@ class ViolinGUI(QMainWindow):
 
         self.legend_checkbox = QCheckBox(self.page)
         self.legend_checkbox.setText('Add legend to the plot')
-        self.legend_checkbox.setStyleSheet(self.style['check box'])
+        self.legend_checkbox.setStyleSheet(self.style['checkbox'])
         self.main_layout.addWidget(self.legend_checkbox)
 
         # Plot button (stand-alone)

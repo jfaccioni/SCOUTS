@@ -20,17 +20,15 @@ from src.utils import (NoIOPathError, NoReferenceError, NoSampleError, PandasInp
 class SCOUTS(QMainWindow):
     """Main Window Widget for SCOUTS."""
     style = {
-        'title': 'QLabel {font-size:18pt; font-weight:700}',
-        'subtitle': 'QLabel {font-size:12pt}',
-        'header': 'QLabel {font-weight:600}',
-        'button': 'QPushButton {font-size: 10pt}',
+        'title': 'QLabel {font-size: 18pt; font-weight: 600}',
+        'header': 'QLabel {font-size: 12pt; font-weight: 520}',
         'label': 'QLabel {font-size: 10pt}',
-        'bold-label': 'QLabel {font-size: 10pt; font-weight:600}',
-        'radio button': 'QRadioButton {font-size: 10pt}',
-        'checkbox': 'QCheckBox {font-size: 10pt}',
+        'button': 'QPushButton {font-size: 10pt}',
+        'md button': 'QPushButton {font-size: 12pt}',
+        'run button': 'QPushButton {font-size: 18pt; font-weight: 600}',
         'line edit': 'QLineEdit {font-size: 10pt}',
-        'credits': 'QLabel {font-style:italic; font-size:10pt}',
-        'run button': 'QPushButton {font-size: 12pt; font-weight: 600}'
+        'checkbox': 'QCheckBox {font-size: 10pt}',
+        'radio button': 'QRadioButton {font-size: 10pt}'
     }
 
     def __init__(self) -> None:
@@ -46,7 +44,7 @@ class SCOUTS(QMainWindow):
         self.threadpool = QThreadPool()
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
-        self.setWindowIcon(QIcon(f'scouts.ico'))
+        self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.rootdir, 'src', 'scouts.ico'))))
         # Creates StackedWidget as QMainWindow's central widget
         self.stacked_pages = QStackedWidget(self)
         self.setCentralWidget(self.stacked_pages)
@@ -134,7 +132,7 @@ class SCOUTS(QMainWindow):
         self.cutoff_text.setToolTip('Choose whether to select outliers using the cutoff value from a reference\n'
                                     'sample (OutR) or by using the cutoff value calculated for each sample\n'
                                     'individually (OutS)')
-        self.cutoff_text.setStyleSheet(self.style['bold-label'])
+        self.cutoff_text.setStyleSheet(self.style['label'])
         # Cutoff button group
         self.cutoff_group = QButtonGroup(self)
         # Cutoff by sample
@@ -158,7 +156,7 @@ class SCOUTS(QMainWindow):
         self.cutoff_group.addButton(self.cutoff_both)
         # Markers text
         self.markers_text = QLabel(self.main_page)
-        self.markers_text.setStyleSheet(self.style['bold-label'])
+        self.markers_text.setStyleSheet(self.style['label'])
         self.markers_text.setText('Show results for:')
         self.markers_text.setToolTip('Individual markers: for each marker, select outliers\n'
                                      'Any marker: select cells that are outliers for AT LEAST one marker')
@@ -185,7 +183,7 @@ class SCOUTS(QMainWindow):
         self.markers_group.addButton(self.both_methods)
         # Tukey text
         self.tukey_text = QLabel(self.main_page)
-        self.tukey_text.setStyleSheet(self.style['bold-label'])
+        self.tukey_text.setStyleSheet(self.style['label'])
         # Tukey button group
         self.tukey_text.setText('Tukey factor:')
         self.tukey_group = QButtonGroup(self)
@@ -282,11 +280,13 @@ class SCOUTS(QMainWindow):
         self.help_button = QPushButton(self.main_page)
         self.set_icon(self.help_button, 'help-about')
         self.help_button.setText(' Help')
+        self.help_button.setStyleSheet(self.style['md button'])
         self.help_button.clicked.connect(self.get_help)
         # Quit button
         self.quit_button = QPushButton(self.main_page)
         self.set_icon(self.quit_button, 'process-stop')
         self.quit_button.setText(' Quit')
+        self.quit_button.setStyleSheet(self.style['md button'])
         self.quit_button.clicked.connect(self.close)
         # Add widgets above to help-quit layout
         self.helpquit_frame.layout().addWidget(self.help_button)
@@ -368,13 +368,13 @@ class SCOUTS(QMainWindow):
         self.clear_samples = QPushButton(self.samples_page)
         self.set_icon(self.clear_samples, 'edit-delete')
         self.clear_samples.setText(' Clear table')
-        self.clear_samples.setStyleSheet(self.style['button'])
+        self.clear_samples.setStyleSheet(self.style['md button'])
         self.clear_samples.clicked.connect(self.prompt_clear_data)
         # Save samples button
         self.save_samples = QPushButton(self.samples_page)
         self.set_icon(self.save_samples, 'document-save')
         self.save_samples.setText(' Save samples')
-        self.save_samples.setStyleSheet(self.style['button'])
+        self.save_samples.setStyleSheet(self.style['md button'])
         self.save_samples.clicked.connect(self.goto_main_page)
         # Add widgets above to save & clear layout
         self.saveclear_frame.layout().addWidget(self.clear_samples)
@@ -414,14 +414,15 @@ class SCOUTS(QMainWindow):
         self.no_gates = QRadioButton(self.gating_page)
         self.no_gates.setObjectName('no_gate')
         self.no_gates.setText("Don't gate samples")
+        self.no_gates.setStyleSheet(self.style['radio button'])
         self.no_gates.setChecked(True)
         self.gating_group.addButton(self.no_gates)
         self.no_gates.clicked.connect(self.activate_gate)
         # CyToF gating
         self.cytof_gates = QRadioButton(self.gating_page)
         self.cytof_gates.setObjectName('cytof')
-        cytof_info = 'Mass Cytometry gating'
-        self.cytof_gates.setText(cytof_info)
+        self.cytof_gates.setText('Mass Cytometry gating')
+        self.cytof_gates.setStyleSheet(self.style['radio button'])
         self.cytof_gates.setToolTip('Exclude cells for which the average expression of all\n'
                                     'markers is below the selected value')
         self.gating_group.addButton(self.cytof_gates)
@@ -435,8 +436,8 @@ class SCOUTS(QMainWindow):
         self.cytof_gates_value.setEnabled(False)
         # scRNA-Seq gating
         self.rnaseq_gates = QRadioButton(self.gating_page)
-        rnaseq_info = 'scRNA-Seq gating'
-        self.rnaseq_gates.setText(rnaseq_info)
+        self.rnaseq_gates.setText('scRNA-Seq gating')
+        self.rnaseq_gates.setStyleSheet(self.style['radio button'])
         self.rnaseq_gates.setToolTip('When calculating cutoff, ignore reads below the selected value')
         self.rnaseq_gates.setObjectName('rnaseq')
         self.gating_group.addButton(self.rnaseq_gates)
@@ -451,6 +452,7 @@ class SCOUTS(QMainWindow):
         # export gated population checkbox
         self.export_gated = QCheckBox(self.gating_page)
         self.export_gated.setText('Export gated cells as an output file')
+        self.export_gated.setStyleSheet(self.style['checkbox'])
         self.export_gated.setEnabled(False)
         # Add widgets above to Gate frame layout
         self.gate_frame.layout().addRow(self.no_gates, QLabel())
@@ -474,12 +476,15 @@ class SCOUTS(QMainWindow):
         self.top_outliers = QLabel(self.gating_page)
         self.top_outliers.setStyleSheet(self.style['label'])
         self.top_outliers.setText('By default, SCOUTS selects the top outliers from the population')
+        self.top_outliers.setStyleSheet(self.style['label'])
         # Bottom outliers data
         self.bottom_outliers = QCheckBox(self.gating_page)
         self.bottom_outliers.setText('Include results for low outliers')
+        self.bottom_outliers.setStyleSheet(self.style['checkbox'])
         # Non-outliers data
         self.not_outliers = QCheckBox(self.gating_page)
         self.not_outliers.setText('Include results for non-outliers')
+        self.not_outliers.setStyleSheet(self.style['checkbox'])
         # Add widgets above to Gate frame layout
         self.outlier_frame.layout().addWidget(self.top_outliers)
         self.outlier_frame.layout().addWidget(self.bottom_outliers)
@@ -488,7 +493,8 @@ class SCOUTS(QMainWindow):
         # ## Save/back button
         self.save_gates = QPushButton(self.gating_page)
         self.set_icon(self.save_gates, 'go-next')
-        self.save_gates.setText(' Back to menu')
+        self.save_gates.setText(' Back to main menu')
+        self.save_gates.setStyleSheet(self.style['md button'])
         self.gating_layout.addWidget(self.save_gates)
         self.save_gates.clicked.connect(self.goto_main_page)
 
