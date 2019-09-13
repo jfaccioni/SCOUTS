@@ -16,7 +16,7 @@ setup(
     author_email="julianofaccioni@gmail.com",
     mantainer="Juliano Luiz Faccioni",
     mantainer_email="julianofaccioni@gmail.com",
-    # url="http://www.ufrgs.br/labsinal/scouts/index.html",  wait for OK
+    url="http://www.ufrgs.br/labsinal/scouts/index.html",
     download_url="https://scouts.readthedocs.io/en/master/install.html",
     project_urls={
         'Bug Tracker': 'https://github.com/jfaccioni/scouts/issues',
