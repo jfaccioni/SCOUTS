@@ -52,7 +52,7 @@ class SCOUTS(QMainWindow):
 
         # Inherits from QMainWindow
         super().__init__()
-        self.root = get_project_root()
+        self.rootdir = get_project_root()
         self.threadpool = QThreadPool()
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
@@ -531,7 +531,7 @@ class SCOUTS(QMainWindow):
     def set_icon(self, widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.root, 'src', 'default_icons', f'{icon}.svg'))))
+        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.rootdir, 'src', 'default_icons', f'{icon}.svg'))))
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     # ###
