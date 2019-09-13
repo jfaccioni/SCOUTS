@@ -1,3 +1,3 @@
 include README.md
-include src/*.ico
+include src/scouts.ico
 include src/default_icons/*.svg

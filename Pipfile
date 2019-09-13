@@ -8,7 +8,7 @@ pyinstaller = "*"
 
 
 [packages]
-scouts = {editable = true,path = "."}
+scouts = {path = "."}
 numpy = "*"
 pandas = "*"
 matplotlib = "*"
@@ -16,3 +16,4 @@ seaborn = "*"
 pyside2 = "*"
 openpyxl = "*"
 xlrd = "*"
+

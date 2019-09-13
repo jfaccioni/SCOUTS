@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 LONG_DESCRIPTION = """SCOUTS is a tool that quickly finds outliers in your single-cell data, generating information
 about your population organized by target molecules. SCOUTS takes your single-cell input and generates output files
@@ -47,7 +47,7 @@ setup(
     entry_points={
         'console_scripts': [
             'scouts=src.gui:main',
-            'scouts-violins=src.gui_violins:main [violins]'
+            'scouts-violins=src.violins:main [violins]'
         ]
     }
 )
