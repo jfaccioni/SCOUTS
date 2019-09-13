@@ -14,6 +14,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
+from src.utils import get_project_root
+
 set_backend('Qt5Agg')
 sns.set(style="whitegrid")
 
@@ -46,6 +48,7 @@ class ViolinGUI(QMainWindow):
         # ## Setup section
         # Inherits from QMainWindow
         super().__init__()
+        self.rootdir = get_project_root()
         # QMainWindow basic properties
         self.setWindowTitle("Plot Violins")
         self.setWindowIcon(QIcon(f'scouts.ico'))
@@ -211,11 +214,10 @@ class ViolinGUI(QMainWindow):
         """Returns the Y position of the bottommost part of the widget."""
         return widget.height() + widget.y()
 
-    @staticmethod
-    def set_icon(widget: QWidget, icon: str) -> None:
+    def set_icon(self, widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(os.path.join('default_icons', f'{icon}.svg')))
+        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.rootdir, 'src', 'default_icons', f'{icon}.svg'))))
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     def get_path(self) -> None:
