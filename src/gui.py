@@ -9,8 +9,8 @@ from PySide2.QtCore import QEvent, QObject, QRunnable, QThreadPool, Qt, Signal, 
 from PySide2.QtGui import QIcon, QKeySequence, QPixmap
 from PySide2.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QDialog, QDoubleSpinBox, QFileDialog, QFormLayout,
                                QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMainWindow,
-                               QMessageBox, QPushButton, QRadioButton, QShortcut, QStackedWidget, QTableWidget,
-                               QTableWidgetItem, QVBoxLayout, QWidget)
+                               QMessageBox, QPushButton, QRadioButton, QShortcut, QSizePolicy, QStackedWidget,
+                               QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 from src.analysis import start_scouts
 from src.utils import (NoIOPathError, NoReferenceError, NoSampleError, PandasInputError, SampleNamingError,
@@ -19,16 +19,6 @@ from src.utils import (NoIOPathError, NoReferenceError, NoSampleError, PandasInp
 
 class SCOUTS(QMainWindow):
     """Main Window Widget for SCOUTS."""
-    margin = {
-        'left': 15,
-        'top': 5,
-        'right': 10,
-        'bottom': 10
-    }
-    size = {
-        'width': 480,
-        'height': 640
-    }
     style = {
         'title': 'QLabel {font-size:18pt; font-weight:700}',
         'subtitle': 'QLabel {font-size:12pt}',
@@ -57,8 +47,6 @@ class SCOUTS(QMainWindow):
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
         self.setWindowIcon(QIcon(f'scouts.ico'))
-        self.setMinimumSize(*self.size.values())
-        self.setMaximumSize(*self.size.values())
         # Creates StackedWidget as QMainWindow's central widget
         self.stacked_pages = QStackedWidget(self)
         self.setCentralWidget(self.stacked_pages)
@@ -69,7 +57,6 @@ class SCOUTS(QMainWindow):
         self.pages = (self.main_page, self.samples_page, self.gating_page)
         for page in self.pages:
             self.stacked_pages.addWidget(page)
-        self.stacked_pages.setMinimumSize(*self.size.values())
         # ## Sets widget at program startup
         self.stacked_pages.setCurrentWidget(self.main_page)
 
@@ -77,27 +64,30 @@ class SCOUTS(QMainWindow):
         # ### MAIN PAGE
         # ###
 
+        # Main page layout
+        self.main_layout = QVBoxLayout(self.main_page)
+
         # Title section
         # Title
         self.title = QLabel(self.main_page)
-        self.title.move(self.margin['left'], self.margin['top'])
         self.title.setText('SCOUTS - Single Cell Outlier Selector')
         self.title.setStyleSheet(self.style['title'])
-        self.title.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.title.adjustSize()
+        self.main_layout.addWidget(self.title)
 
         # ## Input section
         # Input header
         self.input_header = QLabel(self.main_page)
-        self.input_header.move(self.margin['left'], self.widget_vposition(self.title) + 5)
         self.input_header.setText('Input settings')
         self.input_header.setStyleSheet(self.style['header'])
+        self.main_layout.addChildWidget(self.input_header)
         self.input_header.adjustSize()
+        self.main_layout.addWidget(self.input_header)
         # Input frame
         self.input_frame = QFrame(self.main_page)
-        self.input_frame.setGeometry(self.margin['left'],
-                                     self.widget_vposition(self.input_header) + 5, self.rlimit(), 105)
         self.input_frame.setFrameShape(QFrame.StyledPanel)
         self.input_frame.setLayout(QFormLayout())
+        self.main_layout.addWidget(self.input_frame)
         # Input button
         self.input_button = QPushButton(self.main_page)
         self.input_button.setStyleSheet(self.style['button'])
@@ -129,16 +119,15 @@ class SCOUTS(QMainWindow):
         # ## Analysis section
         # Analysis header
         self.analysis_header = QLabel(self.main_page)
-        self.analysis_header.move(self.margin['left'], self.widget_vposition(self.input_frame) + 15)
         self.analysis_header.setText('Analysis settings')
         self.analysis_header.setStyleSheet(self.style['header'])
         self.analysis_header.adjustSize()
+        self.main_layout.addWidget(self.analysis_header)
         # Analysis frame
         self.analysis_frame = QFrame(self.main_page)
-        self.analysis_frame.setGeometry(self.margin['left'],
-                                        self.widget_vposition(self.analysis_header) + 5, self.rlimit(), 155)
         self.analysis_frame.setFrameShape(QFrame.StyledPanel)
         self.analysis_frame.setLayout(QVBoxLayout())
+        self.main_layout.addWidget(self.analysis_frame)
         # Cutoff text
         self.cutoff_text = QLabel(self.main_page)
         self.cutoff_text.setText('Type of outlier to select:')
@@ -232,16 +221,15 @@ class SCOUTS(QMainWindow):
         # ## Output section
         # Output header
         self.output_header = QLabel(self.main_page)
-        self.output_header.move(self.margin['left'], self.widget_vposition(self.analysis_frame) + 15)
         self.output_header.setText('Output settings')
         self.output_header.setStyleSheet(self.style['header'])
         self.output_header.adjustSize()
+        self.main_layout.addWidget(self.output_header)
         # Output frame
         self.output_frame = QFrame(self.main_page)
-        self.output_frame.setGeometry(self.margin['left'],
-                                      self.widget_vposition(self.output_header) + 5, self.rlimit(), 140)
         self.output_frame.setFrameShape(QFrame.StyledPanel)
         self.output_frame.setLayout(QFormLayout())
+        self.main_layout.addWidget(self.output_frame)
         # Output button
         self.output_button = QPushButton(self.main_page)
         self.output_button.setStyleSheet(self.style['button'])
@@ -280,19 +268,16 @@ class SCOUTS(QMainWindow):
         # ## Run & help-quit section
         # Run button (stand-alone)
         self.run_button = QPushButton(self.main_page)
-        self.run_button.setGeometry(self.margin['left'],
-                                    self.widget_vposition(self.output_frame) + 5, self.rlimit(), 30)
         self.set_icon(self.run_button, 'system-run')
         self.run_button.setText(' Run!')
         self.run_button.setStyleSheet(self.style['run button'])
+        self.main_layout.addWidget(self.run_button)
         self.run_button.clicked.connect(self.run)
         # Help-quit frame (invisible)
         self.helpquit_frame = QFrame(self.main_page)
-        self.helpquit_frame.setGeometry(self.margin['left'],
-                                        self.widget_vposition(self.run_button) + 5, self.rlimit(), 30)
-        helpquit_layout = QHBoxLayout()
-        helpquit_layout.setMargin(0)
-        self.helpquit_frame.setLayout(helpquit_layout)
+        self.helpquit_frame.setLayout(QHBoxLayout())
+        self.helpquit_frame.layout().setMargin(0)
+        self.main_layout.addWidget(self.helpquit_frame)
         # Help button
         self.help_button = QPushButton(self.main_page)
         self.set_icon(self.help_button, 'help-about')
@@ -311,30 +296,31 @@ class SCOUTS(QMainWindow):
         # ### SAMPLES PAGE
         # ###
 
+        # Samples page layout
+        self.samples_layout = QVBoxLayout(self.samples_page)
+
         # ## Title section
         # Title
         self.samples_title = QLabel(self.samples_page)
-        self.samples_title.move(self.margin['left'], self.margin['top'])
         self.samples_title.setText('Name your samples')
         self.samples_title.setStyleSheet(self.style['title'])
-        self.samples_title.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.samples_title.adjustSize()
+        self.samples_layout.addWidget(self.samples_title)
         # Subtitle
         self.samples_subtitle = QLabel(self.samples_page)
-        self.samples_subtitle.move(self.margin['left'], self.widget_vposition(self.samples_title) + 5)
         string = ('Please name the samples to be analysed by SCOUTS.\n\nSCOUTS searches the first '
                   'column of your data\nand locates the exact string as part of the sample name.')
         self.samples_subtitle.setText(string)
         self.samples_subtitle.setStyleSheet(self.style['label'])
         self.samples_subtitle.adjustSize()
+        self.samples_layout.addWidget(self.samples_subtitle)
 
         # ## Sample addition section
         # Sample addition frame
         self.samples_frame = QFrame(self.samples_page)
-        self.samples_frame.setGeometry(self.margin['left'],
-                                       self.widget_vposition(self.samples_subtitle) + 5, self.rlimit(), 80)
         self.samples_frame.setFrameShape(QFrame.StyledPanel)
-        self.samples_layout = QGridLayout()
-        self.samples_frame.setLayout(self.samples_layout)
+        self.samples_frame.setLayout(QGridLayout())
+        self.samples_layout.addWidget(self.samples_frame)
         # Sample name box
         self.sample_name = QLineEdit(self.samples_page)
         self.sample_name.setStyleSheet(self.style['line edit'])
@@ -358,30 +344,26 @@ class SCOUTS(QMainWindow):
         self.remove_sample_button.setStyleSheet(self.style['button'])
         self.remove_sample_button.clicked.connect(self.remove_from_sample_table)
         # Add widgets above to sample addition layout
-        self.samples_layout.addWidget(self.sample_name, 0, 0)
-        self.samples_layout.addWidget(self.is_reference, 1, 0)
-        self.samples_layout.addWidget(self.add_sample_button, 0, 1)
-        self.samples_layout.addWidget(self.remove_sample_button, 1, 1)
+        self.samples_frame.layout().addWidget(self.sample_name, 0, 0)
+        self.samples_frame.layout().addWidget(self.is_reference, 1, 0)
+        self.samples_frame.layout().addWidget(self.add_sample_button, 0, 1)
+        self.samples_frame.layout().addWidget(self.remove_sample_button, 1, 1)
 
         # ## Sample table
         self.sample_table = QTableWidget(self.samples_page)
-        self.sample_table.setGeometry(self.margin['left'],
-                                      self.widget_vposition(self.samples_frame) + 5, self.rlimit(), 350)
         self.sample_table.setColumnCount(2)
         self.sample_table.setHorizontalHeaderItem(0, QTableWidgetItem('Sample'))
         self.sample_table.setHorizontalHeaderItem(1, QTableWidgetItem('Reference?'))
-        head = self.sample_table.horizontalHeader()
-        head.setSectionResizeMode(0, QHeaderView.Stretch)
-        head.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.sample_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.sample_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.samples_layout.addWidget(self.sample_table)
 
         # ## Save & clear buttons
         # Save & clear frame (invisible)
         self.saveclear_frame = QFrame(self.samples_page)
-        self.saveclear_frame.setGeometry(self.margin['left'],
-                                         self.widget_vposition(self.sample_table) + 5, self.rlimit(), 30)
-        saveclear_layout = QHBoxLayout()
-        saveclear_layout.setMargin(0)
-        self.saveclear_frame.setLayout(saveclear_layout)
+        self.saveclear_frame.setLayout(QHBoxLayout())
+        self.saveclear_frame.layout().setMargin(0)
+        self.samples_layout.addWidget(self.saveclear_frame)
         # Clear samples button
         self.clear_samples = QPushButton(self.samples_page)
         self.set_icon(self.clear_samples, 'edit-delete')
@@ -402,28 +384,30 @@ class SCOUTS(QMainWindow):
         # ### GATING PAGE
         # ###
 
+        # Gating page layout
+        self.gating_layout = QVBoxLayout(self.gating_page)
+
         # ## Title section
         # Title
         self.gates_title = QLabel(self.gating_page)
-        self.gates_title.move(self.margin['left'], self.margin['top'])
         self.gates_title.setText('Gating & outlier options')
         self.gates_title.setStyleSheet(self.style['title'])
-        self.gates_title.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.gates_title.adjustSize()
+        self.gating_layout.addWidget(self.gates_title)
 
         # ## Gating options section
         # Gating header
         self.gate_header = QLabel(self.gating_page)
-        self.gate_header.move(self.margin['left'], self.widget_vposition(self.gates_title) + 25)
         self.gate_header.setText('Gating')
         self.gate_header.setStyleSheet(self.style['header'])
         self.gate_header.adjustSize()
+        self.gating_layout.addWidget(self.gate_header)
+
         # Gating frame
         self.gate_frame = QFrame(self.gating_page)
-        self.gate_frame.setGeometry(self.margin['left'],
-                                    self.widget_vposition(self.gate_header) + 5, self.rlimit(), 150)
         self.gate_frame.setFrameShape(QFrame.StyledPanel)
         self.gate_frame.setLayout(QFormLayout())
+        self.gating_layout.addWidget(self.gate_frame)
         # Gating button group
         self.gating_group = QButtonGroup(self)
         # Do not gate samples
@@ -477,16 +461,15 @@ class SCOUTS(QMainWindow):
         # ## Outlier options section
         # Outlier header
         self.outlier_header = QLabel(self.gating_page)
-        self.outlier_header.move(self.margin['left'], self.widget_vposition(self.gate_frame) + 25)
         self.outlier_header.setText('Outliers')
         self.outlier_header.setStyleSheet(self.style['header'])
         self.outlier_header.adjustSize()
+        self.gating_layout.addWidget(self.outlier_header)
         # Outlier frame
         self.outlier_frame = QFrame(self.gating_page)
-        self.outlier_frame.setGeometry(self.margin['left'],
-                                       self.widget_vposition(self.outlier_header) + 5, self.rlimit(), 100)
         self.outlier_frame.setFrameShape(QFrame.StyledPanel)
         self.outlier_frame.setLayout(QVBoxLayout())
+        self.gating_layout.addWidget(self.outlier_frame)
         # Top outliers information
         self.top_outliers = QLabel(self.gating_page)
         self.top_outliers.setStyleSheet(self.style['label'])
@@ -504,29 +487,19 @@ class SCOUTS(QMainWindow):
 
         # ## Save/back button
         self.save_gates = QPushButton(self.gating_page)
-        self.save_gates.setGeometry(self.margin['left'],
-                                    self.widget_vposition(self.outlier_frame) + 25, self.rlimit(), 40)
         self.set_icon(self.save_gates, 'go-next')
         self.save_gates.setText(' Back to menu')
+        self.gating_layout.addWidget(self.save_gates)
         self.save_gates.clicked.connect(self.goto_main_page)
 
+        # ## Add empty label to take vertical space
+        self.empty_label = QLabel(self.gating_page)
+        self.empty_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.gating_layout.addWidget(self.empty_label)
+
     # ###
-    # ### WIDGET ADJUSTMENT METHODS
+    # ### ICON SETTING
     # ###
-
-    def rlimit(self) -> int:
-        """Returns the X position of the start of the right margin. Used to stretch Widgets across the GUI."""
-        return self.size['width'] - (self.margin['left'] + self.margin['right'])
-
-    @staticmethod
-    def widget_hposition(widget: QWidget) -> int:
-        """Returns the X position of the rightmost part of the widget."""
-        return widget.width() + widget.x()
-
-    @staticmethod
-    def widget_vposition(widget: QWidget) -> int:
-        """Returns the Y position of the bottommost part of the widget."""
-        return widget.height() + widget.y()
 
     def set_icon(self, widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
