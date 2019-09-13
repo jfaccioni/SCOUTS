@@ -10,7 +10,6 @@ from openpyxl import Workbook, load_workbook
 
 from src.utils import NoReferenceError, PandasInputError, SampleNamingError
 
-
 Stats = namedtuple("Stats", ['first_quartile', 'third_quartile', 'iqr', 'lower_cutoff', 'upper_cutoff'])
 Info = namedtuple("Info", ['cutoff_from', 'reference', 'outliers_for', 'category'])
 
@@ -106,7 +105,6 @@ def apply_cytof_gating(df: pd.DataFrame, cutoff: float) -> None:
     df.drop(indices_to_drop, axis=0, inplace=True)
 
 
-# noinspection PyTypeChecker
 def apply_rnaseq_gating(df: pd.DataFrame, cutoff: float) -> None:
     """Applies gating for Single-Cell RNASeq onto input dataframe, excluding values below threshold from
     calculations of outlier values."""
@@ -161,9 +159,9 @@ def get_marker_statistics(tukey: float, marker_series: pd.Series) -> Stats:
 
 
 def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], markers: List[str],
-               reference: Optional[str], cutoff_df: pd.DataFrame, cutoff_rule: str, marker_rule: str,
-               export_csv: bool, export_excel: bool, single_excel: bool, export_gated: bool, non_outliers: bool,
-               bottom_outliers: bool, output_folder: str) -> None:
+               reference: Optional[str], cutoff_df: pd.DataFrame, cutoff_rule: str, marker_rule: str, export_csv: bool,
+               export_excel: bool, single_excel: bool, export_gated: bool, non_outliers: bool, bottom_outliers: bool,
+               output_folder: str) -> None:
     """Function responsible for calling SCOUTS subsetting routines, yielding DataFrames, saving them in
     the appropriate format/directory and recording information about each saved result."""
     summary_df = pd.DataFrame(columns=['file number'] + list(Info._fields))
@@ -204,9 +202,10 @@ def run_scouts(widget: QMainWindow, df: pd.DataFrame, samples: List[str], marker
         merged_excel.save(merged_path)
 
 
-def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, samples: List[str],
-                     bottom: bool, non: bool) -> Dict[str, pd.DataFrame]:
-    """str"""  # TODO
+def create_stats_dfs(markers: List[str], cutoff_rule: str, marker_rule: str, samples: List[str], bottom: bool,
+                     non: bool) -> Dict[str, pd.DataFrame]:
+    """Creates and returns a dictionary of DataFrames for keeping track of stats.xslx information,
+    since this information is calculated iteratively as SCOUTS analyses the input data."""
     populations = ['whole population', 'top outliers']
     if non is True:
         populations += ['non-outliers']
@@ -259,7 +258,6 @@ def yield_dataframes(input_df: pd.DataFrame, samples: List[str], markers: List[s
                                                       non_outliers=non_outliers)
 
 
-# noinspection PyTypeChecker,PyUnresolvedReferences
 def scouts_by_reference_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, reference: str,
                                    bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
     """Subsets DataFrame by reference cutoff, selecting samples that have at least 1 marker above
@@ -296,7 +294,6 @@ def scouts_by_reference_single_marker(input_df: pd.DataFrame, cutoff_df: pd.Data
                                (input_df[marker] >= lower_cutoff)], info_non
 
 
-# noinspection PyTypeChecker,PyUnresolvedReferences
 def scouts_by_sample_any_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFrame, samples: List[str],
                                 bottom_outliers: bool, non_outliers: bool) -> Generator[pd.DataFrame, None, None]:
     """Subsets DataFrame by sample cutoff, selecting samples that have at least 1 marker above
@@ -354,16 +351,16 @@ def scouts_by_sample_single_marker(input_df: pd.DataFrame, cutoff_df: pd.DataFra
 
 
 def add_scouts_data_to_summary(df: pd.DataFrame, i: int, info: Info) -> pd.DataFrame:
-    """Adds info to the summary df with each new yielded dataframe from SCOUTS."""
+    """Adds info to the summary_df with each new yielded DataFrame from SCOUTS."""
     series = pd.Series([i, *info._asdict().values()], index=df.columns, name=f'{len(df)}')
     return df.append(series)
 
 
 def add_scouts_data_to_stats(data: pd.DataFrame, samples: List[str], stats_df_dict: Dict[str, pd.DataFrame],
                              info: Info) -> None:
-    """str"""  # TODO
+    """Adds info to the stats_df with each new yielded dataframe from SCOUTS."""
     for sample in samples:
-        values_df = get_values_df(data, sample, info)
+        values_df = get_values_df_or_series(data, sample, info)
         key = get_key_from_info(info)
         df = stats_df_dict[key]
         if 'any' in info.outliers_for:
@@ -372,8 +369,9 @@ def add_scouts_data_to_stats(data: pd.DataFrame, samples: List[str], stats_df_di
             df.loc[(sample, info.category), info.outliers_for] = values_df.values
 
 
-def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> Union[pd.DataFrame, pd.Series]:
-    """str"""  # TODO
+def get_values_df_or_series(data: pd.DataFrame, sample: str, info: Info) -> Union[pd.DataFrame, pd.Series]:
+    """Gets the corresponding values from the yielded DataFrame, in order to add them to the appropriate DataFrame
+    inside the stats_df dictionary."""
     filtered_df = filter_df_by_sample_in_index(df=data, sample=sample)
     if 'any' in info.outliers_for:
         values_df = filtered_df.describe().loc[['count', 'mean', '50%', 'std']]
@@ -384,7 +382,7 @@ def get_values_df(data: pd.DataFrame, sample: str, info: Info) -> Union[pd.DataF
 
 
 def get_key_from_info(info: Info) -> str:
-    """str"""  # TODO
+    """Figures out which key from the stats_df dictionary the stats should be saved to."""
     if info.cutoff_from == 'sample':
         if info.outliers_for == 'any marker':
             return 'OutS any marker'
@@ -404,7 +402,8 @@ def generate_summary_table(summary_df: pd.DataFrame, summary_path: str) -> None:
 
 
 def generate_stats_table(stats_df_dict: Dict[str, pd.DataFrame], stats_path: str) -> None:
-    """str"""  # TODO
+    """Generates table with stats (counts, mean, median and standard deviation) for each OutS/OutR and
+    any marker/single marker combination, as individual sheets."""
     writer = pd.ExcelWriter(stats_path)
     for name, df in stats_df_dict.items():
         df.to_excel(writer, sheet_name=name)
@@ -421,6 +420,8 @@ def generate_cutoff_table(cutoff_df: pd.DataFrame, cutoff_path: str) -> None:
 
 
 def get_output_cutoff_df(cutoff_df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
+    """Gets a properly formatted cutoff DataFrame from the DataFrame containing Info instances,
+    including individual columns for low and high cutoff values."""
     output_cutoff_df = pd.DataFrame(index=cutoff_df.index, columns=columns)
     for sample in cutoff_df.index:
         for marker in cutoff_df.columns:

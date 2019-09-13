@@ -219,14 +219,14 @@ class ViolinGUI(QMainWindow):
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     def get_path(self) -> None:
-        """Opens a dialog box and sets the chosen file/folder path, depending on the caller widget."""
+        """Opens a dialog box and loads the corresponding data into memory, depending on the caller widget."""
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         query = None
         func = None
         if self.sender().objectName() == 'file':
             query, _ = QFileDialog.getOpenFileName(self, "Select file", "", "All Files (*)", options=options)
-            func = self.load_raw_data
+            func = self.load_scouts_input_data
         elif self.sender().objectName() == 'folder':
             query = QFileDialog.getExistingDirectory(self, "Select Directory", options=options)
             func = self.load_scouts_results
@@ -234,7 +234,7 @@ class ViolinGUI(QMainWindow):
             self.load_data(query, func)
 
     def load_data(self, query: str, func: Callable) -> None:
-        """str"""  # TODO
+        """Loads input data into memory, while displaying a loading message as a separate worker."""
         worker = Worker(func=func, query=query)
         message = self.loading_message()
         worker.signals.started.connect(message.show)
@@ -247,7 +247,7 @@ class ViolinGUI(QMainWindow):
         self.threadpool.start(worker)
 
     def loading_message(self) -> QDialog:
-        """str"""  # TODO
+        """Returns the message box to be displayed while the user waits for the input data to load."""
         message = QDialog(self)
         message.setWindowTitle('Loading')
         message.resize(300, 50)
@@ -258,31 +258,33 @@ class ViolinGUI(QMainWindow):
         label.move(int((message.width() - label.width())/2), int((message.height() - label.height())/2))
         return message
 
-    def load_raw_data(self, query: str) -> None:
-        """str"""  # TODO
+    def load_scouts_input_data(self, query: str) -> None:
+        """Loads data for whole population prior to SCOUTS into memory (used for plotting the whole population)."""
         self.population_df = pd.read_excel(query, index_col=0)
         self.drop_down_03.clear()
         self.drop_down_03.addItems(list(self.population_df.columns))
         self.drop_down_03.setCurrentIndex(0)
 
     def load_scouts_results(self, query: str) -> None:
-        """str"""  # TODO
+        """Loads the SCOUTS summary file into memory, in order to dynamically locate SCOUTS output files later when
+        the user chooses which data to plot."""
         self.summary_df = pd.read_excel(os.path.join(query, 'summary.xlsx'), index_col=None)
         self.summary_path = query
 
     def enable_plot(self) -> None:
+        """Enables plot button if all necessary files are placed in memory."""
         if isinstance(self.summary_df, pd.DataFrame) and isinstance(self.population_df, pd.DataFrame):
             self.plot_button.setEnabled(True)
 
     def run_plot(self) -> None:
-        """str"""  # TODO
+        """Sets and starts the plot worker."""
         worker = Worker(func=self.plot)
         worker.signals.error.connect(self.generic_error_message)
         worker.signals.success.connect(self.secondary_window.show)
         self.threadpool.start(worker)
 
     def plot(self) -> None:
-        """str"""  # TODO
+        """Logic for plotting data based on user selection of populations, markers, etc."""
         # Clear figure currently on plot
         self.dynamic_canvas.axes.cla()
         # Initialize values and get parameters from GUI
@@ -327,8 +329,8 @@ class ViolinGUI(QMainWindow):
         self.dynamic_canvas.axes.set_title(f'{marker} expression - {self.drop_down_04.currentText()}')
         self.dynamic_canvas.fig.canvas.draw()
 
-    def parse_sample_names(self):
-        """str"""  # TODO
+    def parse_sample_names(self) -> List[str]:
+        """Parse sample names from the QLineEdit Widget."""
         return self.sample_names.text().split(';')
 
     def generic_error_message(self, error: Tuple[Exception, str]) -> None:
@@ -337,7 +339,7 @@ class ViolinGUI(QMainWindow):
         QMessageBox.critical(self, 'An error occurred!', f"Error: {str(name)}\n\nfull traceback:\n{trace}")
 
     def closeEvent(self, event: QEvent) -> None:
-        """Defines the message box for when the user wants to quit SCOUTS."""
+        """Defines the message box for when the user wants to quit ViolinGUI."""
         title = 'Quit Application'
         mes = "Are you sure you want to quit?"
         reply = QMessageBox.question(self, title, mes, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -347,18 +349,6 @@ class ViolinGUI(QMainWindow):
             event.accept()
         else:
             event.ignore()
-
-    def debug(self):
-        """str"""  # TODO
-        laptop = False
-        repo = "SCOUTS"
-        if laptop:
-            repo = "scouts"
-        path = f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/cytof gio/'
-        self.load_raw_data(os.path.join(path, 'gio-mass-cytometry.xlsx'))
-        self.load_scouts_results(os.path.join(path, 'scouts output'))
-        self.sample_names.setText('Ct;RT;Torin')
-        self.plot_button.setEnabled(True)
 
     @staticmethod
     def yield_violin_values(df: pd.DataFrame, population: str, samples: List[str], marker: str,
@@ -384,14 +374,15 @@ class ViolinGUI(QMainWindow):
 
 
 class DynamicCanvas(FigureCanvas):
+    """Class for the plot canvas in the window independent from the main GUI window."""
     colors = {
               'top outliers':     [0.988, 0.553, 0.384],  # green
               'bottom outliers':  [0.259, 0.455, 0.643],  # blue
               'non-outliers':     [0.400, 0.761, 0.647],  # orange
               'whole population': [0.600, 0.600, 0.600]   # gray
     }
-    """str"""  # TODO
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100) -> None:
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
         FigureCanvas.__init__(self, self.fig)
@@ -399,14 +390,14 @@ class DynamicCanvas(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def update_figure(self, subset_by_sample, pop, sat, samples):
-        """str"""  # TODO
+    def update_figure(self, subset_by_sample: pd.DataFrame, pop: str, sat: float, samples: List[str]) -> None:
+        """Updates the figure shown based on the passed in as arguments."""
         color = self.colors[pop]
         sns.violinplot(ax=self.axes, data=subset_by_sample, x='sample', y='expression', color=color, saturation=sat,
                        order=samples)
 
-    def add_legend(self):
-        """str"""  # TODO
+    def add_legend(self) -> None:
+        """Adds legends to the figure (if the user chose to do so)."""
         labels = {name: Line2D([], [], color=color, marker='s', linestyle='None')
                   for name, color in self.colors.items()}
         self.axes.legend(labels.values(), labels.keys(), fontsize=8)
@@ -451,13 +442,9 @@ class WorkerSignals(QObject):
     finished = Signal(bool)
 
 
-DEBUG = False
-
-
-def main():
+def main() -> None:
+    """Entry point function for ViolinGUI."""
     app = QApplication(sys.argv)
     violin_gui = ViolinGUI()
-    if DEBUG:
-        violin_gui.debug()
     violin_gui.show()
     sys.exit(app.exec_())

@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 
-VERSION = "1.0.2"
+VERSION = "0.1.0"
 
 LONG_DESCRIPTION = """SCOUTS is a tool that quickly finds outliers in your single-cell data, generating information
 about your population organized by target molecules. SCOUTS takes your single-cell input and generates output files
@@ -16,7 +16,7 @@ setup(
     author_email="julianofaccioni@gmail.com",
     mantainer="Juliano Luiz Faccioni",
     mantainer_email="julianofaccioni@gmail.com",
-    url="http://www.ufrgs.br/labsinal/SCOUTS/index.html",
+    # url="http://www.ufrgs.br/labsinal/scouts/index.html",  wait for OK
     download_url="https://scouts.readthedocs.io/en/master/install.html",
     project_urls={
         'Bug Tracker': 'https://github.com/jfaccioni/scouts/issues',

@@ -1,6 +1,6 @@
 import unittest
 from itertools import product
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from src.analysis import *
 
@@ -9,13 +9,14 @@ class TestSCOUTSAnalysis(unittest.TestCase):
     """Tests all functions (and other elements) from src.analysis module."""
     @classmethod
     def setUpClass(cls) -> None:
+        """Loads data used for all unit tests."""
         # Test constants
         cls.samples = ['ct', 'treat', 'patient']
         cls.reference = 'ct'
         cls.sample_table_data = list(zip(cls.samples, ['yes', 'no', 'no']))
         cls.markers = ['Marker01', 'Marker02', 'Marker03', 'Marker04', 'Marker05']
         cls.tukey = 1.5
-        # Test data from spreadsheets
+        # Test data from test-case.xlsx spreadsheet
         cls._backup_df = pd.read_excel('test-case.xlsx', sheet_name='raw data')
         cls.description_df = pd.read_excel('test-case.xlsx', sheet_name='raw data description',
                                            index_col=[0, 1])
@@ -32,12 +33,12 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         cls.outs_any_df = pd.read_excel('test-case.xlsx', sheet_name='OutS any', index_col=[0])
         cls.outs_mk2_df = pd.read_excel('test-case.xlsx', sheet_name='OutS Marker02', index_col=[0])
         cls.stats_df = pd.read_excel('test-case.xlsx', sheet_name='raw data stats', index_col=[0, 1, 2])
+        # Test data from internal functions
         cls.cutoff_df = cls.get_cutoff_df(cls.description_df)
         cls.cytof_cutoff_df = cls.get_cutoff_df(cls.cytof_description_df)
         cls.rnaseq_cutoff_df = cls.get_cutoff_df(cls.rnaseq_description_df)
         cls.reference_cutoff_df = cls.cutoff_df.loc[[cls.reference]]
 
-    # noinspection PyUnresolvedReferences
     @classmethod
     def get_cutoff_df(cls, df: pd.DataFrame) -> pd.DataFrame:
         """Used internally for construction of cutoff df, which contains Stats instances."""
@@ -54,15 +55,14 @@ class TestSCOUTSAnalysis(unittest.TestCase):
                      df.loc[sample].loc['IQR'][marker], df.loc[sample].loc['Lower Tukey fence'][marker],
                      df.loc[sample].loc['Upper Tukey fence'][marker])
 
-    @classmethod
-    def tearDownClass(cls) -> None:
-        pass
-
     def setUp(self) -> None:
+        """Refreshes self.raw_df and self.indexed_df between tests, so that their values remain the same
+        for all tests."""
         self.raw_df = self._backup_df.copy()
         self.indexed_df = self._backup_df.copy().set_index('Sample')
 
     def tearDown(self) -> None:
+        """Deletes references to self.raw_df and self.indexed_df (just to be safe)."""
         del self.raw_df
         del self.indexed_df
 
@@ -83,7 +83,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
             self.assertEqual(getattr(info, attr), value)
 
     @patch('src.analysis.run_scouts')
-    def test_function_start_scouts_marker_and_cutoff_rules(self, mock_run_scouts) -> None:
+    def test_function_start_scouts_marker_and_cutoff_rules(self, mock_run_scouts: MagicMock) -> None:
         start_scouts_kwargs = {
             'widget': 'QMainWindow',
             'input_file': 'test-case.xlsx',
@@ -139,7 +139,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
             self.start_scouts_kwargs_test(expected_kwargs=expected_kwargs, actual_kwargs=mock_run_scouts.call_args[1])
 
     @patch('src.analysis.run_scouts')
-    def test_function_start_scouts_gating_rules(self, mock_run_scouts) -> None:
+    def test_function_start_scouts_gating_rules(self, mock_run_scouts: MagicMock) -> None:
         start_scouts_kwargs = {
             'widget': 'QMainWindow',
             'input_file': 'test-case.xlsx',
@@ -191,6 +191,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
             self.start_scouts_kwargs_test(expected_kwargs=expected_kwargs, actual_kwargs=mock_run_scouts.call_args[1])
 
     def start_scouts_kwargs_test(self, expected_kwargs: Dict, actual_kwargs: Dict) -> None:
+        """Helper function for testing call values on start_scouts function."""
         for expected_arg, actual_arg in zip(expected_kwargs.values(), actual_kwargs.values()):
             if isinstance(expected_arg, pd.DataFrame):
                 pd.testing.assert_frame_equal(expected_arg, actual_arg, check_dtype=False)
@@ -325,7 +326,8 @@ class TestSCOUTSAnalysis(unittest.TestCase):
     @patch('src.analysis.scouts_by_sample_any_marker')
     @patch('src.analysis.scouts_by_reference_single_marker')
     @patch('src.analysis.scouts_by_reference_any_marker')
-    def test_function_yield_dataframes(self, mock_outr_any, mock_outr_single, mock_outs_any, mock_outs_single) -> None:
+    def test_function_yield_dataframes(self, mock_outr_any: MagicMock, mock_outr_single: MagicMock,
+                                       mock_outs_any: MagicMock, mock_outs_single: MagicMock) -> None:
         mocks = (mock_outr_any, mock_outr_single, mock_outs_any, mock_outs_single)
         kwargs = {'input_df': '_', 'samples': '_', 'markers': '_', 'reference': '_', 'cutoff_df': '_',
                   'cutoff_rule': 'TEST_CASE', 'marker_rule': 'TEST_CASE', 'non_outliers': '_', 'bottom_outliers': '_'}
@@ -411,7 +413,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         add_scouts_data_to_stats(data=data, samples=self.samples, stats_df_dict=df_dict, info=info)
         df = df_dict['OutS single marker']
         for sample in self.samples:
-            values = get_values_df(data, sample, info)
+            values = get_values_df_or_series(data, sample, info)
             pd.testing.assert_series_equal(df.loc[(sample, info.category), info.outliers_for], values,
                                            check_dtype=False)
             pd.testing.assert_series_equal(self.stats_df.loc[(sample, info.category), info.outliers_for], values,
@@ -422,7 +424,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
                                                          samples=self.samples, markers=['Marker02'],
                                                          bottom_outliers=False, non_outliers=False))[0]
         for sample in self.samples:
-            values = get_values_df(data=data, sample=sample, info=info)
+            values = get_values_df_or_series(data=data, sample=sample, info=info)
             pd.testing.assert_series_equal(self.stats_df.loc[(sample, info.category), info.outliers_for], values,
                                            check_dtype=False)
 
@@ -437,7 +439,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         self.assertEqual('OutR single marker', get_key_from_info(info))
 
     @patch('src.analysis.pd.DataFrame.to_excel')
-    def test_function_generate_summary_table(self, mock_to_excel) -> None:
+    def test_function_generate_summary_table(self, mock_to_excel: MagicMock) -> None:
         path = 'some/path/to/file.xlsx'
         generate_summary_table(summary_df=self.indexed_df, summary_path=path)
         expected_args = [path]
@@ -446,7 +448,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
 
     @patch('src.analysis.pd.DataFrame.to_excel')
     @patch('src.analysis.pd.ExcelWriter')
-    def test_function_generate_stats_table(self, mock_excel_writer, mock_to_excel) -> None:
+    def test_function_generate_stats_table(self, mock_excel_writer: MagicMock, mock_to_excel: MagicMock) -> None:
         df_dict = create_stats_dfs(markers=self.markers, cutoff_rule='sample', marker_rule='any', samples=self.samples,
                                    bottom=False, non=False)
         path = 'some/path/to/file.xlsx'
@@ -457,7 +459,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         mock_excel_writer.return_value.save.assert_called_once()
 
     @patch('src.analysis.pd.DataFrame.to_excel')
-    def test_function_generate_cutoff_table(self, mock_to_excel) -> None:
+    def test_function_generate_cutoff_table(self, mock_to_excel: MagicMock) -> None:
         path = 'some/path/to/file.xlsx'
         generate_cutoff_table(cutoff_df=self.cutoff_df, cutoff_path=path)
         expected_args = [path]
@@ -469,7 +471,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         pd.testing.assert_frame_equal(output_cutoff_df, self.output_cutoff_df, check_names=False, check_dtype=False)
 
     @patch('src.analysis.pd.DataFrame.to_excel')
-    def test_function_generate_gated_table(self, mock_to_excel) -> None:
+    def test_function_generate_gated_table(self, mock_to_excel: MagicMock) -> None:
         path = 'some/path/to/file.xlsx'
         generate_gated_table(gated_df=self.indexed_df, gated_path=path)
         expected_args = [path]
@@ -477,7 +479,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
         mock_to_excel.assert_called_with(*expected_args, **expected_kwargs)
 
     @patch('src.analysis.read_excel_data')
-    def test_function_merge_excel_files(self, mock_read_excel_data) -> None:
+    def test_function_merge_excel_files(self, mock_read_excel_data: MagicMock) -> None:
         output_path = 'some/path/to/folder/subfolder'
         summary_path = 'some/path/to/summary.xlsx'
         excels = ['some.xlsx', 'excel.xslx', 'file.xlsx', 'names.xlsx']
@@ -491,7 +493,7 @@ class TestSCOUTSAnalysis(unittest.TestCase):
                     self.assertEqual(cell.value, mock_cell_value)
 
     @patch('src.analysis.load_workbook')
-    def test_function_read_excel_data(self, mock_load_workbook) -> None:
+    def test_function_read_excel_data(self, mock_load_workbook: MagicMock) -> None:
         path = 'some/path/to/file.xlsx'
         wb = Workbook()
         ws = wb.active

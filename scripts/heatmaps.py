@@ -34,8 +34,7 @@ def main(path: str, filename: str, ct: str, treat: str, samples: List[str], plot
     """Main function for this script."""
     # load dataframe
     df = pd.read_excel(os.path.join(path, filename), index_col=[0, 1, 2])
-    if not GIO_DATASET:  # format column names nicely
-        df.rename(columns={col: parse_column_name(col) for col in df.columns}, inplace=True)
+    # df.rename(columns={col: parse_column_name(col) for col in df.columns}, inplace=True) for Giovana's downloaded data
     control = df.loc[ct]
     treatment = df.loc[treat]
     # first image

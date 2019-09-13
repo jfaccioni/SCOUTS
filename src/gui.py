@@ -568,7 +568,7 @@ class SCOUTS(QMainWindow):
         if query:
             getattr(self, f'{sender_name}_path').setText(query)
 
-    def enable_single_excel(self):
+    def enable_single_excel(self) -> None:
         """Enables checkbox for generating a single Excel output."""
         if self.output_excel.isChecked():
             self.single_excel.setEnabled(True)
@@ -909,15 +909,15 @@ class WorkerSignals(QObject):
          Started: Worker has begun working. Nothing is emitted.
          Finished: Worker has done executing (either naturally or by an Exception). Nothing is emitted.
          Success: Worker has finished executing without errors. Nothing is emitted.
-         Error: an Exception was raised. Emits a tuple containing an Exception object and the traceback as a string.
-         Aborted: the thread was aborted at some point. Nothing is emitted."""
+         Error: an Exception was raised. Emits a tuple containing an Exception object and the traceback as a string."""
     started = Signal()
     finished = Signal()
     success = Signal()
     error = Signal(Exception)
 
 
-def main():
+def main() -> None:
+    """Entry point function for SCOUTS."""
     app = QApplication(sys.argv)
     scouts = SCOUTS()
     scouts.show()
