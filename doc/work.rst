@@ -12,7 +12,7 @@ Main Page
 
 These are the elements of the main page:
 
-.. image:: _static/SCOUTS_main_numbered.png
+.. image:: _static/gui/old/SCOUTS_main_numbered.png
    :scale: 90%
    :alt: SCOUTS main window - numbered
    :align: center
@@ -58,7 +58,7 @@ Samples page
 
 These are the elements of the samples page:
 
-.. image:: _static/SCOUTS_samplepage_numbered.png
+.. image:: _static/gui/old/SCOUTS_samplepage_numbered.png
    :scale: 90%
    :alt: Samples selection window - numbered
    :align: center
@@ -84,7 +84,7 @@ Gates page
 
 These are the elements of the gates page:
 
-.. image:: _static/SCOUTS_gatepage_numbered.png
+.. image:: _static/gui/old/SCOUTS_gatepage_numbered.png
    :scale: 90%
    :alt: Gates selection window - numbered
    :align: center

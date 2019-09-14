@@ -1,24 +1,18 @@
 Basic usage
 -----------
-
 The ``scouts`` package include two user interfaces:
-
 
 * **SCOUTS**\ : used to select outliers in a population of single-cells.
 * **SCOUTS-violins** (optional): used to visually inspect outliers selected by SCOUTS.
 
 Using SCOUTS
 ^^^^^^^^^^^^
-
 This is a basic rundown of the interface when you start SCOUTS: 
 
-
-.. raw:: html
-
-   <p align="middle">
-   <img src="doc/\_static/gui/scouts_main_page_annotations_small.png" alt="SCOUTS main page" width="50%"/>
-   </p>
-
+.. image:: _static/gui/scouts_main_page_annotations_small.png
+   :scale: 50%
+   :alt: SCOUTS-violins main window
+   :align: center
 
 1) Choose your input data
 2) Choose your sample names - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
@@ -29,16 +23,12 @@ This is a basic rundown of the interface when you start SCOUTS:
 
 Using SCOUTS-violins
 ^^^^^^^^^^^^^^^^^^^^
-
 This is a basic rundown of the interface when you start SCOUTS-violins: 
 
-
-.. raw:: html
-
-   <p align="middle">
-   <img src="doc/\_static/gui/scouts_violins_main_page_annotations_small.png" alt="SCOUTS-violins main page" width="50%"/>
-   </p>
-
+.. image:: _static/gui/scouts_violins_main_page_annotations_small.png
+   :scale: 50%
+   :alt: SCOUTS-violins main window
+   :align: center
 
 1) Choose your input data (same input file used for SCOUTS + SCOUTS output folder)
 2) Choose your sample names - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
