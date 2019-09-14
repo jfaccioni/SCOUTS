@@ -109,7 +109,7 @@ The `scouts` package include two user interfaces:
 This is a basic rundown of the interface when you start SCOUTS: 
 
 <p align="middle">
-<img src="doc/\_static/gui/scouts_main_page_annotations_small.png" alt="SCOUTS main page"/>
+<img src="doc/\_static/gui/scouts_main_page_annotations_small.png" alt="SCOUTS main page" height="60%"/>
 </p>
 
 1) Choose your input data
@@ -123,7 +123,7 @@ This is a basic rundown of the interface when you start SCOUTS:
 This is a basic rundown of the interface when you start SCOUTS-violins: 
 
 <p align="middle">
-<img src="doc/\_static/gui/scouts_violins_main_page_annotations_small.png" alt="SCOUTS-violins main page"/>
+<img src="doc/\_static/gui/scouts_violins_main_page_annotations_small.png" alt="SCOUTS-violins main page" height="60%"/>
 </p>
 
 1) Choose your input data (same input file used for SCOUTS + SCOUTS output folder)
