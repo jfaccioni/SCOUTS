@@ -1,6 +1,6 @@
 # SCOUTS - Single Cell Outlier Selector
 <p align="middle">
-<img src="doc/_static/icons/scouts_icon.png" alt="SCOUTS icon" width="30%/">
+<img src="doc/_static/icons/scouts_icon_small.png" alt="SCOUTS icon">
 </p>
 
 **SCOUTS** SCOUTS is a tool that quickly finds **outliers in your single-cell data**, generating information about your cell population organized by markers. It is designed to analyse **mass cytometry (CyToF)** and **single-cell RNA sequencing** data (scRNASeq).
@@ -65,7 +65,7 @@ $ cd scouts
 Make sure your Python interpreter (version >= 3.6) has the following packages installed:
 * [numpy](http://www.numpy.org/)
 * [pandas](https://pandas.pydata.org/)
-* [PySide2](https://wiki.qt.io/Qt_for_Python)
+* [pyside2](https://wiki.qt.io/Qt_for_Python)
 * [openpyxl](https://openpyxl.readthedocs.io/en/stable/)
 * [xlrd](https://xlrd.readthedocs.io/en/latest/)
 
@@ -87,7 +87,7 @@ $ python scouts-violins.py
 ```
 
 #### Using `pipenv` with the GitHub repository
-For `pipenv` users, we included a `Pipfile` for convenience. Simply type `pipenv install` from the repository's directory to install SCOUTS into a virtual environment. This covers the installation of both SCOUTS and SCOUTS-violins.
+For `pipenv` users, we included a `Pipfile` for convenience. Simply type `pipenv install` from the repository's directory to install SCOUTS into a virtual environment, along with the necessary third-party dependencies. This covers the installation of both SCOUTS and SCOUTS-violins.
 
 ### Download binary release and run as an executable
 Download the binary release for your OS:
@@ -97,7 +97,7 @@ Download the binary release for your OS:
 * [Linux](http://www.ufrgs.br/labsinal/scouts/scouts-linux)
 
 If you choose this option, please be aware that:
-* since SCOUTS is a Python package, the executable has a moderately large size (~150 mb), since it has to bundle the whole Python interpreter along with it.
+* SCOUTS is a Python package. The executable has a moderately large size (~150 mb), since it has to bundle the whole Python interpreter along with it.
 * this is an **experimental release of SCOUTS**, and as such it is not expected to support all OS configurations. If you run into any problems, please choose another installation method.
 
 ## Basic usage
