@@ -1,6 +1,6 @@
 # SCOUTS - Single Cell Outlier Selector
 <p align="middle">
-<img src="doc/_static/icons/scouts_icon.png" alt="SCOUTS icon" width="60%/">
+<img src="doc/_static/icons/scouts_icon.png" alt="SCOUTS icon" width="30%/">
 </p>
 
 **SCOUTS** SCOUTS is a tool that quickly finds **outliers in your single-cell data**, generating information about your cell population organized by markers. It is designed to analyse **mass cytometry (CyToF)** and **single-cell RNA sequencing** data (scRNASeq).
@@ -108,7 +108,7 @@ The `scouts` package include two user interfaces:
 This is a basic rundown of the interface when you start SCOUTS: 
 
 <p align="middle">
-<img src="doc/\_static/gui/scouts_main_page_annotations.png" alt="SCOUTS main page" width="60%"/>
+<img src="doc/\_static/gui/scouts_main_page_annotations.png" alt="SCOUTS main page" width="40%"/>
 </p>
 
 1) Choose your input data
@@ -122,7 +122,7 @@ This is a basic rundown of the interface when you start SCOUTS:
 This is a basic rundown of the interface when you start SCOUTS-violins: 
 
 <p align="middle">
-<img src="doc/\_static/gui/scouts_violins_main_page_annotations.png" alt="SCOUTS-violins main page" width="60%"/>
+<img src="doc/\_static/gui/scouts_violins_main_page_annotations.png" alt="SCOUTS-violins main page" width="40%"/>
 </p>
 
 1) Choose your input data (same input file used for SCOUTS + SCOUTS output folder)
