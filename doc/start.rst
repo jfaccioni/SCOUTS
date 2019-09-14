@@ -1,52 +1,46 @@
-Quickstart
-==========
-When you start SCOUTS, you should see this:
+Basic usage
+-----------
 
-.. image:: _static/SCOUTS_main.png
-   :scale: 90%
-   :alt: SCOUTS main window
-   :align: center
+The ``scouts`` package include two user interfaces:
 
-These are your main options for the analysis:
 
-.. image:: _static/SCOUTS_info.png
-   :scale: 80%
-   :alt: SCOUTS main window - information
-   :align: center
+* **SCOUTS**\ : used to select outliers in a population of single-cells.
+* **SCOUTS-violins** (optional): used to visually inspect outliers selected by SCOUTS.
 
-Sample names are particularly important (if the application does not find a given sample, it warns you and stops the analysis). Click here to select and edit them:
+Using SCOUTS
+^^^^^^^^^^^^
 
-.. image:: _static/SCOUTS_samples.png
-   :scale: 90%
-   :alt: SCOUTS main window - sample button
-   :align: center
+This is a basic rundown of the interface when you start SCOUTS: 
 
-In this window you can inform SCOUTS what your samples are named. You don't have to use the full sample name - any identifier exclusive to each sample is enough, as long as it is part of your samples in your input. Don't forget to add a control sample, too.
 
-.. image:: _static/SCOUTS_samplepage.png
-   :scale: 90%
-   :alt: Sample selection window
-   :align: center
+.. raw:: html
 
-`How SCOUTS works <./work.html>`_ has a detailed explanation of how the program reads and parses sample names.
+   <p align="middle">
+   <img src="doc/\_static/gui/scouts_main_page_annotations_small.png" alt="SCOUTS main page" width="50%"/>
+   </p>
 
-You can also gate your samples, if you want:
 
-.. image:: _static/SCOUTS_main_gates.png
-   :scale: 90%
-   :alt: SCOUTS main window - gates button
-   :align: center
+1) Choose your input data
+2) Choose your sample names - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
+3) Choose whether to gate samples and analyse other outlier populations - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
+4) Choose how to perform outlier selection - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
+5) Choose how and where to save output
+6) Run the program
 
-The gating functionality works differently for Cytof and RNAseq samples. Refer to `How SCOUTS works <./work.html>`_ for details.
+Using SCOUTS-violins
+^^^^^^^^^^^^^^^^^^^^
 
-.. image:: _static/SCOUTS_gatepage.png
-   :scale: 90%
-   :alt: Gates selection window
-   :align: center
+This is a basic rundown of the interface when you start SCOUTS-violins: 
 
-Ready? Click **Run**!
 
-.. image:: _static/SCOUTS_run.png
-   :scale: 90%
-   :alt: SCOUTS main window - run button
-   :align: center
+.. raw:: html
+
+   <p align="middle">
+   <img src="doc/\_static/gui/scouts_violins_main_page_annotations_small.png" alt="SCOUTS-violins main page" width="50%"/>
+   </p>
+
+
+1) Choose your input data (same input file used for SCOUTS + SCOUTS output folder)
+2) Choose your sample names - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
+3) Choose plot parameters
+4) Plot your data
