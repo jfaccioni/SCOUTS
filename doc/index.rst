@@ -20,8 +20,8 @@ Usage & documentation
    Why SCOUTS? <whyscouts>
    Installation <install>
    Quickstart guide <start>
-   How SCOUTS works <work>
-   SCOUTS-violins: create violin plots from SCOUTS analyses <violins>
+   How SCOUTS works <howscoutsworks>
+   How SCOUTS-violins works <howscoutsviolinsworks>
    FAQ <faq>
 
 * :ref:`search`

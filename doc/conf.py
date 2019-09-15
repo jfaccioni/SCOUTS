@@ -91,13 +91,17 @@ html_theme_options = {
     'logo_text_align': 'center',
     'body_text_align': 'justify',
     'description': 'quickly find outliers in your single-cell data',
-    'description_font_style': 'center',
+    'show_relbars': True,
     'github_button': True,
     'github_type': 'follow',
     'github_count': False,
     'github_banner': True,
     'github_user': 'jfaccioni',
-    'github_repo': 'scouts'}
+    'github_repo': 'scouts',
+    'code_font_family': 'Source Code Pro',
+    'font_family': 'Fira Sans',
+    'head_font_family': 'Fira Sans',
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
