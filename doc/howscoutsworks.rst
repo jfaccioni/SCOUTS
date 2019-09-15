@@ -11,7 +11,7 @@ These are the elements of the main window:
 
 .. image:: _static/gui/old/SCOUTS_main_page_full_annotations.png
    :scale: 90%
-   :alt: SCOUTS main window - numbered
+   :alt: SCOUTS main window - annotated
    :align: center
 
 **1) Input file**: this button opens up a dialog to select your input file. Valid input file formats are .xlsx and .csv.
