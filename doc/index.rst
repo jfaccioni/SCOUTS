@@ -29,10 +29,12 @@ If you use SCOUTS, please `cite us <http://www.ufrgs.br/labsinal/>`_.
 Authors
 -------
 **Juliano Faccioni** - Programming and GUI development
+
 * `GitHub <https://github.com/jfaccioni>`_
 * `LinkedIn <https://www.linkedin.com/in/juliano-faccioni-9b2133167>`_
 
 **Giovana Onzi** - Concept and testing
+
 * `LinkedIn <https://www.linkedin.com/in/giovana-onzi-ba222895>`_
 
 License
@@ -42,8 +44,10 @@ This project is licensed under the MIT License.
 Acknowledgements
 ----------------
 **Scientific Counseling**
+
 * Prof. Dr. Guido Lenz
 
 **Funding**
+
 * CAPES/CNPq
 * NIH

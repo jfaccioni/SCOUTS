@@ -2,7 +2,6 @@ Installation
 ============
 SCOUTS is available as a:
 
-
 * Python package from PyPI - install with ``pip``
 * Conda package - install with ``conda``
 * GitHub repository - download/clone the repository
