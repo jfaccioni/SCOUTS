@@ -23,20 +23,17 @@ SCOUTS is available as a:
 * GitHub repository - download/clone the repository
 * binary release (experimental)
 
-For any installation option (other than the binary release), SCOUTS requires **Python >= 3.6**.
-
 Full installation instructions [are found here](https://scouts.readthedocs.io/en/master/install.html).
+
+Binary releases [are found here](https://github.com/jfaccioni/scouts/releases). Keep in mind that these are experimental, and may not work properly on your system. In this case, we recommend following another installation method.
+
+For any installation option (other than the binary release), SCOUTS requires **Python >= 3.6**.
 
 ### Basic usage
 The `scouts` package include two user interfaces:
-* **SCOUTS**: used to select outliers in a population of single-cells.
-* **SCOUTS-violins** (optional): used to visually inspect outliers selected by SCOUTS.
-
-#### Using SCOUTS
-[Here's a quick rundown of SCOUTS](https://scouts.readthedocs.io/en/master/start.html#using-scouts).
-
-#### Using SCOUTS-violins
-[Here's a quick rundown of SCOUTS-violins](https://scouts.readthedocs.io/en/master/start.html#using-scouts-violins).
+* **SCOUTS**: used to select outliers in a population of single-cells. 
+[Here's a quick rundown of how to use SCOUTS](https://scouts.readthedocs.io/en/master/start.html#using-scouts).
+* **SCOUTS-violins** (optional): used to visually inspect outliers selected by SCOUTS. [Here's a quick rundown of how to use SCOUTS-violins](https://scouts.readthedocs.io/en/master/start.html#using-scouts-violins).
 
 ## Documentation
 [Read the full documentation here](https://scouts.readthedocs.io/en/master/).
