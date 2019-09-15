@@ -3,13 +3,13 @@ How SCOUTS works
 
 Page elements
 -------------
-This section explains what each and every element of the program does.
+This section explains what every option.
 
-Main Page
-*********
-These are the elements of the main page:
+Main window
+***********
+These are the elements of the main window:
 
-.. image:: _static/gui/old/SCOUTS_main_numbered.png
+.. image:: _static/gui/old/SCOUTS_main_page_full_annotations.png
    :scale: 90%
    :alt: SCOUTS main window - numbered
    :align: center
@@ -50,8 +50,8 @@ These are the elements of the main page:
 
 **15) Quit**: click here to exit SCOUTS.
 
-Samples page
-************
+Sample name window
+******************
 These are the elements of the samples page:
 
 .. image:: _static/gui/old/SCOUTS_samplepage_numbered.png
@@ -75,8 +75,8 @@ These are the elements of the samples page:
 
 **8) Save samples**: click this button to go back to the main page, saving current sample names.
 
-Gates page
-************
+Gating window
+*************
 These are the elements of the gates page:
 
 .. image:: _static/gui/old/SCOUTS_gatepage_numbered.png
