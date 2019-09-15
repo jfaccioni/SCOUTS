@@ -9,7 +9,7 @@ Main window
 ***********
 These are the elements of the main window:
 
-.. image:: _static/gui/old/SCOUTS_main_page_full_annotations.png
+.. image:: _static/gui/old/scouts_main_page_full_annotations.png
    :scale: 90%
    :alt: SCOUTS main window - annotated
    :align: center
