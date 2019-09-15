@@ -1,15 +1,12 @@
 How SCOUTS works
 ================
 
-
 Page elements
 -------------
-
 This section explains what each and every element of the program does.
 
 Main Page
 *********
-
 These are the elements of the main page:
 
 .. image:: _static/gui/old/SCOUTS_main_numbered.png
@@ -55,7 +52,6 @@ These are the elements of the main page:
 
 Samples page
 ************
-
 These are the elements of the samples page:
 
 .. image:: _static/gui/old/SCOUTS_samplepage_numbered.png
@@ -81,7 +77,6 @@ These are the elements of the samples page:
 
 Gates page
 ************
-
 These are the elements of the gates page:
 
 .. image:: _static/gui/old/SCOUTS_gatepage_numbered.png
@@ -108,7 +103,6 @@ These are the elements of the gates page:
 
 How SCOUTS selects outliers
 ---------------------------
-
 SCOUTS starts by selecting all cells that belong to the same sample. From this subset of the original data, SCOUTS calculates the first quartile (Q1) and third quartile (Q3) for each marker -- that is, **SCOUTS treats each marker/sample combination as being a subpopulation**, and calculates Q1 and Q3 for this subpopulation.
 
 The cutoff value for each marker/sample combination is, in turn, calculated using the following formula:
@@ -136,7 +130,6 @@ where:
 
 About input and output
 ----------------------
-
 SCOUTS expects a certain pattern for the input file. Namely, the input should have:
   - a header, containing all markers. This is the first line of a .csv file, or the first row of an Excel spreadsheet;
   - sample names in the first (leftmost) column. This is the field that SCOUTS uses to search for sample names;
@@ -160,7 +153,6 @@ Note that a **_pop** is appended to the file name if it represents the subset of
 
 About sample names
 ------------------
-
 SCOUTS also expects sample names to be somewhat organized. Names passed as samples will be searched for in the first column of the input data, and rows containing that name will be used when calculating cutoff values for those samples. Sample names are **case-sensitive**, so be sure to type them correctly.
 
 SCOUTS will throw explicit errors if you do one of the following:

@@ -1,12 +1,12 @@
 Basic usage
------------
+===========
 The ``scouts`` package include two user interfaces:
 
 * **SCOUTS**\ : used to select outliers in a population of single-cells.
 * **SCOUTS-violins** (optional): used to visually inspect outliers selected by SCOUTS.
 
 Using SCOUTS
-^^^^^^^^^^^^
+------------
 This is a basic rundown of the interface when you start SCOUTS: 
 
 .. image:: _static/gui/scouts_main_page_annotations_small.png
@@ -22,7 +22,7 @@ This is a basic rundown of the interface when you start SCOUTS:
 6) Run the program
 
 Using SCOUTS-violins
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 This is a basic rundown of the interface when you start SCOUTS-violins: 
 
 .. image:: _static/gui/scouts_violins_main_page_annotations_small.png
