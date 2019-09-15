@@ -55,7 +55,7 @@ Plot window
 These are the elements of the plot window:
 
 .. image:: _static/gui/scouts_violins_plot_page_full_annotations.png
-   :scale: 30%
+   :scale: 10%
    :alt: SCOUTS samples window - numbered
    :align: center
 
