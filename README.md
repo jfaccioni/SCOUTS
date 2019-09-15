@@ -31,9 +31,14 @@ For any installation option (other than the binary release), SCOUTS requires **P
 
 ### Basic usage
 The `scouts` package include two user interfaces:
-* **SCOUTS**: used to select outliers in a population of single-cells. 
-[Here's a quick rundown of how to use SCOUTS](https://scouts.readthedocs.io/en/master/start.html#using-scouts).
-* **SCOUTS-violins** (optional): used to visually inspect outliers selected by SCOUTS. [Here's a quick rundown of how to use SCOUTS-violins](https://scouts.readthedocs.io/en/master/start.html#using-scouts-violins).
+
+**SCOUTS**: used to select outliers in a population of single-cells. 
+* [Here's a quick rundown of how to use SCOUTS](https://scouts.readthedocs.io/en/master/start.html#using-scouts).
+* [Detailed explanation of SCOUTS can be found here](https://scouts.readthedocs.io/en/master/howscoutsworks.html).
+
+**SCOUTS-violins** (optional): used to visually inspect outliers selected by SCOUTS.
+* [Here's a quick rundown of how to use SCOUTS-violins](https://scouts.readthedocs.io/en/master/start.html#using-scouts-violins).
+* [Detailed explanation of SCOUTS-violins can be found here](https://scouts.readthedocs.io/en/master/howscoutsviolinsworks.html)
 
 ## Documentation
 [Read the full documentation here](https://scouts.readthedocs.io/en/master/).

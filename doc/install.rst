@@ -88,13 +88,13 @@ Using ``pipenv`` with the GitHub repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 For ``pipenv`` users, we included a ``Pipfile`` for convenience. Simply type ``pipenv install`` from the repository's directory to install SCOUTS into a virtual environment, along with the necessary third-party dependencies. This covers the installation of both SCOUTS and SCOUTS-violins.
 
-Download binary release and run as an executable
-------------------------------------------------
+Download the binary executable
+------------------------------
 Download the binary release for your OS:
 
-* `Windows <http://www.ufrgs.br/labsinal/scouts/scouts.exe>`_
+* `Windows <https://github.com/jfaccioni/scouts/releases/tag/v0.0.1-alpha>`_
 * MacOS (coming soon!)
-* `Linux <http://www.ufrgs.br/labsinal/scouts/scouts-linux>`_
+* `Linux <https://github.com/jfaccioni/scouts/releases/tag/v0.1.3-alpha>`_
 
 If you choose this option, please be aware that:
 
