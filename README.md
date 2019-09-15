@@ -52,7 +52,7 @@ If you use SCOUTS, please [cite us](http://www.ufrgs.br/labsinal/).
 ## Authors
 **Juliano Faccioni** - Programming and GUI development
 * [GitHub](https://github.com/jfaccioni)
-* [LinkedIn](https://www.linkedin.com/in/juliano-faccioni-9b2133167)
+* [LinkedIn](https://www.linkedin.com/in/jfaccioni/)
 
 **Giovana Onzi** - Concept and testing
 * [LinkedIn](https://www.linkedin.com/in/giovana-onzi-ba222895/)

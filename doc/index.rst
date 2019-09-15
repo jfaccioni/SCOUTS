@@ -26,11 +26,11 @@ Authors
 **Juliano Faccioni** - Programming and GUI development
 
 * `GitHub <https://github.com/jfaccioni>`_
-* `LinkedIn <https://www.linkedin.com/in/juliano-faccioni-9b2133167>`_
+* `LinkedIn <https://www.linkedin.com/in/jfaccioni/>`_
 
 **Giovana Onzi** - Concept and testing
 
-* `LinkedIn <https://www.linkedin.com/in/giovana-onzi-ba222895>`_
+* `LinkedIn <https://www.linkedin.com/in/giovana-onzi-ba222895/>`_
 
 License
 -------
