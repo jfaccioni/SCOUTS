@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 
 LONG_DESCRIPTION = """SCOUTS is a tool that quickly finds outliers in your single-cell data, generating information
 about your population organized by target molecules. SCOUTS takes your single-cell input and generates output files
