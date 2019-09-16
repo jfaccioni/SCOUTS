@@ -8,11 +8,12 @@ import seaborn as sns
 from PySide2.QtCore import QEvent, QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFileDialog, QFormLayout, QFrame, QLabel,
-                               QLineEdit, QMainWindow, QMessageBox, QPushButton, QSizePolicy, QWidget, QVBoxLayout)
+                               QLineEdit, QMainWindow, QMessageBox, QPushButton, QSizePolicy, QVBoxLayout, QWidget)
 from matplotlib import use as set_backend
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavBar
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from xlrd import XLRDError
 
 from src.utils import get_project_root
 
@@ -213,6 +214,7 @@ class ViolinGUI(QMainWindow):
         worker.signals.started.connect(message.show)
         worker.signals.started.connect(self.page.setDisabled)
         worker.signals.error.connect(self.generic_error_message)
+        worker.signals.error.connect(message.destroy)
         worker.signals.failed.connect(self.plot_button.setDisabled)
         worker.signals.success.connect(message.destroy)
         worker.signals.success.connect(self.enable_plot)
@@ -233,7 +235,10 @@ class ViolinGUI(QMainWindow):
 
     def load_scouts_input_data(self, query: str) -> None:
         """Loads data for whole population prior to SCOUTS into memory (used for plotting the whole population)."""
-        self.population_df = pd.read_excel(query, index_col=0)
+        try:
+            self.population_df = pd.read_excel(query, index_col=0)
+        except XLRDError:
+            self.population_df = pd.read_csv(query, index_col=0)
         self.drop_down_03.clear()
         self.drop_down_03.addItems(list(self.population_df.columns))
         self.drop_down_03.setCurrentIndex(0)
@@ -281,8 +286,11 @@ class ViolinGUI(QMainWindow):
                 for file_number in self.yield_selected_file_numbers(summary_df=self.summary_df, population=pop,
                                                                     cutoff_from_reference=cutoff_from_reference,
                                                                     marker=marker):
-                    df_path = os.path.join(self.summary_path, 'data', f'{"%04d" % file_number}.csv')
-                    sample_df = pd.read_csv(df_path, index_col=0)
+                    df_path = os.path.join(self.summary_path, 'data', f'{"%04d" % file_number}.')
+                    try:
+                        sample_df = pd.read_excel(df_path + 'xlsx', index_col=0)
+                    except FileNotFoundError:
+                        sample_df = pd.read_csv(df_path + 'csv', index_col=0)
                     if not sample_df.empty:
                         for partial_df in self.yield_violin_values(df=sample_df, population=pop, samples=samples,
                                                                    marker=marker, columns=columns):
