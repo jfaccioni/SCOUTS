@@ -9,7 +9,7 @@ Main window
 ***********
 These are the elements of the main window:
 
-.. image:: _static/gui/scouts_main_page_full_annotations.png
+.. image:: _static/gui/scouts_main_page_annotations.png
    :scale: 30%
    :alt: SCOUTS main window - annotated
    :align: center
@@ -52,7 +52,7 @@ In this window, the user must choose what samples to analyse. It is crucial that
 
 These are the elements of the sample names window:
 
-.. image:: _static/gui/scouts_sample_page_full_annotations.png
+.. image:: _static/gui/scouts_sample_page_annotations.png
    :scale: 30%
    :alt: SCOUTS samples window - numbered
    :align: center
@@ -77,7 +77,7 @@ In this window, users can choose whether to apply gating to cells *before* runni
 
 These are the elements of the gating window:
 
-.. image:: _static/gui/scouts_gating_page_full_annotations.png
+.. image:: _static/gui/scouts_gating_page_annotations.png
    :scale: 30%
    :alt: Gates selection window - numbered
    :align: center

@@ -15,7 +15,7 @@ Main window
 ***********
 These are the elements of the main window:
 
-.. image:: _static/gui/scouts_violins_main_page_full_annotations.png
+.. image:: _static/gui/scouts_violins_main_page_annotations.png
    :scale: 30%
    :alt: SCOUTS main window - annotated
    :align: center
@@ -40,7 +40,7 @@ Plot window
 ***********
 This is the plot window:
 
-.. image:: _static/gui/scouts_violins_plot_page_full_annotations.png
+.. image:: _static/gui/scouts_violins_plot_page_annotations.png
    :scale: 20%
    :alt: SCOUTS samples window - numbered
    :align: center

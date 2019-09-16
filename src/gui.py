@@ -694,11 +694,13 @@ class SCOUTS(QMainWindow):
 
     def analysis_has_started(self) -> None:
         """Disables run button while SCOUTS analysis is underway."""
+        self.run_button.setText(' Working...')
         self.run_button.setEnabled(False)
 
     def analysis_has_finished(self) -> None:
         """Enables run button after SCOUTS analysis has finished."""
         self.run_button.setEnabled(True)
+        self.run_button.setText(' Run!')
 
     def success_message(self) -> None:
         """Info message box used when SCOUTS finished without errors."""

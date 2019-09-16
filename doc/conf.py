@@ -86,7 +86,7 @@ html_theme = 'alabaster'
 # documentation.
 #
 html_theme_options = {
-    'logo': 'icons/scouts_icon_small.png',
+    'logo': 'scouts.png',
     'logo_name': True,
     'logo_text_align': 'center',
     'body_text_align': 'justify',

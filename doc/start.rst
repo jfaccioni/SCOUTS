@@ -9,7 +9,7 @@ Using SCOUTS
 ------------
 This is a basic rundown of the interface when you start SCOUTS: 
 
-.. image:: _static/gui/scouts_main_page_annotations_small.png
+.. image:: _static/gui/scouts_main_page_start.png
    :scale: 50%
    :alt: SCOUTS-violins main window
    :align: center
@@ -25,7 +25,7 @@ Using SCOUTS-violins
 --------------------
 This is a basic rundown of the interface when you start SCOUTS-violins: 
 
-.. image:: _static/gui/scouts_violins_main_page_annotations_small.png
+.. image:: _static/gui/scouts_violins_main_page_start.png
    :scale: 50%
    :alt: SCOUTS-violins main window
    :align: center
