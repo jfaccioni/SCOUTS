@@ -1,5 +1,8 @@
 How SCOUTS-violins works
 ========================
+SCOUTS-violins works by plotting the data generated from your SCOUTS analysis.
+
+Note that some options may result in errors depending on how you chose to use SCOUTS - e.g. you can't inspect non-outliers or OutR outliers if you did not select those rules when running SCOUTS.
 
 Page elements
 -------------
@@ -14,51 +17,29 @@ These are the elements of the main window:
    :alt: SCOUTS main window - annotated
    :align: center
 
-**1) Input file**: this button opens up a dialog to select your input file. Valid input file formats are .xlsx and .csv.
+**1) Load raw data**: Select the same input file given to SCOUTS.
 
-**2) input file text**: this field shows your input file path. It updates after clicking on the input file button and selecting a file. You can also type the path directly here.
+**2) Load SCOUTS results**: Select the same output folder used to save SCOUTS results.
 
-**3) Output folder**: this button opens up a dialog to select your output folder. We recommend using an empty folder to avoid confusion.
+**3) Select sample names**: Write sample names to plot, separated by semicolons (e.g. "control;pacient;drug01").
 
-**4) Output folder text**: this field shows your output folder path. It updates after clicking on the output folder button and selecting a folder. You can also type the path directly here.
+**4) and 5) Populations to compare**: Select populations to compare on the violin plot. The population in the top selection box appears below the population in the bottom box.
 
-**5) Select sample names**: this opens the sample selection window (see below).
+**6) Marker**: Select marker for which to compare populations. Markers are automatically loaded from the input file header.
 
-**6) Gate samples**: this opens the gate selection window (see below).
+**7) Outlier type**: select whether to plot OutS or OutR outliers.
 
-**7) Consider outliers using cutoff from**: here you can select which cutoff value SCOUTS uses to consider whether a given sample is an outlier or not.
-  - **by sample**: by default, SCOUTS will consider the sample population when calculating cutoff values. This means that each sample population (control, treatment 1, treatment 2, ...) will have a specific cutoff value for each marker.
-  - **by control**: using this option, SCOUTS applies the cutoff value from the control sample to all samples. This means that cells of any sample are treated as outliers for a given marker as long as they present a *higher expression than the control* - and not the sample population itself.
-  - **both**: this option combines both previously described analyses. Results are saved into different files, with the filename representing the analysis performed.
+**8) Legend**: Whether do display a legend in the figure.
 
-**8) Consider outliers for**: here you can select how SCOUTS determines if a cell is an outlier or not.
-    - **single marker**: by default, SCOUTS will locate outliers for each and every marker. If a given cell is an outlier for 2+ markers, it appears in the output table for each one of these markers. SCOUTS generates one output file for each marker/sample combination.
-    - **any marker**: this option considers that cells belong to the outlier population as long as they are above the cutoff value for *at least one marker*. In contrast to the previous analysis, the output generated in this analysis is a single file containing all cells that are outliers for a single marker.
-    - **both**: this option combines both previously described analyses. Results are saved into different files, with the filename representing the analysis performed.
-
-**9) Tukey factor**: by default, SCOUTS uses a Tukey factor of 1.5 when calculating the cutoffs for outliers. You can perform a more robust outlier selection by specifying a Tukey factor of 3.0.
-
-**10) Export csv**: this option generates .csv files of the outliers for each marker/sample combination. The output is placed on subfolders organized by sample.
-
-**11) Export Excel**: this option generates .xlsx files of the outliers for each marker/sample combination. The output is placed on subfolders organized by sample.
-
-**12) Generate multisheet Excel**: this option generates one large .xlsx file, in which the outliers for each marker/sample combination are represented by a different sheet. This option is included for user that want to have all analyses on a single file. **Beware: this option consumes a lot of RAM**, and may slow down your PC/crash SCOUTS depending on your setup.
-
-**13) Run**: click here to start SCOUTS. In general, SCOUTS won't let you start if there are empty fields for input, output, samples, etc.
-
-**14) Help**: click here to open this online documentation.
-
-**15) Quit**: click here to exit SCOUTS.
+**9) Plot**: click here to plot the figure with the selected parameters. The figure opens in a separate window, and can be reloaded with new parameters by clicking again on this button.
 
 Plot window
 ***********
-These are the elements of the plot window:
+This is the plot window:
 
 .. image:: _static/gui/scouts_violins_plot_page_full_annotations.png
    :scale: 20%
    :alt: SCOUTS samples window - numbered
    :align: center
 
-**1) Sample name**: type your sample name here.
-
-**2) Control checkbox**: check this box to mark the sample as control (before clicking to add the sample to the list).
+The plot window works like a regular `matplotlib figure window <https://matplotlib.org/3.1.1/tutorials/introductory/usage.html#sphx-glr-tutorials-introductory-usage-py>`_ - it can be stretched, edited and modified. You can also use the tool bar at the top (**1**) to zoom, move and export the plot in different formats.

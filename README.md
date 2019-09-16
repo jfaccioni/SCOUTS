@@ -3,7 +3,7 @@
 <img src="doc/_static/icons/scouts_icon_small.png" alt="SCOUTS icon">
 </p>
 
-**SCOUTS** is a tool that quickly finds **outliers in your single-cell data**, generating information about your cell population organized by markers. It is designed to analyse **mass cytometry (CyToF)** and **single-cell RNA sequencing** data (scRNASeq).
+**SCOUTS** is a tool that quickly finds **outliers in your single-cell data**, generating information about your cell population organized by markers. It is designed to analyse **mass cytometry (CyToF)** and **single-cell RNA sequencing** data (scRNA-Seq).
 
 ## Why SCOUTS?
 Many single-cell analytical pipelines require some level of programming knowledge in order to be used. While some great tools for languages like R, Python and Julia have been developed, the entry-level barrier of programming is still intimidating for many scientists starting on the field of singe-cell analysis. With this in mind, we developed SCOUTS to simplify this process. Through a desktop application, the user is able to choose the parameters for the outlier selection, and leave the hard work of programmatically subsetting the data to SCOUTS.
