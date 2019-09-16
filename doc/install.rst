@@ -9,9 +9,7 @@ SCOUTS is available as a:
 
 For any installation option (other than the binary release), SCOUTS requires **Python >= 3.6** to installed in your system. To check this, open a terminal/cmd and type:
 
-.. code-block::
-
-   $ python3 --version
+``$ python3 --version``
 
 If the output is something like ``Python 3.6``\ , you're golden! Otherwise you may need to `download or upgrade Python <https://www.python.org/>`_.
 
@@ -21,9 +19,7 @@ Install from PyPI using ``pip``
 -------------------------------
 To install SCOUTS, simply type in a terminal:
 
-.. code-block::
-
-   $ pip install scouts
+``$ pip install scouts``
 
 then run SCOUTS by entering ``scouts`` in your terminal.
 
@@ -31,9 +27,7 @@ Optional: SCOUTS-violins
 ^^^^^^^^^^^^^^^^^^^^^^^^
 If you also want to install SCOUTS-violins, type:
 
-.. code-block::
-
-   $ pip install scouts[violins]
+``$ pip install scouts[violins]``
 
 then run SCOUTS-violins by entering ``scouts-violins`` in your terminal.
 
@@ -45,15 +39,11 @@ Install from the GitHub repository
 ----------------------------------
 Download this repository into your local machine. Alternatively, clone it with ``git``\ :
 
-.. code-block::
-
-   $ git clone https://github.com/jfaccioni/scouts
+``$ git clone https://github.com/jfaccioni/scouts``
 
 Enter the repository's directory:
 
-.. code-block::
-
-   $ cd scouts
+``$ cd scouts``
 
 Make sure your Python interpreter (version >= 3.6) has the following packages installed:
 
@@ -65,9 +55,7 @@ Make sure your Python interpreter (version >= 3.6) has the following packages in
 
 Run SCOUTS by typing:
 
-.. code-block::
-
-   $ python scouts.py
+``$ python scouts.py``
 
 Optional: SCOUTS-violins
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -79,9 +67,7 @@ If you also want to install SCOUTS-violins, make sure your Python interpreter (v
 
 Run SCOUTS-violin by typing:
 
-.. code-block::
-
-   $ python scouts-violins.py
+``python scouts-violins.py``
 
 Using ``pipenv`` with the GitHub repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
