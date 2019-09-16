@@ -9,10 +9,7 @@ SCOUTS is available as a:
 
 For any installation option (other than the binary release), SCOUTS requires **Python >= 3.6** to installed in your system. To check this, open a terminal/cmd and type:
 
-..code-block:: bash
-   :linenos:
-
-   $ python --version
+``$ python --version``
 
 If the output is something like ``Python 3.6``, you're golden!
 
@@ -104,11 +101,11 @@ Troubleshooting
 ---------------
 These are some common errors you may run into when trying to install SCOUTS:
 
-``pip is not recognized as an internal or external command, operable program or batch file``
+**Windows**: ``pip is not recognized as an internal or external command, operable program or batch file``
 
 If you have Python >= 3.6 installed but see the message above, you need to add `Python to your Windows PATH <https://datatofish.com/add-python-to-windows-path/>`_.
 
-``ERROR: Could not install packages due to an EnvironmentError``
+**All platforms**: ``ERROR: Could not install packages due to an EnvironmentError``
 
 This error happens if you have installed Python to your system (with admin privileges) but run the terminal/cmd as a user (without admin privileges). You have a couple of options to circumvent this:
 
@@ -119,11 +116,11 @@ This error happens if you have installed Python to your system (with admin privi
 3) Install ``scouts`` to your user. Add the ``--user`` flag to pip (e.g.``pip install --user scouts``). Note that SCOUTS may be downloaded to a folder not in PATH, so your system won't be able to automatically locate it (see below).
 4) Reinstall Python inside your User folder.
 
-``SyntaxError: invalid syntax``
+**All platforms**: ``SyntaxError: invalid syntax``
 
 You are probably trying to run ``pip`` from within the Python interpreter. Exit the Python interpreter with ``exit()`` and use ``pip`` from your system shell/command line.
 
-``scouts is not recognized as an internal or external command, operable program or batch file``
+**Windows**: ``scouts is not recognized as an internal or external command, operable program or batch file``
 
 Make sure that ``pip install scouts`` has successfully installed ``scouts``.
 
