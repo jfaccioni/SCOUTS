@@ -16,9 +16,9 @@ These are the elements of the main window:
 
 **1) Input file**: select your input file by clicking on this button. Valid input file formats are Excel spreadsheets (.xlsx) and comma-separated values (.csv). Please be sure that the input file `is properly formatted <./howscoutsworks.html#about-input-files>`_.
 
-**2) Name Samples**: this opens the `sample names window <./howscoutsworks.html#sample-names-window>`_.
+**2) Name Samples**: this opens the `sample names window <./howscoutsworks.html#id1>`_.
 
-**3) Gating & outlier options**: this opens the `gating window <./howscoutsworks.html#gating-window>`_.
+**3) Gating & outlier options**: this opens the `gating window <./howscoutsworks.html#id2>`_.
 
 **4) Type of outlier to select**: here you can select which cutoff value to consider when selecting outliers.
 
