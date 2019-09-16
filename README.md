@@ -40,6 +40,10 @@ The `scouts` package include two user interfaces:
 * [Here's a quick rundown of how to use SCOUTS-violins](https://scouts.readthedocs.io/en/master/start.html#using-scouts-violins).
 * [Detailed explanation of SCOUTS-violins can be found here](https://scouts.readthedocs.io/en/master/howscoutsviolinsworks.html)
 
+### Troubleshooting
+If you run into problems or errors during installation, please [read our troubleshooting section](https://scouts.readthedocs.io/en/master/install.html#troubleshooting).
+
+
 ## Documentation
 [Read the full documentation here](https://scouts.readthedocs.io/en/master/).
 
