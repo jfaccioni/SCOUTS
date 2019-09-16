@@ -44,8 +44,11 @@ If you run into problems, check the `troubleshooting section <./install.html#tro
 
 Install using ``conda``
 -----------------------
-Coming soon!
+If you use `conda<https://docs.conda.io/en/latest/>`_, you can install SCOUTS by simply typing in a terminal (preferably from a previously created conda environment):
 
+``$ conda install -c jfaccioni scouts``
+
+Note that this option installs both ``scouts`` and ``scouts-violins``.
 Install from the GitHub repository
 ----------------------------------
 Download this repository into your local machine. Alternatively, clone it with ``git``\ :
@@ -86,11 +89,7 @@ For ``pipenv`` users, we included a ``Pipfile`` for convenience. Simply type ``p
 
 Download the binary executable
 ------------------------------
-Download the binary release for your OS:
-
-* `Windows <https://github.com/jfaccioni/scouts/releases/tag/v0.0.1-alpha>`_
-* MacOS (coming soon!)
-* `Linux <https://github.com/jfaccioni/scouts/releases/tag/v0.1.3-alpha>`_
+`Download the binary release for your OS here<https://github.com/jfaccioni/scouts/releases/latest>`_ (Mac support is coming soon).
 
 If you choose this option, please be aware that:
 
