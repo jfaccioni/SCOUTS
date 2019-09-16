@@ -44,11 +44,12 @@ If you run into problems, check the `troubleshooting section <./install.html#tro
 
 Install using ``conda``
 -----------------------
-If you use `conda<https://docs.conda.io/en/latest/>`_, you can install SCOUTS by simply typing in a terminal (preferably from a previously created conda environment):
+If you use `conda <https://docs.conda.io/en/latest/>`_, you can install SCOUTS by simply typing in a terminal (preferably from a previously created conda environment):
 
 ``$ conda install -c jfaccioni scouts``
 
 Note that this option installs both ``scouts`` and ``scouts-violins``.
+
 Install from the GitHub repository
 ----------------------------------
 Download this repository into your local machine. Alternatively, clone it with ``git``\ :
@@ -75,7 +76,6 @@ Optional: SCOUTS-violins
 ^^^^^^^^^^^^^^^^^^^^^^^^
 If you also want to install SCOUTS-violins, make sure your Python interpreter (version >= 3.6) has the following additional packages installed:
 
-
 * `matplotlib <https://matplotlib.org/>`_
 * `seaborn <https://seaborn.pydata.org/>`_
 
@@ -89,7 +89,7 @@ For ``pipenv`` users, we included a ``Pipfile`` for convenience. Simply type ``p
 
 Download the binary executable
 ------------------------------
-`Download the binary release for your OS here<https://github.com/jfaccioni/scouts/releases/latest>`_ (Mac support is coming soon).
+`Download the binary release for your OS here <https://github.com/jfaccioni/scouts/releases/latest>`_ (Mac support is coming soon).
 
 If you choose this option, please be aware that:
 
