@@ -42,7 +42,7 @@ class ViolinGUI(QMainWindow):
         self.rootdir = get_project_root()
         # QMainWindow basic properties
         self.setWindowTitle("SCOUTS - Violins")
-        self.setWindowIcon(QIcon(os.path.abspath('scouts.ico')))
+        self.setWindowIcon(QIcon(resource_path('scouts.ico')))
         # Creates QWidget as QMainWindow's central widget
         self.page = QWidget(self)
         self.setCentralWidget(self.page)
@@ -190,7 +190,7 @@ class ViolinGUI(QMainWindow):
     def set_icon(widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(f'{icon}.svg'))
+        i.addPixmap(QPixmap(resource_path(f'{icon}.svg')))
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     def get_path(self) -> None:
@@ -422,6 +422,15 @@ class WorkerSignals(QObject):
     failed = Signal()
     success = Signal()
     finished = Signal(bool)
+
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 
 def main() -> None:
