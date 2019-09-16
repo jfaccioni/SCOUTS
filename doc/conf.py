@@ -92,7 +92,7 @@ html_theme_options = {
     'body_text_align': 'justify',
     'description': 'quickly find outliers in your single-cell data',
     'show_relbars': True,
-    'github_button': True,
+    'github_button': False,
     'github_type': 'follow',
     'github_count': False,
     'github_banner': True,
