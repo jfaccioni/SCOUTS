@@ -15,9 +15,9 @@ This is a basic rundown of the interface when you start SCOUTS:
    :align: center
 
 1) Choose your input data
-2) Choose your sample names - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
-3) Choose whether to gate samples and analyse other outlier populations - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
-4) Choose how to perform outlier selection - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
+2) Choose your sample names - `explanation here <./howscoutsworks.html#about-sample-names>`_
+3) Choose whether to gate samples and analyse other outlier populations - `explanation here <./howscoutsworks.html#gating-window>`_
+4) Choose how to perform outlier selection - `explanation here <./howscoutsworks.html#main-window>`_
 5) Choose how and where to save output
 6) Run the program
 
@@ -31,6 +31,6 @@ This is a basic rundown of the interface when you start SCOUTS-violins:
    :align: center
 
 1) Choose your input data (same input file used for SCOUTS + SCOUTS output folder)
-2) Choose your sample names - `explanation here <https://scouts.readthedocs.io/en/master/work.html>`_
+2) Choose your sample names - `explanation here <./howscoutsviolinsworks.html#main-window>`_
 3) Choose plot parameters
 4) Plot your data

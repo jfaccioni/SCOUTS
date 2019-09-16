@@ -24,7 +24,7 @@ These are the elements of the main window:
 
 **2) Load SCOUTS results**: Select the same output folder used to save SCOUTS results.
 
-**3) Select sample names**: Write sample names to plot, separated by semicolons (e.g. "control;pacient;drug01").
+**3) Select sample names**: Write sample names to plot, separated by semicolons (e.g. "control;patient;drug01").
 
 **4) and 5) Populations to compare**: Select populations to compare on the violin plot. The population in the top selection box appears below the population in the bottom box.
 

@@ -14,11 +14,11 @@ These are the elements of the main window:
    :alt: SCOUTS main window - annotated
    :align: center
 
-**1) Input file**: select your input file by clicking on this button. Valid input file formats are Excel spreadsheets (.xlsx) and comma-separated values (.csv). Please be sure that the input file `is properly formatted<https://scouts.readthedocs.io/en/master/howscoutsworks.html#about-input-files>`_.
+**1) Input file**: select your input file by clicking on this button. Valid input file formats are Excel spreadsheets (.xlsx) and comma-separated values (.csv). Please be sure that the input file `is properly formatted<./howscoutsworks.html#about-input-files>`_.
 
-**2) Name Samples**: this opens the `sample names window<https://scouts.readthedocs.io/en/master/howscoutsworks.html#sample-names-window>`_.
+**2) Name Samples**: this opens the `sample names window<./howscoutsworks.html#sample-names-window>`_.
 
-**3) Gating & outlier options**: this opens the `gating window<https://scouts.readthedocs.io/en/master/howscoutsworks.html#gating-window>`_.
+**3) Gating & outlier options**: this opens the `gating window<./howscoutsworks.html#gating-window>`_.
 
 **4) Type of outlier to select**: here you can select which cutoff value to consider when selecting outliers.
 
@@ -34,7 +34,7 @@ These are the elements of the main window:
 
 **6) Tukey factor**: choose whether to consider 1.5 or 3.0 as the `Tukey factor for calculating outliers <https://en.wikipedia.org/wiki/Outlier#Tukey's_fences>`_. Conceptually, a Tukey factor of 1.5 selects possible outliers, while a Tukey factor of 3.0 selects probable outliers.
 
-**7) Select output folder**: the base folder in which to save all results from SCOUTS. We recommend creating a new folder, in order to keep files organized. Be aware that saving **multiple SCOUTS analyses to the same output folder will likely result in your data being overwritten**, so use different folders for different runs! `Here is a detailed description of the files that SCOUTS outputs<https://scouts.readthedocs.io/en/master/howscoutsworks.html#about-output-files>`_.
+**7) Select output folder**: the base folder in which to save all results from SCOUTS. We recommend creating a new folder, in order to keep files organized. Be aware that saving **multiple SCOUTS analyses to the same output folder will likely result in your data being overwritten**, so use different folders for different runs! `Here is a detailed description of the files that SCOUTS outputs<./howscoutsworks.html#about-output-files>`_.
 
 **8) Export csv**: this option generates comma-separated values (.csv) files for the outliers for each marker/sample combination.
 
@@ -48,7 +48,7 @@ These are the elements of the main window:
 
 Sample names window
 *******************
-In this window, the user must choose what samples to analyse. It is crucial that `sample names are present in the first column of your input data<https://scouts.readthedocs.io/en/master/howscoutsworks.html#about-sample-names>`_.
+In this window, the user must choose what samples to analyse. It is crucial that `sample names are present in the first column of your input data<./howscoutsworks.html#about-sample-names>`_.
 
 These are the elements of the sample names window:
 
@@ -106,11 +106,11 @@ SCOUTS treats each marker/sample combination as being a subpopulation, and calcu
 
 The cutoff value for each marker/sample combination is, in turn, calculated using `Tukey's fences <https://en.wikipedia.org/wiki/Outlier#Tukey's_fences>`_:
 
-`upper cutoff = Q3 + (IQR * t)`
+``upper cutoff = Q3 + (IQR * t)``
 
-`lower cutoff = Q1 - (IQR * t)`
+``lower cutoff = Q1 - (IQR * t)``
 
-where `IQR` is the interquartile range (`Q3 - Q1`) and `t` is the Tukey factor.
+where ``IQR`` is the interquartile range (``Q3 - Q1``) and ``t`` is the Tukey factor.
 
 The quantiles are calculated by linear interpolation. See the `Pandas documentation on quantiles <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.quantile.html>`_ to learn more about this.
 
@@ -148,13 +148,13 @@ Make sure to use sample names that are unique to each sample, and double-check i
 
 About output files
 ------------------
-SCOUTS creates a subfolder called `data` in the output folder. In this folder, every file corresponds to a different subpopulation of outliers selected by SCOUTS.
+SCOUTS creates a subfolder called ``data`` in the output folder. In this folder, every file corresponds to a different subpopulation of outliers selected by SCOUTS.
 
-Output files are organized in numerical order. The `summary.xlsx` spreadsheet contains the correspondence between file number and outliers selected.
+Output files are organized in numerical order. The ``summary.xlsx`` spreadsheet contains the correspondence between file number and outliers selected.
 
 SCOUTS also generates the following output files in the output folder:
 
-* `stats.xlsx`: contains information of number of cells, mean, median and standard deviation in the different populations selected.
-* `cutoff_values.xlsx`: contains the upper and lower cutoff values for each sample x marker combination.
-* `gated_population.xlsx` (optional): contains the whole gated population, prior to SCOUTS
-* `merged_data.xslx` (optional): contains all individual Excel file in `data` as spreadsheets in a single Excel workbook.
+* ``stats.xlsx``: contains information of number of cells, mean, median and standard deviation in the different populations selected.
+* ``cutoff_values.xlsx``: contains the upper and lower cutoff values for each sample x marker combination.
+* ``gated_population.xlsx`` (optional): contains the whole gated population, prior to SCOUTS
+* ``merged_data.xlsx`` (optional): contains all individual Excel file in ``data`` as spreadsheets in a single Excel workbook.
