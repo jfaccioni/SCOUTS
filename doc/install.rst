@@ -9,11 +9,17 @@ SCOUTS is available as a:
 
 For any installation option (other than the binary release), SCOUTS requires **Python >= 3.6** to installed in your system. To check this, open a terminal/cmd and type:
 
+``$ python --version``
+
+If the output is something like ``Python 3.6``, you're golden!
+
+If the output is something like ``Python 2.7``, try again with
+
 ``$ python3 --version``
 
-If the output is something like ``Python 3.6``\ , you're golden! Otherwise you may need to `download or upgrade Python <https://www.python.org/>`_.
+If your system can't locate Python3, you may need to `download or upgrade Python <https://www.python.org/>`_.
 
-For PyPI/pip or GitHub installations, we recommend using a `virtual environment <https://docs.python.org/3/tutorial/venv.html>`_\ , instead of installing SCOUTS into your global/system-wide Python interpreter.
+For PyPI/pip or GitHub installations, we recommend using a `virtual environment <https://docs.python.org/3/tutorial/venv.html>`_, instead of installing SCOUTS into your global/system-wide Python interpreter.
 
 Install from PyPI using ``pip``
 -------------------------------
@@ -22,6 +28,8 @@ To install SCOUTS, simply type in a terminal:
 ``$ pip install scouts``
 
 then run SCOUTS by entering ``scouts`` in your terminal.
+
+If you run into problems, check the `troubleshooting section <./install#troubleshooting>`_.
 
 Optional: SCOUTS-violins
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -85,3 +93,41 @@ If you choose this option, please be aware that:
 
 * SCOUTS is a Python package. The executable has a moderately large size (~150 mb), since it has to bundle the whole Python interpreter along with it.
 * this is an **experimental release of SCOUTS**\ , and as such it is not expected to support all OS configurations. If you run into any problems, please choose another installation method.
+
+Troubleshooting
+---------------
+These are some common errors you may run into when trying to install SCOUTS:
+
+**Windows: ``pip is not recognized as an internal or external command, operable program or batch file``**
+
+If you have Python >= 3.6 installed but see the message above, you need to add `Python to your Windows PATH <https://datatofish.com/add-python-to-windows-path/>`_.
+
+**``ERROR: Could not install packages due to an EnvironmentError``**
+
+This error happens if you have installed Python to your system (with admin privileges) but run the terminal/cmd as a user (without admin privileges). You have a couple of options to circumvent this:
+
+1) Use a `virtual environment <https://docs.python.org/3/tutorial/venv.html>`_. This creates an isolated Python interpreter to your user and avoids the ``pip`` packages from interfering with your system's Python.
+2) Run the terminal/cmd as admin:
+  - On Windows, search for ``cmd`` on the search bar, right-click and select "run as administrator"
+  - On Mac/Linux, use the command ``sudo pip install scouts``
+3) Install ``scouts`` to your user. Add the ``--user`` flag to pip (e.g.``pip install --user scouts``). Note that SCOUTS may be downloaded to a folder not in PATH, so your system won't be able to automatically locate it (see below).
+4) Reinstall Python inside your User folder.
+
+**``SyntaxError: invalid syntax``**
+
+You are probably trying to run ``pip`` from within the Python interpreter. Exit the Python interpreter with ``exit()`` and use ``pip`` from your system shell/command line.
+
+**Windows: ``scouts is not recognized as an internal or external command, operable program or batch file``**
+
+Make sure that ``pip install scouts`` has successfully installed ``scouts``.
+
+If you still see this message, the folder containing ``scouts`` is probably not in your PATH (likely due to conflicts between where you installed Python and where ``pip`` installed ``scouts``). You can either:
+
+1) Manually run SCOUTS by searching for ``scouts`` on the Windows Explorer search bar, and running the application (as per the image below):
+
+.. image:: _static/scouts_search.png
+   :scale: 50%
+   :alt: Searching for SCOUTS script
+   :align: center
+
+2) Add the folder containing the files found in step 1 to Windows PATH

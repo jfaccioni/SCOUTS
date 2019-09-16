@@ -1,6 +1,14 @@
 FAQ
 ===
 
+**I can't start SCOUTS on my computer!** ``scouts`` **does nothing!**
+
+Please check the `installation troubleshooting section <./install.html#troubleshooting>`_.
+
+**I can't start SCOUTS-violins on my computer!** ``scouts-violins`` **does nothing!**
+
+Please confirm that you have installed the `necessary dependencies <./install.html#optional-scouts-violins>`_. Then check the `installation troubleshooting section <./install.html#troubleshooting>`_.
+
 **What type of pre-processing does SCOUTS perform on my input?**
 
 By default, SCOUTS does not perform any pre-processing prior to analysing the input data. This means that transformations like data normalization and scaling should be performed by the user prior to using SCOUTS.
