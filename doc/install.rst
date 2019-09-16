@@ -13,7 +13,7 @@ For any installation option (other than the binary release), SCOUTS requires **P
 
 If the output is something like ``Python 3.6``, you're golden!
 
-If the output is something like ``Python 2.7``, try again with
+If the output is something like ``Python 2.7``, try again with:
 
 ``$ python3 --version``
 
@@ -29,15 +29,18 @@ To install SCOUTS, simply type in a terminal:
 
 then run SCOUTS by entering ``scouts`` in your terminal.
 
-If you run into problems, check the `troubleshooting section <./install#troubleshooting>`_.
+If you run into problems, check the `troubleshooting section <./install.html#troubleshooting>`_.
 
 Optional: SCOUTS-violins
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~
 If you also want to install SCOUTS-violins, type:
 
 ``$ pip install scouts[violins]``
 
 then run SCOUTS-violins by entering ``scouts-violins`` in your terminal.
+
+
+If you run into problems, check the `troubleshooting section <./install.html#troubleshooting>`_.
 
 Install using ``conda``
 -----------------------
@@ -66,7 +69,7 @@ Run SCOUTS by typing:
 ``$ python scouts.py``
 
 Optional: SCOUTS-violins
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 If you also want to install SCOUTS-violins, make sure your Python interpreter (version >= 3.6) has the following additional packages installed:
 
 
@@ -78,7 +81,7 @@ Run SCOUTS-violin by typing:
 ``python scouts-violins.py``
 
 Using ``pipenv`` with the GitHub repository
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 For ``pipenv`` users, we included a ``Pipfile`` for convenience. Simply type ``pipenv install`` from the repository's directory to install SCOUTS into a virtual environment, along with the necessary third-party dependencies. This covers the installation of both SCOUTS and SCOUTS-violins.
 
 Download the binary executable
@@ -98,12 +101,12 @@ Troubleshooting
 ---------------
 These are some common errors you may run into when trying to install SCOUTS:
 
-**Windows:** ``pip is not recognized as an internal or external command, operable program or batch file``
-
+``pip is not recognized as an internal or external command, operable program or batch file``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you have Python >= 3.6 installed but see the message above, you need to add `Python to your Windows PATH <https://datatofish.com/add-python-to-windows-path/>`_.
 
-**Windows/Mac/Linux:** ``ERROR: Could not install packages due to an EnvironmentError``
-
+``ERROR: Could not install packages due to an EnvironmentError``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This error happens if you have installed Python to your system (with admin privileges) but run the terminal/cmd as a user (without admin privileges). You have a couple of options to circumvent this:
 
 1) Use a `virtual environment <https://docs.python.org/3/tutorial/venv.html>`_. This creates an isolated Python interpreter to your user and avoids the ``pip`` packages from interfering with your system's Python.
@@ -113,12 +116,12 @@ This error happens if you have installed Python to your system (with admin privi
 3) Install ``scouts`` to your user. Add the ``--user`` flag to pip (e.g.``pip install --user scouts``). Note that SCOUTS may be downloaded to a folder not in PATH, so your system won't be able to automatically locate it (see below).
 4) Reinstall Python inside your User folder.
 
-**Windows/Mac/Linux:** ``SyntaxError: invalid syntax``
-
+``SyntaxError: invalid syntax``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 You are probably trying to run ``pip`` from within the Python interpreter. Exit the Python interpreter with ``exit()`` and use ``pip`` from your system shell/command line.
 
-**Windows:** ``scouts is not recognized as an internal or external command, operable program or batch file``
-
+``scouts is not recognized as an internal or external command, operable program or batch file``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Make sure that ``pip install scouts`` has successfully installed ``scouts``.
 
 If you still see this message, the folder containing ``scouts`` is probably not in your PATH (likely due to conflicts between where you installed Python and where ``pip`` installed ``scouts``). You can either:
