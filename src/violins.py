@@ -42,7 +42,7 @@ class ViolinGUI(QMainWindow):
         self.rootdir = get_project_root()
         # QMainWindow basic properties
         self.setWindowTitle("SCOUTS - Violins")
-        self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.rootdir, 'src', 'scouts.ico'))))
+        self.setWindowIcon(QIcon(os.path.abspath('scouts.ico')))
         # Creates QWidget as QMainWindow's central widget
         self.page = QWidget(self)
         self.setCentralWidget(self.page)
@@ -186,10 +186,11 @@ class ViolinGUI(QMainWindow):
         self.secondary_window.setCentralWidget(self.dynamic_canvas)
         self.secondary_window.addToolBar(NavBar(self.dynamic_canvas, self.secondary_window))
 
-    def set_icon(self, widget: QWidget, icon: str) -> None:
+    @staticmethod
+    def set_icon(widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.rootdir, 'src', 'default_icons', f'{icon}.svg'))))
+        i.addPixmap(QPixmap(f'{icon}.svg'))
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     def get_path(self) -> None:

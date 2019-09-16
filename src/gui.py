@@ -44,7 +44,7 @@ class SCOUTS(QMainWindow):
         self.threadpool = QThreadPool()
         # Sets values for QMainWindow
         self.setWindowTitle("SCOUTS")
-        self.setWindowIcon(QIcon(os.path.abspath(os.path.join(self.rootdir, 'src', 'scouts.ico'))))
+        self.setWindowIcon(QIcon(resource_path('scouts.ico')))
         # Creates StackedWidget as QMainWindow's central widget
         self.stacked_pages = QStackedWidget(self)
         self.setCentralWidget(self.stacked_pages)
@@ -507,10 +507,11 @@ class SCOUTS(QMainWindow):
     # ### ICON SETTING
     # ###
 
-    def set_icon(self, widget: QWidget, icon: str) -> None:
+    @staticmethod
+    def set_icon(widget: QWidget, icon: str) -> None:
         """Associates an icon to a widget."""
         i = QIcon()
-        i.addPixmap(QPixmap(os.path.abspath(os.path.join(self.rootdir, 'src', 'default_icons', f'{icon}.svg'))))
+        i.addPixmap(QPixmap(resource_path(f'{icon}.svg')))
         widget.setIcon(QIcon.fromTheme(icon, i))
 
     # ###
@@ -895,6 +896,15 @@ class WorkerSignals(QObject):
     finished = Signal()
     success = Signal()
     error = Signal(Exception)
+
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 
 def main() -> None:
