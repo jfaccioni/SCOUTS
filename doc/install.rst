@@ -86,11 +86,7 @@ For ``pipenv`` users, we included a ``Pipfile`` for convenience. Simply type ``p
 
 Download the binary executable
 ------------------------------
-Download the binary release for your OS:
-
-* `Windows <https://github.com/jfaccioni/scouts/releases/tag/v0.0.1-alpha>`_
-* MacOS (coming soon!)
-* `Linux <https://github.com/jfaccioni/scouts/releases/tag/v0.1.3-alpha>`_
+`Follow this link <https://github.com/jfaccioni/scouts/releases/latest>`_ to download the binary release for your OS. We aim to support Windows, Mac and Linux, although the Mac version has not been released yet.
 
 If you choose this option, please be aware that:
 
