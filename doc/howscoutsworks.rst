@@ -14,11 +14,11 @@ These are the elements of the main window:
    :alt: SCOUTS main window - annotated
    :align: center
 
-**1) Input file**: select your input file by clicking on this button. Valid input file formats are Excel spreadsheets (.xlsx) and comma-separated values (.csv). Please be sure that the input file :ref:`is properly formatted<About input files>`.
+**1) Input file**: select your input file by clicking on this button. Valid input file formats are Excel spreadsheets (.xlsx) and comma-separated values (.csv). Please be sure that the input file `is properly formatted<https://scouts.readthedocs.io/en/master/howscoutsworks.html#about-input-files>`_.
 
-**2) Name Samples**: this opens the :ref:`sample names window<Sample names window>`.
+**2) Name Samples**: this opens the `sample names window<https://scouts.readthedocs.io/en/master/howscoutsworks.html#sample-names-window>`_.
 
-**3) Gating & outlier options**: this opens the :ref:`gating window<Gating window>`.
+**3) Gating & outlier options**: this opens the `gating window<https://scouts.readthedocs.io/en/master/howscoutsworks.html#gating-window>`_.
 
 **4) Type of outlier to select**: here you can select which cutoff value to consider when selecting outliers.
 
@@ -34,7 +34,7 @@ These are the elements of the main window:
 
 **6) Tukey factor**: choose whether to consider 1.5 or 3.0 as the `Tukey factor for calculating outliers <https://en.wikipedia.org/wiki/Outlier#Tukey's_fences>`_. Conceptually, a Tukey factor of 1.5 selects possible outliers, while a Tukey factor of 3.0 selects probable outliers.
 
-**7) Select output folder**: the base folder in which to save all results from SCOUTS. We recommend creating a new folder, in order to keep files organized. Be aware that saving **multiple SCOUTS analyses to the same output folder will likely result in your data being overwritten**, so use different folders for different runs!  :ref:`Here is a detailed description of the files that SCOUTS outputs<About output files>`.
+**7) Select output folder**: the base folder in which to save all results from SCOUTS. We recommend creating a new folder, in order to keep files organized. Be aware that saving **multiple SCOUTS analyses to the same output folder will likely result in your data being overwritten**, so use different folders for different runs! `Here is a detailed description of the files that SCOUTS outputs<https://scouts.readthedocs.io/en/master/howscoutsworks.html#about-output-files>`_.
 
 **8) Export csv**: this option generates comma-separated values (.csv) files for the outliers for each marker/sample combination.
 
@@ -48,7 +48,7 @@ These are the elements of the main window:
 
 Sample names window
 *******************
-In this window, the user must choose what samples to analyse. It is crucial that :ref:`sample names are present in the first column of your input data<About sample names>`.
+In this window, the user must choose what samples to analyse. It is crucial that `sample names are present in the first column of your input data<https://scouts.readthedocs.io/en/master/howscoutsworks.html#about-sample-names>`_.
 
 These are the elements of the sample names window:
 
@@ -115,7 +115,8 @@ where `IQR` is the interquartile range (`Q3 - Q1`) and `t` is the Tukey factor.
 The quantiles are calculated by linear interpolation. See the `Pandas documentation on quantiles <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.quantile.html>`_ to learn more about this.
 
 Having the cutoff value from each marker/sample combination, SCOUTS proceeds to select cells from the input table with expression values higher than the upper cutoff (top outliers), lower than the lower cutoff (for bottom outliers) or in between (for non-outliers).
- Depending on user choice, outliers for *each marker* may be selected, or outliers for *at least one* marker. Additionally, the cutoff value used may come from a reference sample (OutR) or from each sample itself (OutS).
+
+Depending on user choice, outliers for *each marker* may be selected, or outliers for *at least one* marker. Additionally, the cutoff value used may come from a reference sample (OutR) or from each sample itself (OutS).
 
 About input files
 -----------------
@@ -132,11 +133,13 @@ About sample names
 When starting the analysis, SCOUTS divides the input data into samples. SCOUTS searches for each sample (i.e. each name in the sample table) in the first column of the input data. Sample names are **case-sensitive**, so be sure to type them correctly.
 
 SCOUTS will throw explicit errors if you:
+
 * try to run the program with an empty sample list;
 * try to perform OutR analysis with no reference sample;
 * none of the sample names are found in the first column of the input data.
 
 SCOUTS will **not** stop the analysis nor warn you if:
+
 * *some, but not all* sample names are found in the first column of the input data (these sample names will be ignored).
 * a given sample name appears in more than one subset of samples (these cells will be analysed twice).
 * some cells do not belong to any sample (these cells will be ignored)

@@ -1,8 +1,11 @@
 How SCOUTS-violins works
 ========================
-SCOUTS-violins works by plotting the data generated from your SCOUTS analysis.
 
-Note that some options may result in errors depending on how you chose to use SCOUTS - e.g. you can't inspect non-outliers or OutR outliers if you did not select those rules when running SCOUTS.
+About SCOUTS-violins
+--------------------
+SCOUTS-violins was designed as an exploratory interface through which users can visualize the results from a SCOUTS analysis.
+
+Note that some options in SCOUTS-violins may result in errors, depending on how you chose to use SCOUTS - e.g. you can't inspect non-outliers or OutR outliers if you did not select those rules when running SCOUTS.
 
 Page elements
 -------------
