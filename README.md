@@ -43,10 +43,7 @@ The `scouts` package include two user interfaces:
 ## Documentation
 [Read the full documentation here](https://scouts.readthedocs.io/en/master/).
 
-## FAQ
-[Frequently asked questions can be found here](https://scouts.readthedocs.io/en/master/faq.html).
-
-## Citations
+## Citation
 If you use SCOUTS, please [cite us](http://www.ufrgs.br/labsinal/).
 
 ## Authors

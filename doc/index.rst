@@ -19,8 +19,6 @@ Usage & documentation
    How SCOUTS-violins works <howscoutsviolinsworks>
    FAQ <faq>
 
-Citations
----------
 If you use SCOUTS, please `cite us <http://www.ufrgs.br/labsinal/>`_.
 
 Authors
