@@ -169,7 +169,7 @@ class ViolinGUI(QMainWindow):
         self.checkboxes_frame.setLayout(QHBoxLayout())
         self.main_layout.addWidget(self.checkboxes_frame)
         self.legend_checkbox = QCheckBox(self.page)
-        self.legend_checkbox.setText('Add legend')
+        self.legend_checkbox.setText('Add legend to plot')
         self.legend_checkbox.setStyleSheet(self.style['checkbox'])
         self.log_checkbox = QCheckBox(self.page)
         self.log_checkbox.setText('Log-transform y-axis')

@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
-SAMPLES = ['Ct', 'RT', 'Torin']
-POP_01 = 'top outliers'      # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-POP_02 = 'bottom outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-MARKER = 'pcMyc'
+import random
+SAMPLES = ['Pre-Tx', 'Week4']
+POP_01 = 'whole population'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
+POP_02 = 'top outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
+MARKER = '(Pm147)Di<BCAT-147 (v)>'
 REFERENCE = False
-BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/cytof gio'
+BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/MP29_CD45low'
 SCOUTS_PATH = os.path.join(BASE_PATH, 'scouts output')
 COLORS = {
     'top outliers': [0.988, 0.553, 0.384],     # green
@@ -44,14 +44,22 @@ def plot(samples: List[str], pop_01: str, pop_02: str, marker: str, reference: b
                                                           columns=columns):
                         violins_df = violins_df.append(partial_df)
     pops_to_analyse = [p for p in pops_to_analyse if p != 'none']
-    colors = [COLORS[pop] for pop in pops_to_analyse]
-    violin_df = violins_df[violins_df['marker'] == marker]
-    violin_df.loc[:, 'expression'] = np.log(violin_df.loc[:, 'expression'])
+    violins_df = violins_df[violins_df['marker'] == marker]
+    violins_df.loc[:, 'expression'] = np.log(violins_df.loc[:, 'expression'])
     fig, ax = plt.subplots()
-    sns.violinplot(ax=ax, data=violin_df, x='sample', y='expression', order=samples, scale='count', hue='population', dodge=False, palette=colors)
-    # labels = {name: Line2D([], [], color=color, marker='s', linestyle='None') for name, color in COLORS.items()}
-    # ax.legend(labels.values(), labels.keys(), fontsize=8)
-    ax.set_title(f'{marker} expression - {marker}')
+    for pop in pops_to_analyse:
+        pop_subset = violins_df.loc[violins_df['population'] == pop]
+        if pop == 'whole population':
+            sns.violinplot(ax=ax, data=pop_subset, x='sample', y='expression', order=samples, scale='width',
+                           hue='population', dodge=False, color='white', linestyle='---')
+        elif pop == 'top outliers':
+            for sample, value in zip(pop_subset['sample'], pop_subset['expression']):
+                sample_index = samples.index(sample)
+                jitter = random.uniform(-0.1, 0.1)
+                plt.scatter(sample_index+jitter, value, color=COLORS[pop], s=0.5)
+    ax.set_xlim(-0.5, 1.5)
+    ref_str = 'OutR' if reference else 'OutS'
+    ax.set_title(f'{marker} expression - {ref_str}')
     plt.show()
 
 
@@ -72,7 +80,7 @@ def yield_selected_file_numbers(summary_df: pd.DataFrame, population: str, refer
 
 
 def main():
-    population_df = pd.read_excel(os.path.join(BASE_PATH, 'gio-mass-cytometry.xlsx'), index_col=0)
+    population_df = pd.read_excel(os.path.join(BASE_PATH, 'raw_data.xlsx'), index_col=0)
     summary_df = pd.read_excel(os.path.join(SCOUTS_PATH, 'summary.xlsx'))
     plot(samples=SAMPLES, pop_01=POP_01, pop_02=POP_02, marker=MARKER, reference=REFERENCE, population_df=population_df,
          summary_df=summary_df, scouts_path=SCOUTS_PATH)
