@@ -3,12 +3,14 @@ import sys
 import traceback
 from typing import Callable, Generator, List, Tuple
 
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from PySide2.QtCore import QEvent, QObject, QRunnable, QThreadPool, Qt, Signal, Slot
 from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFileDialog, QFormLayout, QFrame, QLabel,
-                               QLineEdit, QMainWindow, QMessageBox, QPushButton, QSizePolicy, QVBoxLayout, QWidget)
+from PySide2.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFileDialog, QFormLayout, QFrame,
+                               QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QSizePolicy,
+                               QVBoxLayout, QWidget)
 from matplotlib import use as set_backend
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavBar
 from matplotlib.figure import Figure
@@ -163,10 +165,17 @@ class ViolinGUI(QMainWindow):
         self.analysis_frame.layout().addRow(self.analysis_label_03, self.drop_down_03)
         self.analysis_frame.layout().addRow(self.analysis_label_04, self.drop_down_04)
 
+        self.checkboxes_frame = QFrame(self.page)
+        self.checkboxes_frame.setLayout(QHBoxLayout())
+        self.main_layout.addWidget(self.checkboxes_frame)
         self.legend_checkbox = QCheckBox(self.page)
-        self.legend_checkbox.setText('Add legend to the plot')
+        self.legend_checkbox.setText('Add legend')
         self.legend_checkbox.setStyleSheet(self.style['checkbox'])
-        self.main_layout.addWidget(self.legend_checkbox)
+        self.log_checkbox = QCheckBox(self.page)
+        self.log_checkbox.setText('Log-transform y-axis')
+        self.log_checkbox.setStyleSheet(self.style['checkbox'])
+        self.checkboxes_frame.layout().addWidget(self.legend_checkbox)
+        self.checkboxes_frame.layout().addWidget(self.log_checkbox)
 
         # Plot button (stand-alone)
         self.plot_button = QPushButton(self.page)
@@ -298,6 +307,8 @@ class ViolinGUI(QMainWindow):
         # Plot data
         pops_to_analyse = [p for p in pops_to_analyse if p != 'none']
         violin_df = violin_df[violin_df['marker'] == marker]
+        if self.log_checkbox.isChecked():
+            violin_df.loc[:, 'expression'] = np.log(violin_df.loc[:, 'expression'])
         for pop in pops_to_analyse:
             pop_subset = violin_df.loc[violin_df['population'] == pop]
             for sample in samples:
@@ -352,6 +363,18 @@ class ViolinGUI(QMainWindow):
         for index, (file_number, cutoff_from, reference, outliers_for, category) in summary_df.iterrows():
             if cutoff_from == cutoff and outliers_for == marker and category == population:
                 yield file_number
+
+    def debug(self):
+        """Function to automatically set interface parameters (for quicker testing)"""
+        laptop = False
+        repo = "SCOUTS"
+        if laptop:
+            repo = "scouts"
+        path = f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/cytof gio/'
+        self.load_scouts_input_data(os.path.join(path, 'gio-mass-cytometry.xlsx'))
+        self.load_scouts_results(os.path.join(path, 'scouts output'))
+        self.sample_names.setText('Ct;RT;Torin')
+        self.plot_button.setEnabled(True)
 
 
 class DynamicCanvas(FigureCanvas):
@@ -423,9 +446,14 @@ class WorkerSignals(QObject):
     finished = Signal(bool)
 
 
+DEBUG = True
+
+
 def main() -> None:
     """Entry point function for ViolinGUI."""
     app = QApplication(sys.argv)
     violin_gui = ViolinGUI()
+    if DEBUG:
+        violin_gui.debug()
     violin_gui.show()
     sys.exit(app.exec_())
