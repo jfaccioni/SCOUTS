@@ -432,7 +432,7 @@ def get_output_cutoff_df(cutoff_df: pd.DataFrame, columns: List[str]) -> pd.Data
 
 def generate_gated_table(gated_df: pd.DataFrame, gated_path: str) -> None:
     """Generates table with gated population, i.e. same as the input file except for the gated cells."""
-    gated_df.to_excel(gated_path, sheet_name='Gated Population', index=False)
+    gated_df.to_excel(gated_path, sheet_name='Gated Population')
 
 
 def merge_excel_files(output_path: str, summary_path: str, excels: List[str]) -> Workbook:
