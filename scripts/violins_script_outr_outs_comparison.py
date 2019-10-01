@@ -5,12 +5,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-SAMPLES = ['Pre-Tx', 'Week4']
+
+SAMPLES = ['PJ017', 'PJ018']
 POP_01 = 'whole population'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
 POP_02 = 'top outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-MARKER = '(Eu151)Di<MCAM-151 (v)>'
-REFERENCE = True
-BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/MP29_CD45low'
+MARKER = 'PDGFRA'
+REFERENCE = False
+RNASEQ_DATA = True
+GATE = True
+BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/rnaseq gio/PJ017_PJ018'
 SCOUTS_PATH = os.path.join(BASE_PATH, 'scouts output')
 COLORS = {
     'top outliers': [0.988, 0.553, 0.384],     # green
@@ -45,8 +48,10 @@ def plot(samples: List[str], pop_01: str, pop_02: str, marker: str, reference: b
     pops_to_analyse = [p for p in pops_to_analyse if p != 'none']
     palette = [COLORS[pop] for pop in pops_to_analyse]
     violins_df = violins_df[violins_df['marker'] == marker]
-    violins_df.loc[:, 'expression'] = np.log(violins_df.loc[:, 'expression'])
+    if not RNASEQ_DATA:
+        violins_df.loc[:, 'expression'] = np.log(violins_df.loc[:, 'expression'])
     fig, ax = plt.subplots()
+    print(violins_df)
     sns.violinplot(ax=ax, data=violins_df, x='sample', y='expression', order=samples, scale='width', hue='population',
                    dodge=False, color='white', palette=palette)
     ax.set_xlim(-0.5, 1.5)
@@ -72,7 +77,8 @@ def yield_selected_file_numbers(summary_df: pd.DataFrame, population: str, refer
 
 
 def main():
-    population_df = pd.read_excel(os.path.join(BASE_PATH, 'raw_data.xlsx'), index_col=0)
+    filename = 'raw_data.xlsx' if GATE is False else os.path.join('scouts output', 'gated_population.xlsx')
+    population_df = pd.read_excel(os.path.join(BASE_PATH, filename), index_col=0).astype(float)
     summary_df = pd.read_excel(os.path.join(SCOUTS_PATH, 'summary.xlsx'))
     plot(samples=SAMPLES, pop_01=POP_01, pop_02=POP_02, marker=MARKER, reference=REFERENCE, population_df=population_df,
          summary_df=summary_df, scouts_path=SCOUTS_PATH)

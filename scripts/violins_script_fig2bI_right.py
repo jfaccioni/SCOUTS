@@ -5,10 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
 SAMPLES = ['Pre-Tx', 'Week4']
-POP_01 = 'whole population'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
+POP_01 = 'non-outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
 POP_02 = 'top outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-MARKER = '(Pm147)Di<BCAT-147 (v)>'
+MARKER = '(Dy164)Di<CD49F-164 (v)>'
 REFERENCE = False
 BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/MP29_CD45low'
 SCOUTS_PATH = os.path.join(BASE_PATH, 'scouts output')
