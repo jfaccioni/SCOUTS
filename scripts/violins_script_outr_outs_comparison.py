@@ -2,16 +2,15 @@ import os
 from typing import Generator, List
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
+import numpy as np
 import seaborn as sns
 
 SAMPLES = ['PJ017', 'PJ018']
-POP_01 = 'whole population'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
+POP_01 = 'non-outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
 POP_02 = 'top outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-MARKER = 'PDGFRA'
+MARKER = 'EGFR'
 REFERENCE = False
-RNASEQ_DATA = True
 GATE = True
 BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/rnaseq gio/PJ017_PJ018'
 SCOUTS_PATH = os.path.join(BASE_PATH, 'scouts output')
@@ -27,7 +26,7 @@ def plot(samples: List[str], pop_01: str, pop_02: str, marker: str, reference: b
          summary_df: pd.DataFrame, scouts_path: str) -> None:
     pops_to_analyse = [pop_01, pop_02]
     columns = ['sample', 'marker', 'population', 'expression']
-    violins_df = pd.DataFrame(columns=columns)
+    violins_df = pd.DataFrame(columns=columns, dtype=float)
     for pop in pops_to_analyse:
         if pop == 'whole population':
             for partial_df in yield_violin_values(df=population_df, population='whole population', samples=samples,
@@ -47,11 +46,8 @@ def plot(samples: List[str], pop_01: str, pop_02: str, marker: str, reference: b
                         violins_df = violins_df.append(partial_df)
     pops_to_analyse = [p for p in pops_to_analyse if p != 'none']
     palette = [COLORS[pop] for pop in pops_to_analyse]
-    violins_df = violins_df[violins_df['marker'] == marker]
-    if not RNASEQ_DATA:
-        violins_df.loc[:, 'expression'] = np.log(violins_df.loc[:, 'expression'])
+    violins_df.loc[:, 'expression'] = np.log(violins_df.loc[:, 'expression'])
     fig, ax = plt.subplots()
-    print(violins_df)
     sns.violinplot(ax=ax, data=violins_df, x='sample', y='expression', order=samples, scale='width', hue='population',
                    dodge=False, color='white', palette=palette)
     ax.set_xlim(-0.5, 1.5)
