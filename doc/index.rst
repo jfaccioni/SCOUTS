@@ -3,7 +3,7 @@
 
 Single Cell Outlier Selector
 ----------------------------
-**SCOUTS** is a tool that quickly finds **outliers in your single-cell data**, generating information about your cell population organized by markers. It is designed to analyse **mass cytometry (CyToF)** and **single-cell RNA sequencing** data (scRNA-Seq).
+**SCOUTS** is a tool that quickly finds **OUTLIERS in single-cell datasets**, especially those obtained by **mass cytometry (CyToF)** and **single-cell RNA sequencing** (scRNA-Seq) platforms.
 
 Developed by `LabSinal <http://www.ufrgs.br/labsinal/>`_.
 
