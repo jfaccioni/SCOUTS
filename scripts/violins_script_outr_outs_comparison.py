@@ -6,13 +6,13 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 
-SAMPLES = ['PJ017', 'PJ018']
+SAMPLES = ['PJ016']
 POP_01 = 'non-outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
 POP_02 = 'top outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-MARKER = 'EGFR'
+MARKER = 'RPS6'
 REFERENCE = False
 GATE = True
-BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/rnaseq gio/PJ017_PJ018'
+BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/rnaseq gio/PJ016'
 SCOUTS_PATH = os.path.join(BASE_PATH, 'scouts output')
 COLORS = {
     'top outliers': [0.988, 0.553, 0.384],     # green
