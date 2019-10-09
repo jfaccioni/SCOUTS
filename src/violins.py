@@ -371,7 +371,7 @@ class ViolinGUI(QMainWindow):
         if laptop:
             repo = "scouts"
         path = f'/home/juliano/Repositories/my-github-repositories/{repo}/local/sample data/cytof gio/'
-        self.load_scouts_input_data(os.path.join(path, 'gio-mass-cytometry.xlsx'))
+        self.load_scouts_input_data(os.path.join(path, 'raw_data.xlsx'))
         self.load_scouts_results(os.path.join(path, 'scouts output'))
         self.sample_names.setText('Ct;RT;Torin')
         self.plot_button.setEnabled(True)
