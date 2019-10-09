@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-SAMPLES = ['Pre-Tx', 'Week4']
+SAMPLES = ['Ct', 'RT', 'Torin']
 POP_01 = 'whole population'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-POP_02 = 'top outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-MARKER = '(Er168)Di<NES-168 (v)>'
+POP_02 = 'none'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
+MARKER = 'CD44'
 REFERENCE = True
-BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/MP29_CD45low'
+BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/cytof gio'
 SCOUTS_PATH = os.path.join(BASE_PATH, 'scouts output')
 COLORS = {
     'top outliers': [0.988, 0.553, 0.384],     # green
@@ -58,7 +58,7 @@ def plot(samples: List[str], pop_01: str, pop_02: str, marker: str, reference: b
                 sample_index = samples.index(sample)
                 jitter = random.uniform(-0.1, 0.1)
                 plt.scatter(sample_index+jitter, value, color=COLORS[pop], s=0.5)
-    ax.set_xlim(-0.5, 1.5)
+    ax.set_xlim(-0.5, len(samples) - 0.5)
     ref_str = 'OutR' if reference else 'OutS'
     ax.set_title(f'{marker} expression - {ref_str}')
     plt.show()
