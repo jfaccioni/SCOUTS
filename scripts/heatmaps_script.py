@@ -1,13 +1,12 @@
 import os
 import re
-from typing import List
+from typing import List, Optional
 
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
 CONTROL = 'Pre-Tx'
 TREATMENT = 'Week4'
 MARKERS = [
@@ -39,6 +38,7 @@ PARAMS = {
         'colormap': getattr(matplotlib.cm, 'RdBu_r'),
         'normalize': True,
         'global_normalize': True,
+        'center': None,
         'ylabels': [
             'PreTx pop',
             'Week4 pop',
@@ -53,6 +53,7 @@ PARAMS = {
         'colormap': getattr(matplotlib.cm, 'BrBG'),
         'normalize': False,
         'global_normalize': False,
+        'center': None,
         'ylabels': [
             r'$\frac{Week4\ pop}{PreTx\ pop}$',
             r'$\frac{Week4\ out}{PreTx\ out}$',
@@ -65,6 +66,7 @@ PARAMS = {
         'colormap': getattr(matplotlib.cm, 'RdBu_r'),
         'normalize': True,
         'global_normalize': True,
+        'center': None,
         'ylabels': [
             r'PreTx $\frac{out}{nonout}$',
             r'Week4 $\frac{out}{nonout}$'
@@ -76,7 +78,7 @@ PARAMS = {
 def main(dirname: str, filename: str, ct: str, treat: str, markers: List[str]) -> None:
     """Main function for this script."""
     # load dataframe
-    df = pd.read_excel(os.path.join(dirname, filename), index_col=[0, 1, 2])
+    df = pd.read_excel(os.path.join(dirname, filename), index_col=[0, 1, 2], sheet_name='OutS single marker')
     control = df.loc[ct].loc[:, markers]
     treatment = df.loc[treat].loc[:, markers]
 
@@ -113,18 +115,34 @@ def main(dirname: str, filename: str, ct: str, treat: str, markers: List[str]) -
         ylabels = heatmap_dict['ylabels']
         normalize = heatmap_dict['normalize']
         global_normalize = heatmap_dict['global_normalize']
-        plot_heatmap(heatmap=heatmap,
-                     colormap=colormap,
-                     markers=markers,
-                     ylabels=ylabels,
-                     normalize=normalize,
-                     global_normalize=global_normalize)
+        center = heatmap_dict['center']
+        plot_heatmap(heatmap=heatmap, colormap=colormap, markers=markers, ylabels=ylabels, normalize=normalize,
+                     global_normalize=global_normalize, center=center)
     plt.show()
 
 
 def parse_column_name(col: str) -> str:
     """parses column name from CyToF patient dataset."""
     return ''.join(re.search('Di<.*', col).group(0)[3:].split('-')[:-1])
+
+
+def plot_heatmap(heatmap: pd.DataFrame, colormap: plt.cm, markers: List[str], ylabels: List[str],
+                 normalize: bool, global_normalize: bool, center: Optional[float]) -> None:
+    """Plots the heatmap into a separate figure"""
+    if normalize is True:
+        if global_normalize is True:
+            heatmap = apply_global_normalize(heatmap)
+        else:
+            heatmap = apply_normalize(heatmap)
+    fig = plt.figure()
+    if center is not None:
+        sns.heatmap(ax=fig.gca(), data=heatmap, square=True, xticklabels=1, linewidths=0.1, cmap=colormap,
+                    center=center)
+    else:
+        sns.heatmap(ax=fig.gca(), data=heatmap, square=True, xticklabels=1, linewidths=0.1, cmap=colormap)
+    plt.gca().set_xticklabels([parse_column_name(m) for m in markers])
+    plt.gca().set_yticklabels(ylabels)
+    return fig
 
 
 def apply_global_normalize(heatmap: pd.DataFrame) -> pd.DataFrame:
@@ -137,20 +155,6 @@ def apply_global_normalize(heatmap: pd.DataFrame) -> pd.DataFrame:
 def apply_normalize(heatmap: pd.DataFrame) -> pd.DataFrame:
     """Normalizes each DataFrame column to range [-1, 1]"""
     return heatmap.apply(lambda x: (2 * (x - x.min())) / (x.max() - x.min()) - 1)
-
-
-def plot_heatmap(heatmap: pd.DataFrame, colormap: plt.cm, markers: List[str], ylabels: List[str],
-                 normalize: bool, global_normalize: bool) -> None:
-    """Plots the heatmap into a separate figure"""
-    if normalize is True:
-        if global_normalize is True:
-            heatmap = apply_global_normalize(heatmap)
-        else:
-            heatmap = apply_normalize(heatmap)
-    fig = plt.figure()
-    sns.heatmap(ax=fig.gca(), data=heatmap, square=True, xticklabels=1, linewidths=0.1, cmap=colormap)
-    plt.gca().set_xticklabels([parse_column_name(m) for m in markers])
-    plt.gca().set_yticklabels(ylabels)
 
 
 if __name__ == '__main__':
