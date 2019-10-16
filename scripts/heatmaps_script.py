@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
 CONTROL = 'Pre-Tx'
 TREATMENT = 'Week4'
 MARKERS = [
@@ -16,14 +17,14 @@ MARKERS = [
     '(Eu151)Di<MCAM-151 (v)>',
     '(Eu153)Di<S100B-153 (v)>',
     '(Gd156)Di<CXCR3-156>',
-    '(Tb159)Di<CD90-159 (v)>',
+    # '(Tb159)Di<CD90-159 (v)>',
     '(Er162)Di<MET-162 (v)>',
     '(Dy163)Di<SOX2-163 (v)>',
     '(Dy164)Di<CD49F-164 (v)>',
     '(Ho165)Di<EGFR-165 (v)>',
     '(Er166)Di<CD44-166 (v)>',
     '(Er168)Di<NES-168 (v)>',
-    '(Yb174)Di<HLA-DR-174 (v)>',
+    # '(Yb174)Di<HLA-DR-174 (v)>',
     '(Lu175)Di<PD-L1-175 (v)>',
     '(Lu176)Di<H3-176>'
     ]
@@ -63,7 +64,7 @@ PARAMS = {
     },
     'out_heatmap': {
         'heatmap': None,
-        'colormap': getattr(matplotlib.cm, 'RdBu_r'),
+        'colormap': getattr(matplotlib.cm, 'PiYG'),
         'normalize': True,
         'global_normalize': True,
         'center': None,
