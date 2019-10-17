@@ -51,7 +51,7 @@ PARAMS = {
     },
     'ratio_heatmap': {
         'heatmap': None,
-        'colormap': getattr(matplotlib.cm, 'BrBG'),
+        'colormap': getattr(matplotlib.cm, 'PiYG_r'),
         'normalize': False,
         'global_normalize': False,
         'center': None,
@@ -64,7 +64,7 @@ PARAMS = {
     },
     'out_heatmap': {
         'heatmap': None,
-        'colormap': getattr(matplotlib.cm, 'PiYG'),
+        'colormap': getattr(matplotlib.cm, 'BrBG_r'),
         'normalize': True,
         'global_normalize': True,
         'center': None,
