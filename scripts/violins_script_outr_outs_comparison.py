@@ -7,10 +7,10 @@ import numpy as np
 import seaborn as sns
 
 SAMPLES = ['Pre-Tx', 'Week4']
-POP_01 = 'non-outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
+POP_01 = 'whole population'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
 POP_02 = 'top outliers'  # 'top outliers', 'bottom outliers', 'non-outliers', 'whole population', 'none'
-MARKER = '(Gd156)Di<CXCR3-156>'
-REFERENCE = True
+MARKER = '(Er168)Di<NES-168 (v)>'
+REFERENCE = False
 GATE = False
 BASE_PATH = '/home/juliano/Repositories/my-github-repositories/SCOUTS/local/sample data/MP29_CD45low'
 SCOUTS_PATH = os.path.join(BASE_PATH, 'scouts output')
