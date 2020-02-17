@@ -5,6 +5,10 @@ __pycache__/
 # PyCharm environment files
 .idea/
 
+# RStudio files
+*.Rhistory
+*.Rproj
+
 # local files I don't want to track
 /local
 
@@ -113,3 +117,4 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+.Rproj.user
