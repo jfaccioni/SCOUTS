@@ -48,7 +48,7 @@ If you run into problems or errors during installation, please [read our trouble
 [Read the full documentation here](https://scouts.readthedocs.io/en/master/).
 
 ## Citation
-If you use SCOUTS, please [cite us](http://www.ufrgs.br/labsinal/).
+If you use SCOUTS, please [cite us](https://www.biorxiv.org/content/10.1101/2020.03.25.007518v2).
 
 ## Authors
 **Juliano Faccioni** - Programming and GUI development
