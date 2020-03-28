@@ -19,7 +19,7 @@ Usage & documentation
    How SCOUTS-violins works <howscoutsviolinsworks>
    FAQ <faq>
 
-If you use SCOUTS, please `cite us <https://www.biorxiv.org/content/10.1101/2020.03.25.007518v2`_.
+If you use SCOUTS, please `cite us <https://www.biorxiv.org/content/10.1101/2020.03.25.007518v2>`_.
 
 Authors
 -------
